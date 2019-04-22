@@ -3,7 +3,7 @@ import sys
 
 verbose = True
 
-message_file_name = "input_lorem_ipsum.txt"
+message_file_name = "input_outputs/input_lorem_ipsum.txt"
 
 
 def string2bits(s=''):
