@@ -9,7 +9,7 @@ def qam_map(M):
     N = np.sqrt(M) - 1
     aux = np.arange(-N, N+1, 2)
     x, y = np.meshgrid(aux, aux[::-1])
-    return x + 1j*y
+    return (x + 1j*y).T.flatten()
 
 # Returns a M-PSK constellation
 def psk_map(M):
@@ -20,3 +20,5 @@ if __name__ == '__main__':
     M = 3
     print(qam_map(M))
     print(psk_map(M))
+
+# TODO make qam_map output in the trigonometric order, starting with 1+j
