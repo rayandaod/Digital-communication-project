@@ -1,10 +1,11 @@
 import zlib
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 
 import mappings
 
-verbose = False
+verbose = True
 
 message_file_name = "../data/input_lorem_ipsum.txt"
 
@@ -67,11 +68,27 @@ def choose_mapping():
 
 # Forms our n-tuples
 def encoder(indices, mapping):
-    return [mapping[i] for i in indices]
+    symbols = [mapping[i] for i in indices]
+
+    if verbose:
+        print("Average symbol energy: {}".format(np.mean(np.abs(symbols)**2)))
+        X = [x.real for x in symbols]
+        Y = [x.imag for x in symbols]
+        plt.scatter(X, Y, color='red')
+        plt.legend(['Symbols'])
+        plt.title("{} transmitted symbols".format(len(symbols)))
+        plt.xlabel("Re")
+        plt.ylabel("Im")
+        plt.grid()
+        plt.show()
+
+    return symbols
 
 
 if __name__ == '__main__':
     mapping = choose_mapping()
+    mapping = mapping/np.sqrt(np.mean(np.abs(mapping)**2))
+
     indices = mapping_indices()
     symbols = encoder(indices, mapping)
 
