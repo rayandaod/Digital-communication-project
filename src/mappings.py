@@ -11,6 +11,7 @@ def qam_map(M):
     x, y = np.meshgrid(aux, aux[::-1])
     return (x + 1j*y).T.flatten()
 
+
 # Returns a M-PSK constellation
 def psk_map(M):
     return np.exp(1j*2*np.pi*np.arange(0, M)/M)
