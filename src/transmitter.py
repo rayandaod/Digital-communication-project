@@ -1,7 +1,6 @@
 import zlib
 import sys
 import numpy as np
-import matplotlib.pyplot as plt
 
 import utils
 
@@ -30,7 +29,7 @@ def mapping_indices():
     # Make a new string with these cropped bytes
     new_bits = ''.join(new_bits)
     # New structure with bits_per_symbol bits by row
-    new_bits = [new_bits[i:i + utils.bits_per_symbol] for i in range(0, len(new_bits), bits_per_symbol)]
+    new_bits = [new_bits[i:i + utils.bits_per_symbol] for i in range(0, len(new_bits), utils.bits_per_symbol)]
     # Convert this new bits sequence to an integer sequence
     ints = [int(b, 2) for b in new_bits]
 
@@ -57,16 +56,7 @@ def encoder(indices, mapping):
     if utils.verbose:
         print("Average symbol energy: {}".format(np.mean(np.abs(symbols)**2)))
         print("Symbols/n-tuples to be sent: {}".format(symbols))
-
-        X = [x.real for x in symbols]
-        Y = [x.imag for x in symbols]
-        plt.scatter(X, Y, color='red')
-        plt.legend(['Symbols'])
-        plt.title("{} transmitted symbols".format(len(symbols)))
-        plt.xlabel("Re")
-        plt.ylabel("Im")
-        plt.grid()
-        plt.show()
+        utils.plot_complex(symbols, "{} transmitted symbols".format(len(symbols)))
 
     return symbols
 
