@@ -56,7 +56,7 @@ def encoder(indices, mapping):
     if utils.verbose:
         print("Average symbol energy: {}".format(np.mean(np.abs(symbols)**2)))
         print("Symbols/n-tuples to be sent: {}".format(symbols))
-        utils.plot_complex(symbols, "{} transmitted symbols".format(len(symbols)))
+        utils.plot_complex(symbols, "{} transmitted symbols".format(len(symbols)), "blue")
 
     return symbols
 
@@ -67,10 +67,11 @@ def waveform_former():
 
 
 if __name__ == '__main__':
+    print("Transmitter:")
     mapping = utils.choose_mapping()
 
     # Normalize the mapping
-    #mapping = mapping/np.sqrt(np.mean(np.abs(mapping)**2))
+    # mapping = mapping/np.sqrt(np.mean(np.abs(mapping)**2))
 
     symbols = encoder(mapping_indices(), mapping)
 

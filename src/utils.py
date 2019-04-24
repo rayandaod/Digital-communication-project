@@ -7,11 +7,16 @@ import mappings
 verbose = True
 message_file_path = "../data/input_lorem_ipsum.txt"
 output_file_path = "../data/output_lorem_ipsum.txt"
+server_hostname = "iscsrv72.epfl.ch"
+server_port = 80
 
 # Communication parameters
-M = 64
+M = 4
 bits_per_symbol = int(np.log2(M))
 modulation_type = "qam"
+noise_variance = 0.1
+sampling_rate = 22050  # samples per second
+abs_sample_interval = 1  # samples amplitude must be between -1 and 1
 
 
 def string2bits(s=''):
@@ -43,15 +48,21 @@ def choose_mapping():
 
     if verbose:
         print("Chosen mapping: {}".format(mapping))
-        plot_complex(mapping, "Chosen mapping")
+        plot_complex(mapping, "Chosen mapping", "red")
 
     return mapping
 
 
-def plot_complex(complex_values, title):
+def plot_complex(complex_values, title, color):
+    """
+    :param complex_values: array of complex values to plot
+    :param title: title of the plot
+    :param color: color of the points
+    :return: None (plot the graph)
+    """
     X = [x.real for x in complex_values]
     Y = [x.imag for x in complex_values]
-    plt.scatter(X, Y, color='red')
+    plt.scatter(X, Y, color=color)
     plt.legend(['Symbols'])
     plt.title(title)
     plt.xlabel("Re")
