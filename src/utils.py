@@ -10,13 +10,13 @@ output_file_path = "../data/output_lorem_ipsum.txt"
 server_hostname = "iscsrv72.epfl.ch"
 server_port = 80
 
-# Communication parameters
-M = 4
-bits_per_symbol = int(np.log2(M))
-modulation_type = "qam"
-noise_variance = 0.1
-sampling_rate = 22050  # samples per second
-abs_sample_interval = 1  # samples amplitude must be between -1 and 1
+# Communication parameters (you should change only the first 2)
+M = 16
+MOD_TYPE = "psk"
+BITS_PER_SYMBOL = int(np.log2(M))
+NOISE_VAR = 0.1
+SAMPLING_RATE = 22050  # samples per second
+ABS_SAMPLE_INTERVAL = 1  # samples amplitude must be between -1 and 1
 
 
 def string2bits(s=''):
@@ -39,9 +39,9 @@ def choose_mapping():
     """
     :return: The mapping corresponding to the given modulation type
     """
-    if modulation_type == "qam":
+    if MOD_TYPE == "qam":
         mapping = mappings.qam_map(M)
-    elif modulation_type == "psk":
+    elif MOD_TYPE == "psk":
         mapping = mappings.psk_map(M)
     else:
         raise ValueError('No modulation of this type was found')
@@ -60,13 +60,18 @@ def plot_complex(complex_values, title, color):
     :param color: color of the points
     :return: None (plot the graph)
     """
-    X = [x.real for x in complex_values]
-    Y = [x.imag for x in complex_values]
-    plt.scatter(X, Y, color=color)
+    re = [x.real for x in complex_values]
+    im = [x.imag for x in complex_values]
+
+    plt.scatter(re, im, color=color)
     plt.legend(['Symbols'])
     plt.title(title)
     plt.xlabel("Re")
     plt.ylabel("Im")
+    if MOD_TYPE == "psk":
+        ax = plt.gca()
+        disk1 = plt.Circle((0, 0), 1, color='k', fill=False)
+        ax.add_artist(disk1)
     plt.grid()
     plt.show()
 

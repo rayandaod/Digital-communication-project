@@ -29,7 +29,7 @@ def mapping_indices():
     # Make a new string with these cropped bytes
     new_bits = ''.join(new_bits)
     # New structure with bits_per_symbol bits by row
-    new_bits = [new_bits[i:i + utils.bits_per_symbol] for i in range(0, len(new_bits), utils.bits_per_symbol)]
+    new_bits = [new_bits[i:i + utils.BITS_PER_SYMBOL] for i in range(0, len(new_bits), utils.BITS_PER_SYMBOL)]
     # Convert this new bits sequence to an integer sequence
     ints = [int(b, 2) for b in new_bits]
 
