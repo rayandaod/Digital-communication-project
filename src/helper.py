@@ -61,5 +61,7 @@ def plot_complex(complex_values, title, color):
     plt.axhline(linewidth=1, color="black")
     plt.show()
 
+mapping = choose_mapping()
+
 
 # TODO manage to plot without waiting for closing

@@ -6,13 +6,14 @@ import helper
 import params
 
 
-def bits_to_ints():
+def message_to_ints():
     """
     :return: the mapping indices corresponding to our message
     """
     # Retrieve the message from file
     message_file = open(params.message_file_path)
     message = message_file.readline()
+    print("Message to be sent:\n{}".format(message))
 
     # Tried to compress message
     message_encoded = message.encode('ascii')
@@ -22,8 +23,8 @@ def bits_to_ints():
     string_bytes = helper.string2bits(message)
 
     # Next step is to re-arrange string_bytes in agreement with M. Indeed, with a symbol constellation of M points,
-    # we can only represent log2(M) bits per symbol. Thus, we want to re-structure string_bytes with log2(M)
-    # bits by row.
+    # we can only represent BITS_PER_SYMBOL=log2(M) bits per symbol. Thus, we want to re-structure string_bytes
+    # with BITS_PER_SYMBOL=log2(M) bits by row.
 
     # Remove the most significant bit (0) as it is useless in ASCII (do not forget to put it again in the receiver!)
     new_bits = [b[1:] for b in string_bytes]
@@ -59,7 +60,7 @@ def encoder(indices, mapping):
         print("Symbols/n-tuples to be sent: {}".format(symbols))
         helper.plot_complex(symbols, "{} transmitted symbols".format(len(symbols)), "blue")
 
-    return symbols
+    return np.asarray(symbols)
 
 
 # TODO
@@ -69,15 +70,11 @@ def waveform_former():
 
 if __name__ == '__main__':
     print("Transmitter:")
-    mapping = helper.choose_mapping()
-
-    # Normalize the mapping
-    # mapping = mapping/np.sqrt(np.mean(np.abs(mapping)**2))
-
-    symbols = encoder(bits_to_ints(), mapping)
+    symbols = encoder(message_to_ints(), helper.mapping)
 
 # TODO Add checks everywhere on the sizes of the arrays etc
 # TODO Try with a longer/shorter message
 # TODO Try with different M
 # TODO Add prints if verbose for debugging
-# TODO Try to make it work with text compression (?)
+# TODO Try to make it work with text compression (?). Idea : first remove the useless zero,
+# TODO      then back to string, then compression

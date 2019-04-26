@@ -29,10 +29,8 @@ def decoder(y, mapping):
         mapping = mapping.reshape(np.size(mapping, 0), 1)
 
     if params.verbose:
-        print("y: {}".format(y))
-        print(np.shape(y))
-        print("mapping: {}".format(mapping))
-        print(np.shape(mapping))
+        print("y: {}\n{}".format(np.shape(y), y))
+        print("mapping: {} \n{}".format(np.shape(mapping), mapping))
 
     # Number of symbols in the mapping
     M = np.size(mapping, 0)
@@ -42,15 +40,46 @@ def decoder(y, mapping):
     distances = np.transpose(abs(np.tile(y, (M, 1)) - np.tile(mapping, (1, S))))
     return np.argmin(distances, 1)
 
-def ints_to_bits():
-    return None
+
+def ints_to_message(ints):
+    """
+    :param ints: integers between 0 and M-1, i.e integers corresponding to the bits sent
+    :return: the corresponding message
+    """
+
+    # TODO make it work for any M
+    # Convert the ints to BITS_PER_SYMBOL bits (2 for now because M=4)
+    bits = ["{0:02b}".format(i) for i in ints]
+    if params.verbose:
+        print(bits)
+
+    # Make a new string with it
+    bits = ''.join(bits)
+    if params.verbose:
+        print(bits)
+
+    # Slice the string into substrings of 7 characters
+    bits = [bits[i:i+7] for i in range(0, len(bits), 7)]
+    if params.verbose:
+        print(bits)
+
+    # Add a zero at the beginning of each substring (cf transmitter)
+    new_bits = []
+    for sub_string in bits:
+        new_bits.append('0' + sub_string)
+    if params.verbose:
+        print(new_bits)
+
+    message = ''.join(helper.bits2string(new_bits))
+    print("Message received:\n{}".format(message))
+
+    return message
 
 
 if __name__ == "__main__":
     print("Receiver:")
-    observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j])
+    observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j])
     helper.plot_complex(observation_test, "observation", "red")
-    print(decoder(observation_test, params.mapping))
-
-# TODO Do not forget to put back the most significant bit (0) in the receiver
-# TODO sequence of bits
+    ints = decoder(observation_test, helper.mapping)
+    print(ints)
+    print(ints_to_message(ints))
