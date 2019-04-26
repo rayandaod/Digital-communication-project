@@ -16,10 +16,4 @@ def qam_map(M):
 def psk_map(M):
     return np.exp(1j*2*np.pi*np.arange(0, M)/M)
 
-
-if __name__ == '__main__':
-    M = 3
-    print(qam_map(M))
-    print(psk_map(M))
-
 # TODO make qam_map output in the trigonometric order, starting with 1+j
