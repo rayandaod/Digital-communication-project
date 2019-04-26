@@ -2,7 +2,8 @@ import zlib
 import sys
 import numpy as np
 
-import utils
+import helper
+import params
 
 
 def mapping_indices():
@@ -10,7 +11,7 @@ def mapping_indices():
     :return: the mapping indices corresponding to our message
     """
     # Retrieve the message from file
-    message_file = open(utils.message_file_path)
+    message_file = open(params.message_file_path)
     message = message_file.readline()
 
     # Tried to compress message
@@ -18,7 +19,7 @@ def mapping_indices():
     compressed_message = zlib.compress(message_encoded)
 
     # Retrieve the message as a sequences of binary bytes
-    string_bytes = utils.string2bits(message)
+    string_bytes = helper.string2bits(message)
 
     # Next step is to re-arrange string_bytes in agreement with M. Indeed, with a symbol constellation of M points,
     # we can only represent log2(M) bits per symbol. Thus, we want to re-structure string_bytes with log2(M)
@@ -29,11 +30,11 @@ def mapping_indices():
     # Make a new string with these cropped bytes
     new_bits = ''.join(new_bits)
     # New structure with bits_per_symbol bits by row
-    new_bits = [new_bits[i:i + utils.BITS_PER_SYMBOL] for i in range(0, len(new_bits), utils.BITS_PER_SYMBOL)]
+    new_bits = [new_bits[i:i + params.BITS_PER_SYMBOL] for i in range(0, len(new_bits), params.BITS_PER_SYMBOL)]
     # Convert this new bits sequence to an integer sequence
     ints = [int(b, 2) for b in new_bits]
 
-    if utils.verbose:
+    if params.verbose:
         print("Original message: {}".format(message))
         print("Encoded message: {}".format(message_encoded))
         print("Size (in bytes) of encoded message: {}".format(sys.getsizeof(message_encoded)))
@@ -53,10 +54,10 @@ def encoder(indices, mapping):
     """
     symbols = [mapping[i] for i in indices]
 
-    if utils.verbose:
+    if params.verbose:
         print("Average symbol energy: {}".format(np.mean(np.abs(symbols)**2)))
         print("Symbols/n-tuples to be sent: {}".format(symbols))
-        utils.plot_complex(symbols, "{} transmitted symbols".format(len(symbols)), "blue")
+        helper.plot_complex(symbols, "{} transmitted symbols".format(len(symbols)), "blue")
 
     return symbols
 
@@ -68,7 +69,7 @@ def waveform_former():
 
 if __name__ == '__main__':
     print("Transmitter:")
-    mapping = utils.choose_mapping()
+    mapping = helper.choose_mapping()
 
     # Normalize the mapping
     # mapping = mapping/np.sqrt(np.mean(np.abs(mapping)**2))
