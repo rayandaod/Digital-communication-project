@@ -6,16 +6,16 @@ import params
 
 def string2bits(s=''):
     """
-    :param s:
-    :return:
+    :param s: the string to be converted
+    :return: the corresponding array of bits
     """
     return [bin(ord(x))[2:].zfill(8) for x in s]
 
 
 def bits2string(b=None):
     """
-    :param b: array of bits
-    :return:
+    :param b: array of bits to be converted
+    :return: the corresponding string
     """
     return ''.join([chr(int(x, 2)) for x in b])
 
@@ -61,7 +61,7 @@ def plot_complex(complex_values, title, color):
     plt.axhline(linewidth=1, color="black")
     plt.show()
 
-mapping = choose_mapping()
 
+mapping = choose_mapping()
 
 # TODO manage to plot without waiting for closing

@@ -44,7 +44,7 @@ def decoder(y, mapping):
 def ints_to_message(ints):
     """
     :param ints: integers between 0 and M-1, i.e integers corresponding to the bits sent
-    :return: the corresponding message
+    :return: the corresponding guessed message as a string
     """
 
     # TODO make it work for any M
@@ -70,12 +70,14 @@ def ints_to_message(ints):
     if params.verbose:
         print(new_bits)
 
+    # Convert from array of bytes to string
     message = ''.join(helper.bits2string(new_bits))
     print("Message received:\n{}".format(message))
 
     return message
 
 
+# Intended for testing (to run the program, run test.py)
 if __name__ == "__main__":
     print("Receiver:")
     observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j])

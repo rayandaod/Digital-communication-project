@@ -68,6 +68,7 @@ def waveform_former():
     return None
 
 
+# Intended for testing (to run the program, run test.py)
 if __name__ == '__main__':
     print("Transmitter:")
     symbols = encoder(message_to_ints(), helper.mapping)
