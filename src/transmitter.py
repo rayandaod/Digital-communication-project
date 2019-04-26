@@ -6,7 +6,7 @@ import helper
 import params
 
 
-def mapping_indices():
+def bits_to_ints():
     """
     :return: the mapping indices corresponding to our message
     """
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     # Normalize the mapping
     # mapping = mapping/np.sqrt(np.mean(np.abs(mapping)**2))
 
-    symbols = encoder(mapping_indices(), mapping)
+    symbols = encoder(bits_to_ints(), mapping)
 
 # TODO Add checks everywhere on the sizes of the arrays etc
 # TODO Try with a longer/shorter message
