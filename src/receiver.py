@@ -77,7 +77,7 @@ def ints_to_message(ints):
     return message
 
 
-# Intended for testing (to run the program, run test.py)
+# Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
     print("Receiver:")
     observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j])
