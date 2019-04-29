@@ -1,6 +1,7 @@
 import zlib
 import sys
 import numpy as np
+from scipy.signal import upfirdn
 
 import helper
 import params
@@ -64,14 +65,32 @@ def encoder(indices, mapping):
 
 
 # TODO
-def waveform_former():
-    return None
+def symbols_to_samples(symbols, h, USF):
+    """
+    :param symbols: the symbols modulating the pulse
+    :param h: the sampled pulse
+    :param USF: the up-sampling factor (number of samples per symbols)
+    :return: the samples of a modulated pulse train to send to the server
+    """
+
+    # If symbols is not a column vector, make it a column vector
+    if np.size(symbols, 0) == 1:
+        symbols = symbols.reshape(np.size(symbols, 1), 1)
+    else:
+        symbols = symbols.reshape(np.size(symbols, 0), 1)
+
+    # TODO Ask if ok to use that
+    return upfirdn(h, symbols, USF)
 
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == '__main__':
     print("Transmitter:")
-    symbols = encoder(message_to_ints(), helper.mapping)
+    # symbols = encoder(message_to_ints(), helper.mapping)
+
+    # TODO How do we choose the USF?
+    print(symbols_to_samples(np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j]),
+                             None, 5))
 
 # TODO Add checks everywhere on the sizes of the arrays etc
 # TODO Try with a longer/shorter message

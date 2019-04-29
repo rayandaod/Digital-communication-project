@@ -38,6 +38,7 @@ def choose_mapping():
     return mapping
 
 
+# TODO manage to plot without waiting for closing
 def plot_complex(complex_values, title, color):
     """
     :param complex_values: array of complex values to plot
@@ -64,4 +65,6 @@ def plot_complex(complex_values, title, color):
 
 mapping = choose_mapping()
 
-# TODO manage to plot without waiting for closing
+
+def root_raised_cosine(beta):
+

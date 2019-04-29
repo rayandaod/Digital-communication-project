@@ -14,7 +14,7 @@ BITS_PER_SYMBOL = int(np.log2(M))
 NOISE_VAR = 0.1
 T = 1  # seconds
 SAMPLING_RATE = 22050  # samples per second
-Fs = SAMPLING_RATE/T  # sample frequency
+Fs = SAMPLING_RATE/T  # sampling frequency
 ABS_SAMPLE_INTERVAL = 1  # samples amplitude must be between -1 and 1
 
 pn_seq = [-1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1,
