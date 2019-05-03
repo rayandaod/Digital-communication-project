@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     # TODO How do we choose the USF?
     print(symbols_to_samples(np.array([1+1j, -1-1j, -1+1j, 1+1j, 1-1j, 1+1j, -1-1j]),
-                             None, 5))
+                             helper.root_raised_cosine(), 5))
 
 # TODO Add checks everywhere on the sizes of the arrays etc
 # TODO Try with a longer/shorter message
