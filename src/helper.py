@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 import mappings
 import params
@@ -30,7 +31,7 @@ def choose_mapping():
     elif params.MOD_TYPE == "psk":
         mapping = mappings.psk_map(params.M)
     else:
-        raise ValueError('No modulation of this type was found')
+        raise ValueError('No modulation of this type is defined')
 
     if params.verbose:
         print("Chosen mapping: {}".format(mapping))
@@ -67,38 +68,39 @@ def plot_complex_symbols(complex_values, title, color="black"):
 mapping = choose_mapping()
 
 
-def root_raised_cosine(N, beta=params.BETA, T=params.T, Fs=params.SAMPLING_RATE):
+def root_raised_cosine(N, beta=params.BETA, T=params.T, Fs=params.Fs):
     """
     :param N: number of samples in output
-    :param beta: rolloff factor, between 0 and 1
-    :param T: symbol period (in number of samples)
+    :param beta: rolloff factor (0<=beta<1)
+    :param T: symbol period (in seconds)
     :param Fs: sampling frequency (in Hz)
     :return: 1-dimensional FIR (finite-impulse response) filter coefficients
     """
 
-    if T <= 0 or N < 0 or Fs < 0 or beta < 0 or beta > 1:
-        raise AttributeError("Be careful, we must have T>0, N>0, Fs>0, 0<beta<1!")
+    if T <= 0 or N < 0 or Fs < 0 or beta < 0 or beta >= 1:
+        raise AttributeError("Be careful, we must have T>0, N>0, Fs>0, 0<=beta<1!")
 
     Ts = 1 / Fs  # time between each sample
-    T_in_seconds = T * Ts  # symbol period (in seconds)
     rrc = np.zeros(N)
     time_indices = (np.arange(N) - N / 2) * Ts
     sample_numbers = np.arange(N)
     for n in sample_numbers:
         t = time_indices[n]
-        rrc[n] = (4 * beta / np.pi * np.sqrt(T_in_seconds)) * (
-                np.cos((1 + beta) * np.pi * t / T_in_seconds) + (1 - beta) * np.pi / (4 * beta) * np.sinc(
-            (1 - beta) * t / T_in_seconds)) / (1 - (4 * beta * t / T_in_seconds) ** 2)
+        rrc[n] = (4 * beta / (np.pi * np.sqrt(T))) * (
+                np.cos((1 + beta) * np.pi * t / T) + (1 - beta) * (np.pi / (4 * beta)) * np.sinc(
+            (1 - beta) * t / T)) / (1 - (4 * beta * t / T) ** 2)
+        # if math.isnan(rrc[n]):
+        #     print("Nan")
     if params.verbose:
-        print("Root-raised-cosine: N = {} samples, beta = {}, T = {} samples, Fs = {} "
+        print("Root-raised-cosine: N = {} samples, beta = {}, T = {} seconds, Fs = {} "
               "samples per second (Hz)".format(N, beta, T, Fs))
         plt.plot(time_indices, rrc)
         plt.title("Root-raised-cosine")
-        plt.xlabel("Time")
+        plt.xlabel("Time (in seconds)")
         plt.ylabel("Amplitude")
         plt.show()
     return time_indices, rrc
 
 
 if __name__ == "__main__":
-    root_raised_cosine(50)
+    root_raised_cosine(50000)
