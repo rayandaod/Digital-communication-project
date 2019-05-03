@@ -59,7 +59,7 @@ def encoder(indices, mapping):
     if params.verbose:
         print("Average symbol energy: {}".format(np.mean(np.abs(symbols)**2)))
         print("Symbols/n-tuples to be sent: {}".format(symbols))
-        helper.plot_complex(symbols, "{} transmitted symbols".format(len(symbols)), "blue")
+        helper.plot_complex_symbols(symbols, "{} transmitted symbols".format(len(symbols)), "blue")
 
     return np.asarray(symbols)
 
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     # symbols = encoder(message_to_ints(), helper.mapping)
 
     # TODO How do we choose the USF?
-    print(symbols_to_samples(np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j]),
+    print(symbols_to_samples(np.array([1+1j, -1-1j, -1+1j, 1+1j, 1-1j, 1+1j, -1-1j]),
                              None, 5))
 
 # TODO Add checks everywhere on the sizes of the arrays etc

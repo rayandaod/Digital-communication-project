@@ -81,7 +81,7 @@ def ints_to_message(ints):
 if __name__ == "__main__":
     print("Receiver:")
     observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j])
-    helper.plot_complex(observation_test, "observation", "red")
+    helper.plot_complex_symbols(observation_test, "observation", "red")
     ints = decoder(observation_test, helper.mapping)
     print(ints)
     print(ints_to_message(ints))

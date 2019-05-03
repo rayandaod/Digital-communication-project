@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 import mappings
 import params
@@ -33,13 +34,13 @@ def choose_mapping():
 
     if params.verbose:
         print("Chosen mapping: {}".format(mapping))
-        plot_complex(mapping, "Chosen mapping", "red")
+        plot_complex_symbols(mapping, "Chosen mapping", "red")
 
     return mapping
 
 
 # TODO manage to plot without waiting for closing
-def plot_complex(complex_values, title, color):
+def plot_complex_symbols(complex_values, title, color="black"):
     """
     :param complex_values: array of complex values to plot
     :param title: title of the plot
@@ -66,5 +67,40 @@ def plot_complex(complex_values, title, color):
 mapping = choose_mapping()
 
 
-def root_raised_cosine(beta):
+def root_raised_cosine(N, beta=params.BETA, T=params.T, Fs=params.SAMPLING_RATE):
+    """
+    :param N: number of samples in output
+    :param beta: rolloff factor, between 0 and 1
+    :param T: symbol period (in number of samples)
+    :param Fs: sampling frequency (in Hz)
+    :return: 1-dimensional FIR (finite-impulse response) filter coefficients
+    """
 
+    # TODO check inputs:
+    # TODO      - T>0
+    # TODO      - N>0
+    # TODO      - Fs>0
+    # TODO      - 0<beta<1
+
+    Ts = 1 / Fs  # time between each sample
+    T_in_seconds = T * Ts
+    rrc = np.zeros(N)
+    time_indices = (np.arange(N) - N / 2) * Ts
+    sample_numbers = np.arange(N)
+    for n in sample_numbers:
+        t = time_indices[n]
+        rrc[n] = (4 * beta / np.pi * np.sqrt(T_in_seconds)) * (
+                    np.cos((1 + beta) * np.pi * t / T_in_seconds) + (1 - beta) * np.pi / (4 * beta) * np.sinc(
+                (1 - beta) * t / T_in_seconds)) / (1 - (4 * beta * t / T_in_seconds) ** 2)
+    if params.verbose:
+        print("Root-raised-cosine: N = {} samples, beta = {}, T = {} samples, Fs = {} samples per second (Hz)".format(N, beta, T, Fs))
+        plt.stem(time_indices, rrc)
+        plt.title("Root-raised-cosine")
+        plt.xlabel("Samples")
+        plt.ylabel("Amplitudes")
+        plt.show()
+    return time_indices, rrc
+
+
+if __name__ == "__main__":
+    root_raised_cosine(50)
