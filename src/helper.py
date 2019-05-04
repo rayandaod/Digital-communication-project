@@ -94,13 +94,16 @@ def root_raised_cosine(N, beta=params.BETA, T=params.T, Fs=params.Fs):
     if params.verbose:
         print("Root-raised-cosine: N = {} samples, beta = {}, T = {} seconds, Fs = {} "
               "samples per second (Hz)".format(N, beta, T, Fs))
+        print()
         plt.plot(time_indices, rrc)
+        plt.plot(time_indices-T, rrc)
         plt.title("Root-raised-cosine")
         plt.xlabel("Time (in seconds)")
         plt.ylabel("Amplitude")
+        plt.grid()
         plt.show()
     return time_indices, rrc
 
 
 if __name__ == "__main__":
-    root_raised_cosine(50000)
+    root_raised_cosine(22050)
