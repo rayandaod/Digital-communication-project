@@ -64,33 +64,45 @@ def encoder(indices, mapping):
     return np.asarray(symbols)
 
 
-# TODO
-def symbols_to_samples(symbols, h, USF):
+def symbols_to_samples(h, symbols, USF):
     """
-    :param symbols: the symbols modulating the pulse
     :param h: the sampled pulse
+    :param symbols: the symbols modulating the pulse
     :param USF: the up-sampling factor (number of samples per symbols)
     :return: the samples of a modulated pulse train to send to the server
     """
+    #
+    # # If symbols is not a column vector, make it a column vector
+    # if np.size(symbols, 0) == 1:
+    #     symbols = symbols.reshape(np.size(symbols, 1), 1)
+    # else:
+    #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
-    # If symbols is not a column vector, make it a column vector
-    if np.size(symbols, 0) == 1:
-        symbols = symbols.reshape(np.size(symbols, 1), 1)
-    else:
-        symbols = symbols.reshape(np.size(symbols, 0), 1)
+    samples = upfirdn(h, symbols, USF)
 
-    # TODO Ask if ok to use that
-    return upfirdn(h, symbols, USF)
+    if params.verbose:
+        print("Symbols to be sent: {}".format(symbols))
+        print("Samples to be sent: {}".format(samples))
+        helper.plot_complex_function(samples, "Samples")
+
+    return samples
 
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == '__main__':
     print("Transmitter:")
-    # symbols = encoder(message_to_ints(), helper.mapping)
+    symbols = encoder(message_to_ints(), helper.mapping)
 
-    # TODO How do we choose the USF?
-    print(symbols_to_samples(np.array([1+1j, -1-1j, -1+1j, 1+1j, 1-1j, 1+1j, -1-1j]),
-                             helper.root_raised_cosine(), 5))
+    # TODO How do we choose the USF? USF = Fs*T, i.e number of samples between 2 repeated pulses
+    USF = int(np.ceil(params.T * params.Fs))
+
+    # TODO How to choose N?
+    N = 8*USF
+    # time_indices, h_rrc = helper.root_raised_cosine(N)
+    time_indices, h_rrc = helper.rrcosfilter(N, params.BETA, params.T, params.Fs)
+
+    # TODO Why do I have little discontinuities in my plot of samples
+    waveform = symbols_to_samples(h_rrc, np.array([1, 1]), USF)
 
 # TODO Add checks everywhere on the sizes of the arrays etc
 # TODO Try with a longer/shorter message

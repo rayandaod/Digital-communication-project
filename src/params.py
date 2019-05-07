@@ -1,18 +1,18 @@
 import numpy as np
 
 # General variables
-verbose = True
+verbose = False
 message_file_path = "../data/input_lorem_ipsum.txt"
 output_file_path = "../data/output_lorem_ipsum.txt"
 server_hostname = "iscsrv72.epfl.ch"
 server_port = 80
 
 # Communication parameters (you should only tweak the first 5 ones for this project)
-M = 4  # length of the mapping
-MOD_TYPE = "qam"  # modulation type
+M = 4  # length of the mapping (must be of the form 2^2k if QAM is chosen)
+MOD_TYPE = "qam"  # modulation type: qam of psk for now
 BITS_PER_SYMBOL = int(np.log2(M))  # number of bits we transmit per symbol
-BETA = 0.5  # rolloff factor of our root-raised-cosine pulse
-T = 0.1  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying Nyquist criterion
+BETA = 0.22  # rolloff factor of our root-raised-cosine pulse
+T = 1  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying Nyquist criterion
 
 # /!\ DO NOT CHANGE THE FOLLOWING VARIABLES /!\
 NOISE_VAR = 0.1  # channel noise variance
