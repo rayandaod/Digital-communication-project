@@ -97,12 +97,12 @@ if __name__ == '__main__':
     USF = int(np.ceil(params.T * params.Fs))
 
     # TODO How to choose N?
-    N = 8*USF
+    N = 16*USF
     # time_indices, h_rrc = helper.root_raised_cosine(N)
     time_indices, h_rrc = helper.rrcosfilter(N, params.BETA, params.T, params.Fs)
 
     # TODO Why do I have little discontinuities in my plot of samples
-    waveform = symbols_to_samples(h_rrc, np.array([1, 1]), USF)
+    waveform = symbols_to_samples(h_rrc, np.array([1, 1, 1, 1, 1]), USF)
 
 # TODO Add checks everywhere on the sizes of the arrays etc
 # TODO Try with a longer/shorter message
