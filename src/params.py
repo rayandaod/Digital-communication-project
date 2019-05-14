@@ -2,8 +2,8 @@ import numpy as np
 
 # General variables
 verbose = False
-message_file_path = "../data/input_lorem_ipsum.txt"
-output_file_path = "../data/output_lorem_ipsum.txt"
+message_file_path = "../data/input_text.txt"
+output_file_path = "../data/output_text.txt"
 server_hostname = "iscsrv72.epfl.ch"
 server_port = 80
 

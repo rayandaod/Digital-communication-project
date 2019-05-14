@@ -15,4 +15,4 @@ def launch_test(input_file, output_file):
  
 
 if __name__ == "__main__":
-    launch_test("../data/input.txt", "../data/output.txt")
+    launch_test("../data/input_samples.txt", "../data/output_samples.txt")
