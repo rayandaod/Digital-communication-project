@@ -2,3 +2,5 @@
 __pycache__
 .DS_Store
 data/*
+venv
+src/__init__.py
