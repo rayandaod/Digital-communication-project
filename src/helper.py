@@ -120,7 +120,8 @@ def root_raised_cosine(N, beta=params.BETA, T=params.T, Fs=params.Fs):
         elif beta != 0.0:
             rrc[n] = rrc_helper(t)
         else:
-            rrc[n] = (np.sin(np.pi * t * (1 - beta) / T) + 4 * beta * (t / T) * np.cos(np.pi * t * (1 + beta) / T)) / (np.pi * t * (1 - (4 * beta * t / T) * (4 * beta * t / T)) / T)
+            rrc[n] = (np.sin(np.pi * t * (1 - beta) / T) + 4 * beta * (t / T) * np.cos(np.pi * t * (1 + beta) / T)) / \
+                     (np.pi * t * (1 - (4 * beta * t / T) * (4 * beta * t / T)) / T)
     if params.verbose:
         print("Root-raised-cosine: N = {} samples, beta = {}, T = {} seconds, Fs = {} "
               "samples per second (Hz)".format(N, beta, T, Fs))
@@ -134,75 +135,16 @@ def root_raised_cosine(N, beta=params.BETA, T=params.T, Fs=params.Fs):
     return time_indices, rrc
 
 
-# Commpy implementation (just to test the speed of ours)
-def rrcosfilter(N, alpha=params.BETA, Ts=params.T, Fs=params.Fs):
-    """
-    Generates a root raised cosine (RRC) filter (FIR) impulse response.
-    Parameters
-    ----------
-    N : int
-        Length of the filter in samples.
-    alpha : float
-        Roll off factor (Valid values are [0, 1]).
-    Ts : float
-        Symbol period in seconds.
-    Fs : float
-        Sampling Rate in Hz.
-    Returns
-    ---------
-    time_idx : 1-D ndarray of floats
-        Array containing the time indices, in seconds, for
-        the impulse response.
-    h_rrc : 1-D ndarray of floats
-        Impulse response of the root raised cosine filter.
-    """
-
-    T_delta = 1 / float(Fs)
-    time_idx = (np.arange(N) - N / 2) * T_delta
-    sample_num = np.arange(N)
-    h_rrc = np.zeros(N, dtype=float)
-
-    for x in sample_num:
-        t = (x - N / 2) * T_delta
-        if t == 0.0:
-            h_rrc[x] = 1.0 - alpha + (4 * alpha / np.pi)
-        elif alpha != 0 and t == Ts / (4 * alpha):
-            h_rrc[x] = (alpha / np.sqrt(2)) * (((1 + 2 / np.pi) *
-                                                (np.sin(np.pi / (4 * alpha)))) + (
-                                                           (1 - 2 / np.pi) * (np.cos(np.pi / (4 * alpha)))))
-        elif alpha != 0 and t == -Ts / (4 * alpha):
-            h_rrc[x] = (alpha / np.sqrt(2)) * (((1 + 2 / np.pi) *
-                                                (np.sin(np.pi / (4 * alpha)))) + (
-                                                           (1 - 2 / np.pi) * (np.cos(np.pi / (4 * alpha)))))
-        else:
-            h_rrc[x] = (np.sin(np.pi * t * (1 - alpha) / Ts) +
-                        4 * alpha * (t / Ts) * np.cos(np.pi * t * (1 + alpha) / Ts)) / \
-                       (np.pi * t * (1 - (4 * alpha * t / Ts) * (4 * alpha * t / Ts)) / Ts)
-
-    if params.verbose:
-        print("Root-raised-cosine: N = {} samples, beta = {}, T = {} seconds, Fs = {} "
-              "samples per second (Hz)".format(N, alpha, Ts, Fs))
-        print()
-        plt.plot(time_idx, h_rrc)
-        plt.title("Root-raised-cosine")
-        plt.xlabel("Time (in seconds)")
-        plt.ylabel("Amplitude")
-        plt.grid()
-        plt.show()
-
-    return time_idx, h_rrc
-
-
 def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
     """
     Synchronizes the received signal, i.e returns the number of samples after which the data signal begins.\n
 
-    - We first check which range of frequencies has been removed by the channel (among 1-3kHz, 3-5kHz, 5-7kHz,
-    7-9kHz) thanks to a Fourier-transform on the received signal.
+    - We first check which range of frequencies has been removed by the channel (among 1-3kHz, 3-5kHz, 5-7kHz, 7-9kHz)
+    thanks to a Fourier-transform on the received signal.
 
     - Then we remove the corresponding frequency components from our original training sequence and correlate the
-    received signal with the modified training sequence to aim for the highest scalar product, which will correspond
-    to the delay.\n
+    received signal with the modified training sequence to aim for the highest scalar product, which will correspond to
+    the delay.\n
 
     :param received_signal: signal received from the server
     :param training_sequence: real-valued sequence used to synchronize the received signal
@@ -211,14 +153,9 @@ def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
 
     return None
 
+
 mapping = choose_mapping()
 
-# TODO speed up our RRC
+
 if __name__ == "__main__":
-    start = time.time()
-    _, a = root_raised_cosine(100000)
-    intermediate = time.time()
-    _, b =rrcosfilter(100000)
-    end = time.time()
-    print("My rrc: {}\nCommpy's rrc: {}".format(intermediate - start, end - intermediate))
-    print((a == b).all())
+    print("helper.py")
