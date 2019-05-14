@@ -101,11 +101,26 @@ def root_raised_cosine(N, beta=params.BETA, T=params.T, Fs=params.Fs):
     rrc = np.zeros(N)
     time_indices = (np.arange(N) - N / 2) * Ts
     sample_numbers = np.arange(N)
+
+    def rrc_helper(t):
+        if t == T / (4 * beta):
+           return (beta / np.sqrt(2)) * (((1 + 2 / np.pi) * (np.sin(np.pi / (4 * beta)))) + (
+                        (1 - 2 / np.pi) * (np.cos(np.pi / (4 * beta)))))
+        elif t == -T / (4 * beta):
+           return (beta / np.sqrt(2)) * (((1 + 2 / np.pi) * (np.sin(np.pi / (4 * beta)))) + (
+                        (1 - 2 / np.pi) * (np.cos(np.pi / (4 * beta)))))
+        else:
+            return (np.sin(np.pi * t * (1 - beta) / T) + 4 * beta * (t / T) * np.cos(np.pi * t * (1 + beta) / T)) / (
+                                         np.pi * t * (1 - (4 * beta * t / T) * (4 * beta * t / T)) / T)
+
     for n in sample_numbers:
         t = time_indices[n]
-        rrc[n] = (4 * beta / (np.pi * np.sqrt(T))) * (
-                np.cos((1 + beta) * np.pi * t / T) + (1 - beta) * (np.pi / (4 * beta)) * np.sinc(
-            (1 - beta) * t / T)) / (1 - (4 * beta * t / T) ** 2)
+        if t == 0.0:
+            rrc[n] = 1 - beta + (4 * beta / np.pi)
+        elif beta != 0.0:
+            rrc[n] = rrc_helper(t)
+        else:
+            rrc[n] = (np.sin(np.pi * t * (1 - beta) / T) + 4 * beta * (t / T) * np.cos(np.pi * t * (1 + beta) / T)) / (np.pi * t * (1 - (4 * beta * t / T) * (4 * beta * t / T)) / T)
     if params.verbose:
         print("Root-raised-cosine: N = {} samples, beta = {}, T = {} seconds, Fs = {} "
               "samples per second (Hz)".format(N, beta, T, Fs))
@@ -142,25 +157,27 @@ def rrcosfilter(N, alpha=params.BETA, Ts=params.T, Fs=params.Fs):
         Impulse response of the root raised cosine filter.
     """
 
-    T_delta = 1/float(Fs)
-    time_idx = (np.arange(N)-N/2)*T_delta
+    T_delta = 1 / float(Fs)
+    time_idx = (np.arange(N) - N / 2) * T_delta
     sample_num = np.arange(N)
     h_rrc = np.zeros(N, dtype=float)
 
     for x in sample_num:
-        t = (x-N/2)*T_delta
+        t = (x - N / 2) * T_delta
         if t == 0.0:
-            h_rrc[x] = 1.0 - alpha + (4*alpha/np.pi)
-        elif alpha != 0 and t == Ts/(4*alpha):
-            h_rrc[x] = (alpha/np.sqrt(2))*(((1+2/np.pi) *
-                    (np.sin(np.pi/(4*alpha)))) + ((1-2/np.pi)*(np.cos(np.pi/(4*alpha)))))
-        elif alpha != 0 and t == -Ts/(4*alpha):
-            h_rrc[x] = (alpha/np.sqrt(2))*(((1+2/np.pi) *
-                    (np.sin(np.pi/(4*alpha)))) + ((1-2/np.pi)*(np.cos(np.pi/(4*alpha)))))
+            h_rrc[x] = 1.0 - alpha + (4 * alpha / np.pi)
+        elif alpha != 0 and t == Ts / (4 * alpha):
+            h_rrc[x] = (alpha / np.sqrt(2)) * (((1 + 2 / np.pi) *
+                                                (np.sin(np.pi / (4 * alpha)))) + (
+                                                           (1 - 2 / np.pi) * (np.cos(np.pi / (4 * alpha)))))
+        elif alpha != 0 and t == -Ts / (4 * alpha):
+            h_rrc[x] = (alpha / np.sqrt(2)) * (((1 + 2 / np.pi) *
+                                                (np.sin(np.pi / (4 * alpha)))) + (
+                                                           (1 - 2 / np.pi) * (np.cos(np.pi / (4 * alpha)))))
         else:
-            h_rrc[x] = (np.sin(np.pi*t*(1-alpha)/Ts) +
-                    4*alpha*(t/Ts)*np.cos(np.pi*t*(1+alpha)/Ts))/ \
-                    (np.pi*t*(1-(4*alpha*t/Ts)*(4*alpha*t/Ts))/Ts)
+            h_rrc[x] = (np.sin(np.pi * t * (1 - alpha) / Ts) +
+                        4 * alpha * (t / Ts) * np.cos(np.pi * t * (1 + alpha) / Ts)) / \
+                       (np.pi * t * (1 - (4 * alpha * t / Ts) * (4 * alpha * t / Ts)) / Ts)
 
     if params.verbose:
         print("Root-raised-cosine: N = {} samples, beta = {}, T = {} seconds, Fs = {} "
@@ -199,8 +216,9 @@ mapping = choose_mapping()
 # TODO speed up our RRC
 if __name__ == "__main__":
     start = time.time()
-    root_raised_cosine(100000)
+    _, a = root_raised_cosine(100000)
     intermediate = time.time()
-    rrcosfilter(100000)
+    _, b =rrcosfilter(100000)
     end = time.time()
-    print("My rrc: {}\nCommpy's rrc: {}".format(intermediate-start, end-intermediate))
+    print("My rrc: {}\nCommpy's rrc: {}".format(intermediate - start, end - intermediate))
+    print((a == b).all())
