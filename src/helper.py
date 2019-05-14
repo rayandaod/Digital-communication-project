@@ -176,6 +176,24 @@ def rrcosfilter(N, alpha=params.BETA, Ts=params.T, Fs=params.Fs):
     return time_idx, h_rrc
 
 
+def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
+    """
+    Synchronizes the received signal, i.e returns the number of samples after which the data signal begins.\n
+
+    - We first check which range of frequencies has been removed by the channel (among 1-3kHz, 3-5kHz, 5-7kHz,
+    7-9kHz) thanks to a Fourier-transform on the received signal.
+
+    - Then we remove the corresponding frequency components from our original training sequence and correlate the
+    received signal with the modified training sequence to aim for the highest scalar product, which will correspond
+    to the delay.\n
+
+    :param received_signal: signal received from the server
+    :param training_sequence: real-valued sequence used to synchronize the received signal
+    :return: delay in number of samples
+    """
+
+    return None
+
 mapping = choose_mapping()
 
 # TODO speed up our RRC
