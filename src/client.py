@@ -20,10 +20,10 @@ import numpy as np
 
 import channel_helper as ch
 
-
 def parse_args():
-    parser = argparse.ArgumentParser(description="COM-303 black-box channel simulator. (client)",
-                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(description="COM-302 black-box channel simulator. (client)",
+                                     formatter_class=argparse.RawTextHelpFormatter,
+                                     epilog="To promote efficient communication schemes, transmissions are limited to 1 Mega-sample.")
 
     parser.add_argument('--input_file', type=str, required=True,
                         help='.txt file containing (N_sample,) rows of float samples.')
@@ -47,7 +47,6 @@ def parse_args():
 
     return args
 
-
 if __name__ == '__main__':
     args = parse_args()
     tx_p_signal = np.loadtxt(args.input_file)
@@ -56,6 +55,10 @@ if __name__ == '__main__':
     if not ((tx_p_signal.shape == (N_sample,)) and
             np.issubdtype(tx_p_signal.dtype, np.floating)):
         raise ValueError('Parameter[input_file] must contain a real-valued sequence.')
+
+    if N_sample > 1e6:
+        raise ValueError(('Parameter[input_file] contains more than 1 Mega-sample. '
+                          'Design a more efficient communication system.'))
 
     with socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM) as sock_cl:
         sock_cl.connect((args.srv_hostname, args.srv_port))

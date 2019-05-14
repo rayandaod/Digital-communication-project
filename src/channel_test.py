@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
-    # f = open("../data/input.txt", "w")
+    # f = open("../data/input_samples.txt", "w")
     # for i in range(200):
     #     f.write(str(np.sin(i)) + '\n')
 
-    input = np.loadtxt('../data/input.txt')
-    output = np.loadtxt('../data/output.txt')
+    input = np.loadtxt('../data/input_samples.txt')
+    output = np.loadtxt('../data/output_samples.txt')
 
     fig, axs = plt.subplots(2, 1)
     axs[0].plot(range(len(input)), input)
