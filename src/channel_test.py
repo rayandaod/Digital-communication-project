@@ -1,24 +1,123 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import params
+import launcher
+
+
+def dft_shift(X):
+    """
+    With k=0 as the center point, odd-length vectors will produce symmetric data sets with (N-1)/2 points left and
+    right of the origin, whereas even-length vectors will be asymmetric, with one more point on the positive axis;
+    indeed, the highest positive frequency for even-length signals will be equal to omega_{N/2} = pi. Since the
+    frequencies of pi and -pi are identical, we can copy the top frequency data point to the negative axis and
+    obtain a symmetric vector also for even-length signals. Here is a function that does that.
+    (credits: Prandoni P. - Signal processing for Communication course at EPFL)
+
+    :param X: the fourier transform of our signal x
+    :return: a shifted version of the fourier transform (to be around 0) for even and odd length signals
+    :
+    """
+    N = len(X)
+    if N % 2 == 0:
+        # even-length: return N+1 values
+        return np.arange(-int(N/2), int(N/2) + 1), np.concatenate((X[int(N/2):], X[:int(N/2)+1]))
+    else:
+        # odd-length: return N values
+        return np.arange(-int((N-1)/2), int((N-1)/2) + 1), np.concatenate((X[int((N+1)/2):], X[:int((N+1)/2)]))
+
+
+def dft_map(X, Fs, shift=True):
+    """
+    In order to look at the spectrum of the sound file with a DFT we need to map the digital frequency "bins" of the
+    DFT to real-world frequencies. The k-th basis function over C_N completes k periods over N samples.
+    If the time between samples is 1/Fs, then the real-world frequency of the k-th basis function is periods over time,
+    namely k(F_s/N). Let's remap the DFT coefficients using the sampling rate.
+    (credits: Prandoni P. - Signal processing for Communication course at EPFL)
+
+    :param X: the fourier transform of our signal x
+    :param Fs: the sampling frequency
+    :param shift: rather we want to shift the fft or not
+    :return: a real-world-frequency DFT
+    """
+    resolution = float(Fs) / len(X)
+    if shift:
+        n, Y = dft_shift(X)
+    else:
+        Y = X
+        n = np.arange(0, len(Y))
+    f = n * resolution
+    return f, Y
+
+
+def write_in_input(num_samples):
+    """
+    Write samples in input file for testing purpose
+    """
+    f = open("../data/input_samples.txt", "w")
+    mean = 0
+    std = 1
+    samples = np.random.normal(mean, std, size=num_samples)
+    for i in range(num_samples):
+        f.write(str(samples[i]) + '\n')
+
+
+def vertical_lines_frequency_ranges(plot):
+    plot.axvline(x=1000, color='r')
+    plot.axvline(x=3000, color='r')
+    plot.axvline(x=5000, color='r')
+    plot.axvline(x=7000, color='r')
+    plot.axvline(x=9000, color='r')
+
+
 if __name__ == "__main__":
-    # f = open("../data/input_samples.txt", "w")
-    # for i in range(200):
-    #     f.write(str(np.sin(i)) + '\n')
 
-    input = np.loadtxt('../data/input_samples.txt')
-    output = np.loadtxt('../data/output_samples.txt')
+    input_samples_file = '../data/input_samples.txt'
+    output_sample_file = '../data/output_samples.txt'
 
-    fig, axs = plt.subplots(2, 1)
+    launcher.launch_test(input_samples_file, output_sample_file)
+
+    """
+    Plot the input and output in time domain.
+    """
+    input = np.loadtxt(input_samples_file)
+    output = np.loadtxt(output_sample_file)
+
+    _, axs = plt.subplots(2, 1)
     axs[0].plot(range(len(input)), input)
     axs[0].set_xlabel('Samples')
-    axs[0].set_ylabel('input')
+    axs[0].set_ylabel('Input')
 
-    output = output[13280:13480]
+    # output = output[13000:]
     axs[1].plot(range(len(output)), output)
     axs[1].set_xlabel('Samples')
-    axs[1].set_ylabel('output')
+    axs[1].set_ylabel('Output')
 
     axs[0].grid(True)
     axs[1].grid(True)
+    plt.show()
+
+    """
+    Plot the output in time domain and its Fourier transform.
+    """
+    X = np.fft.fft(input)
+    Y = np.fft.fft(output)
+
+    f_x, y_x = dft_map(X, params.Fs, shift=False)
+    f_y, y_y = dft_map(Y, params.Fs, shift=False)
+
+    _, axs = plt.subplots(2, 1)
+    axs[0].plot(f_x, abs(y_x))
+    axs[0].set_xlabel('Frequency (in Hz)')
+    axs[0].set_ylabel('Amplitude')
+    vertical_lines_frequency_ranges(axs[0])
+
+    axs[1].plot(f_y[:10000], abs(y_y[:10000]))
+    axs[1].set_xlabel('Frequency (in Hz)')
+    axs[1].set_ylabel('Amplitude')
+    vertical_lines_frequency_ranges(axs[1])
+
+    axs[0].grid(True)
+    axs[1].grid(True)
+    plt.xlim(0, 10000)
     plt.show()
