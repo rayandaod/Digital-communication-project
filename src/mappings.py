@@ -25,17 +25,16 @@ def psk_map(M):
     return np.exp(1j*2*np.pi*np.arange(0, M)/M)
 
 
-def pam_map(M,a):
+def pam_map(M):
     """
             :param M: the size of our mapping, i.e the number of symbols we can send
-            :param a: the mid-distance between two symbols
             :return: the array of symbols of the M-PAM (Pulse Amplitude Modulation)
             """
-    if M%2 != 0:
+    if M % 2 != 0:
         raise ValueError('Parameter[M] is not of the form 2^K, K a positive integer.')
-    N = M -1
+    N = M - 1
     print(N)
-    aux = np.arange(-N*a, N*a + 1, 2*a)
+    aux = np.arange(-N, N + 1, 2)
     return aux
 
 # TODO make qam_map output in the trigonometric order, starting with 1+j

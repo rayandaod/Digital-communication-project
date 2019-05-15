@@ -20,6 +20,7 @@ import numpy as np
 
 import channel_helper as ch
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description="COM-302 black-box channel simulator. (client)",
                                      formatter_class=argparse.RawTextHelpFormatter,
@@ -46,6 +47,7 @@ def parse_args():
         raise ValueError('Parameter[output_file] is not a .txt file.')
 
     return args
+
 
 if __name__ == '__main__':
     args = parse_args()

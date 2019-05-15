@@ -30,6 +30,8 @@ def choose_mapping():
         mapping = mappings.qam_map(params.M)
     elif params.MOD_TYPE == "psk":
         mapping = mappings.psk_map(params.M)
+    elif params.MOD_TYPE == "pam":
+        mapping = mappings.pam_map(params.M)
     else:
         raise ValueError('No modulation of this type is defined')
 
