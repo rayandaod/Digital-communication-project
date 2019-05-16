@@ -49,9 +49,13 @@ def dft_map(X, Fs, shift=True):
     return f, Y
 
 
-def dft_unmap(X):
-    #TODO
-    return None
+# TODO do we need that
+def dft_unmap(X, Fs, shift=True):
+    if shift:
+        # TODO
+        return None
+    else:
+        return X
 
 
 # TODO additional checks on the certainty of the decision on the removed freq. range

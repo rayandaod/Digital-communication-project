@@ -22,23 +22,23 @@ def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
     """
     n = len(received_signal)
 
-    # Fourier transform
-    # TODO Do we need to compute the fourier of the whole signal?
+    # Identify which range of frequencies has been removed
+    # TODO Do we need to compute the fourier of the whole signal? only the [preamble + data] part is relevant in freq.
     RX = np.fft.fft(received_signal)
     frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, params.Fs, shift=False)
     removed_freq_range = fourier_helper.find_removed_freq_range(RX_mapped)
 
+    # Remove it from the training sequence
     S = np.fft.fft(training_sequence)
     frequencies_mapped, S_mapped = fourier_helper.dft_map(S, params.Fs, shift=False)
     S_mapped[params.FREQ_RANGES[removed_freq_range][0]:params.FREQ_RANGES[removed_freq_range][1]] = 0
-    # TODO un-map and un-dftshift the array S_mapped: this will be our new training sequence
+    new_training_sequence = np.fft.ifft(S_mapped)
 
-    # TODO do the correlation with the new training sequence
-    # Correlation
-    padded_training_sequence = np.pad(training_sequence, (0, n - len(training_sequence)), 'constant')
-    correlation_array = sc.correlate(received_signal, padded_training_sequence)
+    # Correlation between the received signal and the NEW training sequence to find the delay
+    padded_new_training_sequence = np.pad(new_training_sequence, (0, n - len(new_training_sequence)), 'constant')
+    correlation_array = sc.correlate(received_signal, padded_new_training_sequence)
 
-    # TODO Should we put abs here? In which case is it useful?
+    # TODO Should we put abs here? Useful only if the channel multiplies the training sequence by -1
     index = np.argmax(abs(correlation_array))
 
     M = max(len(received_signal), len(training_sequence))
