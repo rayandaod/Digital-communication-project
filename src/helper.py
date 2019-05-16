@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+import scipy.signal as sc
 
 import mappings
 import params
@@ -152,8 +153,13 @@ def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
     :param training_sequence: real-valued sequence used to synchronize the received signal
     :return: delay in number of samples
     """
-
-    return None
+    n = len(received_signal)
+    padded_training_sequence = np.pad(training_sequence, (0,n - len(training_sequence)), 'constant')
+    correlation_array = sc.correlate(padded_training_sequence,received_signal)
+    print(correlation_array)
+    print(padded_training_sequence)
+    print(received_signal)
+    return np.argmax(correlation_array)
 
 
 def write_noise(num_samples):
@@ -186,3 +192,5 @@ mapping = choose_mapping()
 
 if __name__ == "__main__":
     print("helper.py")
+    print(maximum_likelihood_sync(np.array([1,-1,1,1,1,-1,1.0,-1,1,1,1,-1,-1.0,-1,1,1,1,-1,-1,-1,-1]),np.array([1,-1,1,1,1,-1,-1]) ))
+
