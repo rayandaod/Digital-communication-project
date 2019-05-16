@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
 import mappings
@@ -22,27 +21,32 @@ def bits2string(b=None):
     return ''.join([chr(int(x, 2)) for x in b])
 
 
-def choose_mapping():
+def choose_mapping(normalize=False):
     """
     :return: The mapping corresponding to the given modulation type
     """
     if params.MOD_TYPE == "qam":
-        mapping = mappings.qam_map(params.M)
+        chosen_mapping = mappings.qam_map(params.M)
     elif params.MOD_TYPE == "psk":
-        mapping = mappings.psk_map(params.M)
+        chosen_mapping = mappings.psk_map(params.M)
     elif params.MOD_TYPE == "pam":
-        mapping = mappings.pam_map(params.M)
+        chosen_mapping = mappings.pam_map(params.M)
     else:
         raise ValueError('No modulation of this type is defined')
 
+    if normalize:
+        chosen_mapping = chosen_mapping / np.sqrt(np.mean(np.abs(chosen_mapping) ** 2))
+
     if params.verbose:
-        print("Chosen mapping: {}".format(mapping))
-        plot_helper.plot_complex_symbols(mapping, "Chosen mapping", "red")
+        print("Chosen mapping:\n{}".format(chosen_mapping))
+        print("--------------------------------------------------------")
+        plot_helper.plot_complex_symbols(chosen_mapping, "Chosen mapping", "red")
 
-    return mapping
+    return chosen_mapping
 
 
-mapping = choose_mapping()
+# TODO why does this work
+mapping = choose_mapping(normalize=True)
 
 
 if __name__ == "__main__":

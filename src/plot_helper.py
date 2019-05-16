@@ -39,10 +39,11 @@ def plot_complex_function(complex_values, title):
     im = [x.imag for x in complex_values]
     indices = range(len(complex_values))
     plt.subplot(2, 1, 1)
-    plt.title("Real part of the samples")
+    plt.suptitle("Input samples")
+    plt.ylabel("Re")
     plt.plot(indices, re)
     plt.subplot(2, 1, 2)
-    plt.title("Imaginary part of the samples")
+    plt.ylabel("Im")
     plt.plot(indices, im)
     plt.show()
     return None

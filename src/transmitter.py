@@ -17,7 +17,6 @@ def message_to_ints():
     # Retrieve the message from file
     message_file = open(params.message_file_path)
     message = message_file.readline()
-    print("Message to be sent:\n{}".format(message))
 
     # Tried to compress message
     message_encoded = message.encode('ascii')
@@ -40,13 +39,14 @@ def message_to_ints():
     ints = [int(b, 2) for b in new_bits]
 
     if params.verbose:
-        print("Original message: {}".format(message))
-        print("Encoded message: {}".format(message_encoded))
-        print("Size (in bytes) of encoded message: {}".format(sys.getsizeof(message_encoded)))
+        print("Original message:\n{}".format(message))
+        print("Encoded message:\n{}".format(message_encoded))
+        print("Size (in bytes) of encoded message:\n{}".format(sys.getsizeof(message_encoded)))
         print("Compressed message: {}".format(compressed_message))
-        print("Size (in bytes) of compressed message {}".format(sys.getsizeof(compressed_message)))
-        print("Cropped and re-structured bits: {}".format(new_bits))
-        print("Equivalent integers (indices for our mapping): {}".format(ints))
+        print("Size (in bytes) of compressed message:\n{}".format(sys.getsizeof(compressed_message)))
+        print("Cropped and re-structured bits:\n{}".format(new_bits))
+        print("Equivalent integers (indices for our mapping):\n{}".format(ints))
+        print("--------------------------------------------------------")
 
     return ints
 
@@ -60,8 +60,12 @@ def encoder(indices, mapping):
     symbols = [mapping[i] for i in indices]
 
     if params.verbose:
+        print("Symbols/n-tuples to be sent:\n{}".format(symbols))
         print("Average symbol energy: {}".format(np.mean(np.abs(symbols)**2)))
-        print("Symbols/n-tuples to be sent: {}".format(symbols))
+        print("Number of symbols: {}".format(len(symbols)))
+        print("Minimum symbol: {}".format(min(symbols)))
+        print("Maximum symbol: {}".format(max(symbols)))
+        print("--------------------------------------------------------")
         plot_helper.plot_complex_symbols(symbols, "{} transmitted symbols".format(len(symbols)), "blue")
 
     return np.asarray(symbols)
@@ -84,8 +88,11 @@ def symbols_to_samples(h, symbols, USF):
     samples = upfirdn(h, symbols, USF)
 
     if params.verbose:
-        print("Symbols to be sent: {}".format(symbols))
-        print("Samples to be sent: {}".format(samples))
+        print("Samples to be sent:\n{}".format(samples))
+        print("Number of samples: {}".format(len(samples)))
+        print("Minimum sample: {}".format(min(samples)))
+        print("Maximum sample: {}".format(max(samples)))
+        print("--------------------------------------------------------")
         plot_helper.plot_complex_function(samples, "Samples")
 
     return samples
@@ -97,16 +104,13 @@ if __name__ == '__main__':
     symbols = encoder(message_to_ints(), helper.mapping)
 
     # time_indices, h_rrc = helper.root_raised_cosine(N)
-    time_indices, h_rrc = pulses.root_raised_cosine(params.SPAN, params.BETA, params.T, params.Fs)
+    _, h_rrc = pulses.root_raised_cosine(params.SPAN, params.BETA, params.T, params.Fs)
 
     # TODO Why do I have little discontinuities in my plot of samples
     waveform = symbols_to_samples(h_rrc, symbols, params.USF)
-    waveform = waveform/20
 
     # writers.write_gaussian_noise(1, 0, 1/4)
-    writers.write_sinus(1, 4000, scaling_factor=0.5)
-
-    print(len(waveform))
+    # writers.write_sinus(1, 4000, scaling_factor=0.5)
 
 # TODO Add checks everywhere on the sizes of the arrays etc
 # TODO Try with a longer/shorter message

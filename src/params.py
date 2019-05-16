@@ -1,5 +1,7 @@
 import numpy as np
 
+import helper
+
 # General variables
 verbose = True
 message_file_path = "../data/input_text.txt"
@@ -28,15 +30,13 @@ PREAMBLE = [-1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1,  
 
 # Communication parameters (you should only tweak the first 5 ones for this project)
 M = 16  # length of the mapping (must be of the form 2^2k if QAM is chosen)
-MOD_TYPE = "qam"  # modulation type: qam or psk or pam for now
+MOD_TYPE = "pam"  # modulation type: qam or psk or pam for now
 BITS_PER_SYMBOL = int(np.log2(M))  # number of bits we transmit per symbol
-BETA = 0.5  # rolloff factor of our root-raised-cosine pulse
-T = 0.0005  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying Nyquist criterion
+BETA = 0.22  # rolloff factor of our root-raised-cosine pulse
+T = 0.05  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying Nyquist criterion
 USF = int(np.ceil(T * Fs))  # up-sampling factor, i.e the number of zeros to add between
 # any 2 samples before pulse shaping
-SPAN = 8 * USF  # size of our pulse in number of samples
-
-# mapping = mapping/np.sqrt(np.mean(np.abs(mapping)**2))
+SPAN = 6*USF  # size of our pulse in number of samples
 
 # TODO check that the length of the pn-sequence is optimal
 # TODO How to choose SPAN?

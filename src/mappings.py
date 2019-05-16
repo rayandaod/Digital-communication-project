@@ -31,10 +31,8 @@ def pam_map(M):
             :return: the array of symbols of the M-PAM (Pulse Amplitude Modulation)
             """
     if M % 2 != 0:
-        raise ValueError('Parameter[M] is not of the form 2^K, K a positive integer.')
+        raise ValueError('Parameter[M] is not even.')
     N = M - 1
-    print(N)
-    aux = np.arange(-N, N + 1, 2)
-    return aux
+    return np.arange(-N, N + 1, 2)
 
-# TODO make qam_map output in the trigonometric order, starting with 1+j
+# TODO make qam_map output counter-clockwise or clockwise, starting with 1+j

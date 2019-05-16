@@ -42,9 +42,10 @@ def root_raised_cosine(SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
             rrc[n] = (np.sin(np.pi * t * (1 - beta) / T) + 4 * beta * (t / T) * np.cos(np.pi * t * (1 + beta) / T)) / \
                      (np.pi * t * (1 - (4 * beta * t / T) * (4 * beta * t / T)) / T)
     if params.verbose:
-        print("Root-raised-cosine: N = {} samples, beta = {}, T = {} seconds, Fs = {} "
+        print("Root-raised-cosine:\nN = {} samples, beta = {}, T = {} seconds, Fs = {} "
               "samples per second (Hz)".format(SPAN, beta, T, Fs))
-        print()
+        print("Higher value = {}".format(1 - beta + (4 * beta / np.pi)))
+        print("--------------------------------------------------------")
         plt.plot(time_indices, rrc)
         plt.title("Root-raised-cosine")
         plt.xlabel("Time (in seconds)")
