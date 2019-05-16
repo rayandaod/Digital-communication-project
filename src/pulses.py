@@ -4,22 +4,22 @@ import matplotlib.pyplot as plt
 import params
 
 
-def root_raised_cosine(N, beta=params.BETA, T=params.T, Fs=params.Fs):
+def root_raised_cosine(SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
     """
-    :param N: number of samples in output
+    :param SPAN: number of samples in output
     :param beta: rolloff factor (0<=beta<1)
     :param T: symbol period (in seconds)
     :param Fs: sampling frequency (in Hz)
     :return: time indices, and 1-dimensional FIR (finite-impulse response) filter coefficients
     """
 
-    if T <= 0 or N <= 0 or Fs <= 0 or beta < 0 or beta > 1:
+    if T <= 0 or SPAN <= 0 or Fs <= 0 or beta < 0 or beta > 1:
         raise AttributeError("Be careful, we must have T>0, N>0, Fs>0, 0<=beta<=1!")
 
     Ts = 1 / Fs  # time between each sample
-    rrc = np.zeros(N)
-    time_indices = (np.arange(N) - N / 2) * Ts
-    sample_numbers = np.arange(N)
+    rrc = np.zeros(SPAN)
+    time_indices = (np.arange(SPAN) - SPAN / 2) * Ts
+    sample_numbers = np.arange(SPAN)
 
     def rrc_helper(t):
         if t == T / (4 * beta):
@@ -43,7 +43,7 @@ def root_raised_cosine(N, beta=params.BETA, T=params.T, Fs=params.Fs):
                      (np.pi * t * (1 - (4 * beta * t / T) * (4 * beta * t / T)) / T)
     if params.verbose:
         print("Root-raised-cosine: N = {} samples, beta = {}, T = {} seconds, Fs = {} "
-              "samples per second (Hz)".format(N, beta, T, Fs))
+              "samples per second (Hz)".format(SPAN, beta, T, Fs))
         print()
         plt.plot(time_indices, rrc)
         plt.title("Root-raised-cosine")

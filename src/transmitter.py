@@ -97,13 +97,14 @@ if __name__ == '__main__':
     symbols = encoder(message_to_ints(), helper.mapping)
 
     # time_indices, h_rrc = helper.root_raised_cosine(N)
-    time_indices, h_rrc = pulses.root_raised_cosine(N, params.BETA, params.T, params.Fs)
+    time_indices, h_rrc = pulses.root_raised_cosine(params.SPAN, params.BETA, params.T, params.Fs)
 
     # TODO Why do I have little discontinuities in my plot of samples
-    waveform = symbols_to_samples(h_rrc, symbols, USF)
+    waveform = symbols_to_samples(h_rrc, symbols, params.USF)
     waveform = waveform/20
 
-    writers.write_gaussian_noise(10000, 0, 1/3)
+    # writers.write_gaussian_noise(1, 0, 1/4)
+    writers.write_sinus(1, 4000, scaling_factor=0.5)
 
     print(len(waveform))
 
