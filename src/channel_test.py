@@ -50,18 +50,6 @@ def dft_map(X, Fs, shift=True):
     return f, Y
 
 
-def write_in_input(num_samples):
-    """
-    Write samples in input file for testing purpose
-    """
-    f = open("../data/input_samples.txt", "w")
-    mean = 0
-    std = 1
-    samples = np.random.normal(mean, std, size=num_samples)
-    for i in range(num_samples):
-        f.write(str(samples[i]) + '\n')
-
-
 def vertical_lines_frequency_ranges(plot):
     plot.axvline(x=1000, color='r')
     plot.axvline(x=3000, color='r')
@@ -84,8 +72,9 @@ if __name__ == "__main__":
     output = np.loadtxt(output_sample_file)
 
     _, axs = plt.subplots(2, 1)
+    plt.figure(1).suptitle("Input and output in Time domain")
+
     axs[0].plot(range(len(input)), input)
-    axs[0].set_xlabel('Samples')
     axs[0].set_ylabel('Input')
 
     # output = output[13000:]
@@ -95,7 +84,6 @@ if __name__ == "__main__":
 
     axs[0].grid(True)
     axs[1].grid(True)
-    plt.show()
 
     """
     Plot the output in time domain and its Fourier transform.
@@ -107,17 +95,19 @@ if __name__ == "__main__":
     f_y, y_y = dft_map(Y, params.Fs, shift=False)
 
     _, axs = plt.subplots(2, 1)
+    fig = plt.figure(2)
+    fig.suptitle("Input and output in Frequency domain")
+
     axs[0].plot(f_x, abs(y_x))
-    axs[0].set_xlabel('Frequency (in Hz)')
-    axs[0].set_ylabel('Amplitude')
+    axs[0].set_ylabel('Input')
     vertical_lines_frequency_ranges(axs[0])
+    axs[0].set_xlim(params.MIN_FREQ - 1000, params.MAX_FREQ + 1000)
 
-    axs[1].plot(f_y[:10000], abs(y_y[:10000]))
+    axs[1].plot(f_y, abs(y_y))
     axs[1].set_xlabel('Frequency (in Hz)')
-    axs[1].set_ylabel('Amplitude')
+    axs[1].set_ylabel('Output')
     vertical_lines_frequency_ranges(axs[1])
+    axs[1].set_xlim(params.MIN_FREQ - 1000, params.MAX_FREQ + 1000)
 
-    axs[0].grid(True)
-    axs[1].grid(True)
-    plt.xlim(0, 10000)
+    plt.interactive(False)
     plt.show()

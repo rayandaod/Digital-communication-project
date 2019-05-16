@@ -103,6 +103,9 @@ if __name__ == '__main__':
 
     # TODO Why do I have little discontinuities in my plot of samples
     waveform = symbols_to_samples(h_rrc, symbols, USF)
+    waveform = waveform/20
+
+    helper.write_noise(10000)
 
     print(len(waveform))
 
