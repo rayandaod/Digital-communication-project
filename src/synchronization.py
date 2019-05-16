@@ -1,6 +1,9 @@
 import numpy as np
 import scipy.signal as sc
 
+import params
+import fourier_helper
+
 
 def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
     """
@@ -18,9 +21,35 @@ def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
     :return: delay in number of samples
     """
     n = len(received_signal)
+
+    # Fourier transform
+    # TODO Do we need to compute the fourier of the whole signal?
+    RX = np.fft.fft(received_signal)
+    frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, params.Fs, shift=False)
+    removed_freq_range = fourier_helper.find_removed_freq_range(RX_mapped)
+
+    # Correlation
     padded_training_sequence = np.pad(training_sequence, (0, n - len(training_sequence)), 'constant')
-    correlation_array = sc.correlate(padded_training_sequence, received_signal)
-    print(correlation_array)
-    print(padded_training_sequence)
-    print(received_signal)
-    return np.argmax(correlation_array)
+    correlation_array = sc.correlate(received_signal, padded_training_sequence)
+
+    # TODO Should we put abs here? In which case is it useful?
+    index = np.argmax(abs(correlation_array))
+
+    M = max(len(received_signal), len(training_sequence))
+    delay_range = np.arange(-M+1, M-1)
+
+    return delay_range[index]
+
+
+if __name__ == "__main__":
+    print(maximum_likelihood_sync([-1, 1, 1, 1, 1, 1, 1, -1,
+            -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1, # starts here
+            -1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
+            1, -1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1,
+            -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, 1, -1, -1, -1, 1, 1, 1,
+            1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, 1, -1, 1, -1, -1, -1, 1, 1,
+            -1, -1, 1, -1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, 1, 1, 1, -1, 1, -1,
+            1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, 1, -1, 1, -1,                    # ends here
+                             -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1, # starts here
+            -1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
+            1, -1, -1, 1, 1, 1, -1], params.PREAMBLE))

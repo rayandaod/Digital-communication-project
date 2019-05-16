@@ -13,9 +13,11 @@ server_port = 80
 NOISE_VAR = 0.05  # channel noise variance
 Fs = 22050  # sampling frequency / sampling rate / samples per second (in Hz)
 ABS_SAMPLE_INTERVAL = 1  # samples amplitude must be between -1 and 1
-MIN_FREQ = 1000
-MAX_FREQ = 9000
-PREAMBLE = [-1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1,  # preamble sequence
+FREQ_RANGES = [[1000, 3000],  # frequency ranges authorized by the channel
+               [3000, 5000],  # one of them (at random) is set to 0 by the channel
+               [5000, 7000],
+               [7000, 9000]]
+PREAMBLE = [-1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1,  # training sequence
             -1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
             1, -1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1,
             -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, 1, -1, -1, -1, 1, 1, 1,
