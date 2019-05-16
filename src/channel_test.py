@@ -60,16 +60,16 @@ def vertical_lines_frequency_ranges(plot):
 
 if __name__ == "__main__":
 
-    input_samples_file = '../data/input_samples.txt'
-    output_sample_file = '../data/output_samples.txt'
-
-    launcher.launch_test(input_samples_file, output_sample_file)
+    """
+    Send the samples from the input file to the server, and get the output samples in the output file
+    """
+    launcher.launch()
 
     """
-    Plot the input and output in time domain.
+    Plot the input and output samples in Time domain
     """
-    input = np.loadtxt(input_samples_file)
-    output = np.loadtxt(output_sample_file)
+    input = np.loadtxt(params.message_sample_path)
+    output = np.loadtxt(params.output_sample_path)
 
     _, axs = plt.subplots(2, 1)
     plt.figure(1).suptitle("Input and output in Time domain")
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     axs[1].grid(True)
 
     """
-    Plot the output in time domain and its Fourier transform.
+    Plot the output samples in the Frequency domain
     """
     X = np.fft.fft(input)
     Y = np.fft.fft(output)

@@ -5,6 +5,9 @@ from scipy.signal import upfirdn
 
 import helper
 import params
+import writers
+import plot_helper
+import pulses
 
 
 def message_to_ints():
@@ -59,7 +62,7 @@ def encoder(indices, mapping):
     if params.verbose:
         print("Average symbol energy: {}".format(np.mean(np.abs(symbols)**2)))
         print("Symbols/n-tuples to be sent: {}".format(symbols))
-        helper.plot_complex_symbols(symbols, "{} transmitted symbols".format(len(symbols)), "blue")
+        plot_helper.plot_complex_symbols(symbols, "{} transmitted symbols".format(len(symbols)), "blue")
 
     return np.asarray(symbols)
 
@@ -83,7 +86,7 @@ def symbols_to_samples(h, symbols, USF):
     if params.verbose:
         print("Symbols to be sent: {}".format(symbols))
         print("Samples to be sent: {}".format(samples))
-        helper.plot_complex_function(samples, "Samples")
+        plot_helper.plot_complex_function(samples, "Samples")
 
     return samples
 
@@ -99,13 +102,13 @@ if __name__ == '__main__':
     # TODO How to choose N?
     N = 8*USF
     # time_indices, h_rrc = helper.root_raised_cosine(N)
-    time_indices, h_rrc = helper.root_raised_cosine(N, params.BETA, params.T, params.Fs)
+    time_indices, h_rrc = pulses.root_raised_cosine(N, params.BETA, params.T, params.Fs)
 
     # TODO Why do I have little discontinuities in my plot of samples
     waveform = symbols_to_samples(h_rrc, symbols, USF)
     waveform = waveform/20
 
-    helper.write_noise(10000)
+    writers.write_gaussian_noise(10000, 0, 1/3)
 
     print(len(waveform))
 
