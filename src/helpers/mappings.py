@@ -1,7 +1,6 @@
 import numpy as np
 
 
-# Returns a M-QAM constellation
 def qam_map(M):
     """
     :param M: the size of our mapping, i.e the number of symbols we can send
@@ -16,7 +15,6 @@ def qam_map(M):
     return (x + 1j*y).T.flatten()
 
 
-# Returns a M-PSK constellation
 def psk_map(M):
     """
         :param M: the size of our mapping, i.e the number of symbols we can send

@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import params
+import src.params
 
 
-def root_raised_cosine(N, beta=params.BETA, T=params.T, Fs=params.Fs):
+def root_raised_cosine(N, beta=src.params.BETA, T=src.params.T, Fs=src.params.Fs):
     """
     :param N: number of samples in output
     :param beta: rolloff factor (0<=beta<1)
@@ -41,7 +41,7 @@ def root_raised_cosine(N, beta=params.BETA, T=params.T, Fs=params.Fs):
         else:
             rrc[n] = (np.sin(np.pi * t * (1 - beta) / T) + 4 * beta * (t / T) * np.cos(np.pi * t * (1 + beta) / T)) / \
                      (np.pi * t * (1 - (4 * beta * t / T) * (4 * beta * t / T)) / T)
-    if params.verbose:
+    if src.params.verbose:
         print("Root-raised-cosine: N = {} samples, beta = {}, T = {} seconds, Fs = {} "
               "samples per second (Hz)".format(N, beta, T, Fs))
         print()

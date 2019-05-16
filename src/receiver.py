@@ -1,7 +1,7 @@
 import numpy as np
 
 import params
-import helper
+from src.helpers import plot_helper, enc_dec_helper
 
 
 def decoder(y, mapping):
@@ -71,7 +71,7 @@ def ints_to_message(ints):
         print(new_bits)
 
     # Convert from array of bytes to string
-    message = ''.join(helper.bits2string(new_bits))
+    message = ''.join(enc_dec_helper.bits2string(new_bits))
     print("Message received:\n{}".format(message))
 
     return message
@@ -81,7 +81,7 @@ def ints_to_message(ints):
 if __name__ == "__main__":
     print("Receiver:")
     observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j])
-    helper.plot_complex_symbols(observation_test, "observation", "red")
-    ints = decoder(observation_test, helper.mapping)
+    plot_helper.plot_complex_symbols(observation_test, "observation", "red")
+    ints = decoder(observation_test, enc_dec_helper.mapping)
     print(ints)
     print(ints_to_message(ints))
