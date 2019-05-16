@@ -28,6 +28,12 @@ def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
     frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, params.Fs, shift=False)
     removed_freq_range = fourier_helper.find_removed_freq_range(RX_mapped)
 
+    S = np.fft.fft(training_sequence)
+    frequencies_mapped, S_mapped = fourier_helper.dft_map(S, params.Fs, shift=False)
+    S_mapped[params.FREQ_RANGES[removed_freq_range][0]:params.FREQ_RANGES[removed_freq_range][1]] = 0
+    # TODO un-map and un-dftshift the array S_mapped: this will be our new training sequence
+
+    # TODO do the correlation with the new training sequence
     # Correlation
     padded_training_sequence = np.pad(training_sequence, (0, n - len(training_sequence)), 'constant')
     correlation_array = sc.correlate(received_signal, padded_training_sequence)
@@ -43,13 +49,13 @@ def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
 
 if __name__ == "__main__":
     print(maximum_likelihood_sync([-1, 1, 1, 1, 1, 1, 1, -1,
-            -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1, # starts here
-            -1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
-            1, -1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1,
-            -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, 1, -1, -1, -1, 1, 1, 1,
-            1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, 1, -1, 1, -1, -1, -1, 1, 1,
-            -1, -1, 1, -1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, 1, 1, 1, -1, 1, -1,
-            1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, 1, -1, 1, -1,                    # ends here
-                             -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1, # starts here
-            -1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
-            1, -1, -1, 1, 1, 1, -1], params.PREAMBLE))
+                                   -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1,  # starts here
+                                   -1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
+                                   1, -1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1,
+                                   -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, 1, -1, -1, -1, 1, 1, 1,
+                                   1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, 1, -1, 1, -1, -1, -1, 1, 1,
+                                   -1, -1, 1, -1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, 1, 1, 1, -1, 1, -1,
+                                   1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, 1, -1, 1, -1,                     # ends here
+                                   -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1,
+                                   -1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
+                                   1, -1, -1, 1, 1, 1, -1], params.PREAMBLE))
