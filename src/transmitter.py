@@ -96,11 +96,6 @@ if __name__ == '__main__':
     print("Transmitter:")
     symbols = encoder(message_to_ints(), helper.mapping)
 
-    # TODO How do we choose the USF? USF = Fs*T, i.e number of samples between 2 repeated pulses
-    USF = int(np.ceil(params.T * params.Fs))
-
-    # TODO How to choose N?
-    N = 8*USF
     # time_indices, h_rrc = helper.root_raised_cosine(N)
     time_indices, h_rrc = pulses.root_raised_cosine(N, params.BETA, params.T, params.Fs)
 
