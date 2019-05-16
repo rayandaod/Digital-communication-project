@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import src.params
-import src.helpers.launcher
+import params
+import launcher
 
 
 def dft_shift(X):
@@ -63,13 +63,13 @@ if __name__ == "__main__":
     """
     Send the samples from the input file to the server, and get the output samples in the output file
     """
-    src.helpers.launcher.launch()
+    launcher.launch()
 
     """
     Plot the input and output samples in Time domain
     """
-    input = np.loadtxt(src.params.message_sample_path)
-    output = np.loadtxt(src.params.output_sample_path)
+    input = np.loadtxt(params.message_sample_path)
+    output = np.loadtxt(params.output_sample_path)
 
     _, axs = plt.subplots(2, 1)
     plt.figure(1).suptitle("Input and output in Time domain")
@@ -91,8 +91,8 @@ if __name__ == "__main__":
     X = np.fft.fft(input)
     Y = np.fft.fft(output)
 
-    f_x, y_x = dft_map(X, src.params.Fs, shift=False)
-    f_y, y_y = dft_map(Y, src.params.Fs, shift=False)
+    f_x, y_x = dft_map(X, params.Fs, shift=False)
+    f_y, y_y = dft_map(Y, params.Fs, shift=False)
 
     _, axs = plt.subplots(2, 1)
     fig = plt.figure(2)
@@ -101,13 +101,13 @@ if __name__ == "__main__":
     axs[0].plot(f_x, abs(y_x))
     axs[0].set_ylabel('Input')
     vertical_lines_frequency_ranges(axs[0])
-    axs[0].set_xlim(src.params.MIN_FREQ - 1000, src.params.MAX_FREQ + 1000)
+    axs[0].set_xlim(params.MIN_FREQ - 1000, params.MAX_FREQ + 1000)
 
     axs[1].plot(f_y, abs(y_y))
     axs[1].set_xlabel('Frequency (in Hz)')
     axs[1].set_ylabel('Output')
     vertical_lines_frequency_ranges(axs[1])
-    axs[1].set_xlim(src.params.MIN_FREQ - 1000, src.params.MAX_FREQ + 1000)
+    axs[1].set_xlim(params.MIN_FREQ - 1000, params.MAX_FREQ + 1000)
 
     plt.interactive(False)
     plt.show()

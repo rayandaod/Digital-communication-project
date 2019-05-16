@@ -3,8 +3,11 @@ import sys
 import numpy as np
 from scipy.signal import upfirdn
 
+import helper
 import params
-from src.helpers import pulses, plot_helper, enc_dec_helper, writers
+import writers
+import plot_helper
+import pulses
 
 
 def message_to_ints():
@@ -21,7 +24,7 @@ def message_to_ints():
     compressed_message = zlib.compress(message_encoded)
 
     # Retrieve the message as a sequences of binary bytes
-    string_bytes = enc_dec_helper.string2bits(message)
+    string_bytes = helper.string2bits(message)
 
     # Next step is to re-arrange string_bytes in agreement with M. Indeed, with a symbol constellation of M points,
     # we can only represent BITS_PER_SYMBOL=log2(M) bits per symbol. Thus, we want to re-structure string_bytes
@@ -91,7 +94,7 @@ def symbols_to_samples(h, symbols, USF):
 # Intended for testing (to run the program, run main.py)
 if __name__ == '__main__':
     print("Transmitter:")
-    symbols = encoder(message_to_ints(), enc_dec_helper.mapping)
+    symbols = encoder(message_to_ints(), helper.mapping)
 
     # TODO How do we choose the USF? USF = Fs*T, i.e number of samples between 2 repeated pulses
     USF = int(np.ceil(params.T * params.Fs))
@@ -105,7 +108,7 @@ if __name__ == '__main__':
     waveform = symbols_to_samples(h_rrc, symbols, USF)
     waveform = waveform/20
 
-    writers.write_gaussian_noise(10000, 0, 1 / 3)
+    writers.write_gaussian_noise(10000, 0, 1/3)
 
     print(len(waveform))
 

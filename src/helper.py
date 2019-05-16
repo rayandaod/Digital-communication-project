@@ -1,5 +1,8 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
 import mappings
-import src.params
+import params
 import plot_helper
 
 
@@ -23,16 +26,16 @@ def choose_mapping():
     """
     :return: The mapping corresponding to the given modulation type
     """
-    if src.params.MOD_TYPE == "qam":
-        mapping = mappings.qam_map(src.params.M)
-    elif src.params.MOD_TYPE == "psk":
-        mapping = mappings.psk_map(src.params.M)
-    elif src.params.MOD_TYPE == "pam":
-        mapping = mappings.pam_map(src.params.M)
+    if params.MOD_TYPE == "qam":
+        mapping = mappings.qam_map(params.M)
+    elif params.MOD_TYPE == "psk":
+        mapping = mappings.psk_map(params.M)
+    elif params.MOD_TYPE == "pam":
+        mapping = mappings.pam_map(params.M)
     else:
         raise ValueError('No modulation of this type is defined')
 
-    if src.params.verbose:
+    if params.verbose:
         print("Chosen mapping: {}".format(mapping))
         plot_helper.plot_complex_symbols(mapping, "Chosen mapping", "red")
 
@@ -43,4 +46,4 @@ mapping = choose_mapping()
 
 
 if __name__ == "__main__":
-    print("enc_dec_helper.py")
+    print("helper.py")

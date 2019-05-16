@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-import src.params
+import params
 
 
 # TODO manage to plot without waiting for closing
@@ -20,7 +20,7 @@ def plot_complex_symbols(complex_values, title, color="black"):
     plt.xlabel("Re")
     plt.ylabel("Im")
     ax = plt.gca()
-    if src.params.MOD_TYPE == "psk":
+    if params.MOD_TYPE == "psk":
         disk1 = plt.Circle((0, 0), 1, color='k', fill=False)
         ax.add_artist(disk1)
     plt.axvline(linewidth=1, color="black")
@@ -29,9 +29,10 @@ def plot_complex_symbols(complex_values, title, color="black"):
     return None
 
 
-def plot_complex_function(complex_values):
+def plot_complex_function(complex_values, title):
     """
     :param complex_values: complex values (e.g at the output of the pulse-shaping)
+    :param title: title of the plot
     :return: None (plot the graph)
     """
     re = [x.real for x in complex_values]

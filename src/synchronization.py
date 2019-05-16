@@ -1,9 +1,8 @@
 import numpy as np
+import scipy.signal as sc
 
-import src.params
 
-
-def maximum_likelihood_sync(received_signal, training_sequence=src.params.PREAMBLE):
+def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
     """
     Synchronizes the received signal, i.e returns the number of samples after which the data signal begins.\n
 
@@ -20,12 +19,8 @@ def maximum_likelihood_sync(received_signal, training_sequence=src.params.PREAMB
     """
     n = len(received_signal)
     padded_training_sequence = np.pad(training_sequence, (0, n - len(training_sequence)), 'constant')
-    correlation_array = np.correlate(training_sequence, received_signal)
+    correlation_array = sc.correlate(padded_training_sequence, received_signal)
     print(correlation_array)
     print(padded_training_sequence)
     print(received_signal)
     return np.argmax(correlation_array)
-
-
-if __name__ == "__main__":
-    print(maximum_likelihood_sync([0, 0, 0, 1, 2, 3, 1, 3, 2, 1], [1, 2, 3]))
