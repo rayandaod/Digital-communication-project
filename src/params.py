@@ -1,15 +1,7 @@
 import numpy as np
 
-<<<<<<< HEAD
 # General variables
 verbose = True
-
-=======
-#import helper
-
-# General variables
-verbose = False
->>>>>>> d94ee76faa280d59cf22ef2cbd0d19cc7965568b
 message_file_path = "../data/input_text.txt"
 output_file_path = "../data/output_text.txt"
 
