@@ -8,6 +8,7 @@ import struct
 import numpy as np
 import io
 
+
 def send_ndarray(sock, data):
     """
     Send a NumPy array over the network.
@@ -24,6 +25,7 @@ def send_ndarray(sock, data):
     # Pack message length
     msg = struct.pack('>I', len(byte_data)) + byte_data
     sock.sendall(msg)
+
 
 def recv_ndarray(sock):
     """

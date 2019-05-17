@@ -95,6 +95,19 @@ def symbols_to_samples(h, symbols, USF):
         print("--------------------------------------------------------")
         plot_helper.plot_complex_function(samples, "Samples")
 
+    # TODO we can automatically do this for the speed test
+    # TODO this is wrong, TODOOOOOOO
+    # if np.iscomplex(samples):
+    #     time_indices = np.arange(len(samples))/params.Fs
+    #     fc = 2000  # TODO must be wrong
+    #     re_samples = np.real(samples)
+    #     im_samples = np.imag(samples)
+    #     for t in time_indices:
+    #         re_samples = re_samples * np.sqrt(2) * np.cos(2*np.pi*fc*t)
+    #         im_samples = im_samples * (-np.sqrt(2)) * np.sin(2*np.pi*fc*t)
+    #
+    #     final_samples = re_samples
+
     return samples
 
 
@@ -104,11 +117,12 @@ if __name__ == '__main__':
     symbols = encoder(message_to_ints(), helper.mapping)
 
     # time_indices, h_rrc = helper.root_raised_cosine(N)
-    _, h_rrc = pulses.root_raised_cosine(params.SPAN, params.BETA, params.T, params.Fs)
+    time_indices, h_rrc = pulses.root_raised_cosine(params.SPAN, params.BETA, params.T, params.Fs)
 
     # TODO Why do I have little discontinuities in my plot of samples
-    waveform = symbols_to_samples(h_rrc, symbols, params.USF)
+    input_samples = symbols_to_samples(h_rrc, symbols, params.USF)
 
+    writers.write_samples(input_samples)
     # writers.write_gaussian_noise(1, 0, 1/4)
     # writers.write_sinus(1, 4000, scaling_factor=0.5)
 

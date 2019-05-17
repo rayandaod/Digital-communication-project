@@ -31,17 +31,25 @@ def write_samples(samples):
     return None
 
 
-def write_sinus(duration, freq, scaling_factor=1):
+def write_sinus(duration, freqs, scaling_factor=1.):
     """
     Write a sinus in the input sample file, at the given frequency
     :param scaling_factor:
     :param duration: duration of the sinus (in seconds)
-    :param freq: given frequency for the sinus
+    :param freqs: array of frequencies for the sum of sinus
     :return: None
     """
-    n_samples = params.Fs * duration
-    t = np.linspace(0, duration, n_samples)
-    samples = np.sin(freq * 2 * np.pi * t)
+    n_samples = int(np.ceil(duration*params.Fs))
+    t = np.arange(n_samples)/params.Fs
+    samples = np.zeros(n_samples)
+    for freq in freqs:
+        samples += np.sin(freq * 2 * np.pi * t)
     for i in range(n_samples):
         f.write(str(samples[i]*scaling_factor) + '\n')
     return None
+
+
+if __name__ == "__main__":
+    # write_samples(input_samples)
+    write_gaussian_noise(1, 0, 1/4)
+    # write_sinus(1, [2000, 4000, 6000, 8000], scaling_factor=1/8)
