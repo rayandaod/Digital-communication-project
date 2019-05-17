@@ -1,8 +1,15 @@
 import numpy as np
 
+<<<<<<< HEAD
 # General variables
 verbose = True
 
+=======
+#import helper
+
+# General variables
+verbose = False
+>>>>>>> d94ee76faa280d59cf22ef2cbd0d19cc7965568b
 message_file_path = "../data/input_text.txt"
 output_file_path = "../data/output_text.txt"
 
@@ -33,7 +40,7 @@ PREAMBLE = [-1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1,  
 M = 16  # length of the mapping (must be of the form 2^2k if QAM is chosen)
 MOD_TYPE = "qam"  # modulation type: qam or psk or pam for now
 BITS_PER_SYMBOL = int(np.log2(M))  # number of bits we transmit per symbol
-BETA = 0  # rolloff factor of our root-raised-cosine pulse
+BETA = 0.5  # rolloff factor of our root-raised-cosine pulse
 T = 0.05  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying Nyquist criterion
 USF = int(np.ceil(T * Fs))  # up-sampling factor, i.e the number of zeros to add between
 # any 2 samples before pulse shaping
