@@ -25,11 +25,11 @@ def choose_mapping(normalize=False):
     """
     :return: The mapping corresponding to the given modulation type
     """
-    if params.MOD_TYPE == "qam":
+    if params.MAPPING == "qam":
         chosen_mapping = mappings.qam_map(params.M)
-    elif params.MOD_TYPE == "psk":
+    elif params.MAPPING == "psk":
         chosen_mapping = mappings.psk_map(params.M)
-    elif params.MOD_TYPE == "pam":
+    elif params.MAPPING == "pam":
         chosen_mapping = mappings.pam_map(params.M)
     else:
         raise ValueError('No modulation of this type is defined')

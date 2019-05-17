@@ -8,6 +8,7 @@ import params
 import writers
 import plot_helper
 import pulses
+import fourier_helper
 
 
 def message_to_ints():
@@ -86,29 +87,35 @@ def symbols_to_samples(h, symbols, USF):
     #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
     samples = upfirdn(h, symbols, USF)
+    maximum = max(samples)
 
     if params.verbose:
         print("Samples to be sent:\n{}".format(samples))
         print("Number of samples: {}".format(len(samples)))
         print("Minimum sample: {}".format(min(samples)))
-        print("Maximum sample: {}".format(max(samples)))
+        print("Maximum sample: {}".format(maximum))
         print("--------------------------------------------------------")
-        plot_helper.plot_complex_function(samples, "Samples")
+        plot_helper.plot_complex_function(samples, "Input samples")
 
-    # TODO we can automatically do this for the speed test
-    # TODO this is wrong, TODOOOOOOO
-    # if np.iscomplex(samples):
-    #     time_indices = np.arange(len(samples))/params.Fs
-    #     fc = 2000  # TODO must be wrong
-    #     re_samples = np.real(samples)
-    #     im_samples = np.imag(samples)
-    #     for t in time_indices:
-    #         re_samples = re_samples * np.sqrt(2) * np.cos(2*np.pi*fc*t)
-    #         im_samples = im_samples * (-np.sqrt(2)) * np.sin(2*np.pi*fc*t)
-    #
-    #     final_samples = re_samples
+    if np.any(np.iscomplex(samples)):
+        if params.MODULATION_TYPE == 1:
+            samples = fourier_helper.modulate(samples, params.np.mean(params.FREQ_RANGES, axis=1))
+        elif params.MODULATION_TYPE == 2:
+            samples = fourier_helper.modulate(samples, [params.FREQ_RANGES[0][1], params.FREQ_RANGES[2][1]])
+        else:
+            raise ValueError('This modulation type does not exist yet... Hehehe')
 
-    return samples
+        maximum = max(samples)
+
+        if params.verbose:
+            print("Modulation of the signal...")
+            print("Number of samples: {}".format(len(samples)))
+            print("Minimum sample after modulation: {}".format(min(samples)))
+            print("Maximum sample after modulation: {}".format(maximum))
+            print("--------------------------------------------------------")
+            plot_helper.plot_complex_function(samples, "Input samples after modulation")
+
+    return maximum, samples
 
 
 # Intended for testing (to run the program, run main.py)
@@ -119,8 +126,10 @@ if __name__ == '__main__':
     # time_indices, h_rrc = helper.root_raised_cosine(N)
     time_indices, h_rrc = pulses.root_raised_cosine(params.SPAN, params.BETA, params.T, params.Fs)
 
-    # TODO Why do I have little discontinuities in my plot of samples
-    input_samples = symbols_to_samples(h_rrc, symbols, params.USF)
+    maximum, input_samples = symbols_to_samples(h_rrc, symbols, params.USF)
+
+    # Scale to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
+    input_samples = input_samples/(maximum*(2-params.ABS_SAMPLE_RANGE))
 
     writers.write_samples(input_samples)
     # writers.write_gaussian_noise(1, 0, 1/4)

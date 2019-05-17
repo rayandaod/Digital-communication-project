@@ -72,3 +72,16 @@ def find_removed_freq_range(X):
 
     means = [mean_1, mean_2, mean_3, mean_4]
     return np.argmin(means)
+
+
+def modulate(samples, freqs):
+    n_sample = len(samples)
+    time_indices = np.arange(n_sample)/params.Fs
+    re_samples = np.real(samples)
+    im_samples = np.imag(samples)
+    new_samples = np.zeros(n_sample)
+    for n in range(n_sample):
+        for f in freqs:
+            new_samples[n] += re_samples[n] * np.sqrt(2) * np.cos(2 * np.pi * f * time_indices[n]) - \
+                             im_samples[n] * np.sqrt(2) * np.sin(2 * np.pi * f * time_indices[n])
+    return new_samples.real

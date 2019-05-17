@@ -20,7 +20,7 @@ def plot_complex_symbols(complex_values, title, color="black"):
     plt.xlabel("Re")
     plt.ylabel("Im")
     ax = plt.gca()
-    if params.MOD_TYPE == "psk":
+    if params.MAPPING == "psk":
         disk1 = plt.Circle((0, 0), 1, color='k', fill=False)
         ax.add_artist(disk1)
     plt.axvline(linewidth=1, color="black")
@@ -39,7 +39,7 @@ def plot_complex_function(complex_values, title):
     im = [x.imag for x in complex_values]
     indices = range(len(complex_values))
     plt.subplot(2, 1, 1)
-    plt.suptitle("Input samples")
+    plt.suptitle(title)
     plt.ylabel("Re")
     plt.plot(indices, re)
     plt.subplot(2, 1, 2)

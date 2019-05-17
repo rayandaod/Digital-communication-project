@@ -45,7 +45,7 @@ def root_raised_cosine2(SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
     if params.verbose:
         print("Root-raised-cosine:\nN = {} samples, beta = {}, T = {} seconds, Fs = {} "
               "samples per second (Hz)".format(SPAN, beta, T, Fs))
-        print("Higher value = {}".format(1 - beta + (4 * beta / np.pi)))
+        print("Highest value = {}".format(1 - beta + (4 * beta / np.pi)))
         print("--------------------------------------------------------")
         plt.plot(time_indices, rrc)
         plt.title("Root-raised-cosine")
@@ -101,7 +101,7 @@ def root_raised_cosine(SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
     if params.verbose:
         print("Root-raised-cosine:\nN = {} samples, beta = {}, T = {} seconds, Fs = {} "
               "samples per second (Hz)".format(SPAN, beta, T, Fs))
-        print("Higher value = {}".format(1 - beta + (4 * beta / np.pi)))
+        print("Highest value = {}".format(1 - beta + (4 * beta / np.pi)))
         print("--------------------------------------------------------")
         plt.plot(time_indices, rrc)
         plt.title("Root-raised-cosine")
