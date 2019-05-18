@@ -9,7 +9,7 @@ import writers
 import plot_helper
 import pulses
 import fourier_helper
-import synchronization
+import mappings
 
 
 def message_to_ints():
@@ -88,11 +88,11 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
     #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
     # Insert the synchronization sequence
-    synchronization.PREAMBLE = np.random.choice(enc_dec_helper.mapping,
-                                                size=int(np.ceil(len(symbols_to_send) * params.PREAMBLE_LENGTH_RATIO)))
-    symbols_to_send = np.concatenate((synchronization.PREAMBLE, symbols_to_send))
+    PREAMBLE = np.random.choice(mappings.mapping,
+                                size=int(np.ceil(len(symbols_to_send) * params.PREAMBLE_LENGTH_RATIO)))
+    symbols_to_send = np.concatenate((PREAMBLE, symbols_to_send))
     if params.verbose:
-        print("Synchronization sequence:\n{}".format(synchronization.PREAMBLE))
+        print("Synchronization sequence:\n{}".format(PREAMBLE))
         print("--------------------------------------------------------")
 
     # TODO can/should I remove the ramp-up and ramp_down?
@@ -110,12 +110,15 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
         print("--------------------------------------------------------")
         plot_helper.plot_complex_function(samples, "Input samples")
 
-    synchronization.preamble_shaped = upfirdn(h, synchronization.PREAMBLE, USF)
+    # Write the preamble shaped's samples in the preamble_samples file
+    preamble_shaped = upfirdn(h, PREAMBLE, USF)
+    writers.write_samples(preamble_shaped, preamble=True)
+
     if params.verbose:
         print("Shaping the preamble...")
-        print("Synchronization sequence shaped:\n{}".format(synchronization.preamble_shaped))
-        print("Number of samples for the preamble: {}".format(len(synchronization.preamble_shaped)))
-        plot_helper.plot_complex_function(synchronization.preamble_shaped, "Synchronization sequence shaped")
+        print("Synchronization sequence shaped:\n{}".format(preamble_shaped))
+        print("Number of samples for the preamble: {}".format(len(preamble_shaped)))
+        plot_helper.plot_complex_function(preamble_shaped, "Synchronization sequence shaped")
         print("--------------------------------------------------------")
 
     if np.any(np.iscomplex(samples)):
@@ -152,7 +155,7 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
 # Intended for testing (to run the program, run main.py)
 if __name__ == '__main__':
     # Encode the message
-    symbols = encoder(message_to_ints(), enc_dec_helper.mapping)
+    symbols = encoder(message_to_ints(), mappings.mapping)
 
     # Generate the root-raised_cosine
     _, h_pulse = pulses.root_raised_cosine()

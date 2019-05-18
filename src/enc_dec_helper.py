@@ -1,10 +1,3 @@
-import numpy as np
-
-import mappings
-import params
-import plot_helper
-
-
 def string2bits(s=''):
     """
     :param s: the string to be converted

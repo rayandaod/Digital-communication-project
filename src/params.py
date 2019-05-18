@@ -1,36 +1,5 @@
 import numpy as np
 
-import mappings
-import plot_helper
-
-
-def choose_mapping(normalize=False):
-    """
-    :return: The mapping corresponding to the given mapping
-    """
-    if MAPPING == "qam":
-        chosen_mapping = mappings.qam_map(M)
-    elif MAPPING == "psk":
-        chosen_mapping = mappings.psk_map(M)
-    elif MAPPING == "pam":
-        chosen_mapping = mappings.pam_map(M)
-    else:
-        raise ValueError('No modulation of this type is defined')
-
-    if normalize:
-        chosen_mapping = chosen_mapping / np.sqrt(np.mean(np.abs(chosen_mapping) ** 2))
-
-    if verbose:
-        print("Chosen mapping:\n{}".format(chosen_mapping))
-        print("--------------------------------------------------------")
-        plot_helper.plot_complex_symbols(chosen_mapping, "Chosen mapping", "red")
-
-    return chosen_mapping
-
-
-# TODO why does this work
-mapping = choose_mapping(normalize=True)
-
 
 def choose_symbol_period():
     if MODULATION_TYPE == 1:
@@ -46,8 +15,9 @@ verbose = True
 message_file_path = "../data/input_text.txt"
 output_file_path = "../data/output_text.txt"
 
-message_sample_path = "../data/input_samples.txt"
-output_sample_path = "../data/output_samples.txt"
+input_sample_file_path = "../data/input_samples.txt"
+output_sample_file_path = "../data/output_samples.txt"
+preamble_sample_file_path = "../data/preamble_samples.txt"
 
 server_hostname = "iscsrv72.epfl.ch"
 server_port = 80

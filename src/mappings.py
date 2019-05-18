@@ -1,5 +1,8 @@
 import numpy as np
 
+import params
+import plot_helper
+
 
 def qam_map(M):
     """
@@ -32,5 +35,33 @@ def pam_map(M):
         raise ValueError('Parameter[M] is not even.')
     N = M - 1
     return np.arange(-N, N + 1, 2)
+
+
+def choose_mapping(normalize=False):
+    """
+    :return: The mapping corresponding to the given mapping
+    """
+    if params.MAPPING == "qam":
+        chosen_mapping = qam_map(params.M)
+    elif params.MAPPING == "psk":
+        chosen_mapping = psk_map(params.M)
+    elif params.MAPPING == "pam":
+        chosen_mapping = pam_map(params.M)
+    else:
+        raise ValueError('No modulation of this type is defined')
+
+    if normalize:
+        chosen_mapping = chosen_mapping / np.sqrt(np.mean(np.abs(chosen_mapping) ** 2))
+
+    if params.verbose:
+        print("Chosen mapping:\n{}".format(chosen_mapping))
+        print("--------------------------------------------------------")
+        plot_helper.plot_complex_symbols(chosen_mapping, "Chosen mapping", "red")
+
+    return chosen_mapping
+
+
+# TODO why does this work
+mapping = choose_mapping(normalize=True)
 
 # TODO make qam_map output counter-clockwise or clockwise, starting with 1+j

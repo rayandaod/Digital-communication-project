@@ -82,12 +82,18 @@ def ints_to_message(ints):
 # Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
     print("Receiver:")
-    output_sample_file = open(params.output_sample_path, "r")
+    output_sample_file = open(params.output_sample_file_path, "r")
     received_samples = [float(line) for line in output_sample_file.readlines()]
     output_sample_file.close()
     print(received_samples)
-    plot_helper.plot_complex_function(received_samples, "")
-    print(synchronization.maximum_likelihood_sync(received_samples))
+
+    plot_helper.plot_complex_function(received_samples, "Received samples in time domain")
+    plot_helper.fft_plot(received_samples, "Received samples in frequency domain")
+
+    preamble_samples_file = open(params.preamble_sample_file_path, "r")
+    preamble_samples = [float(line) for line in preamble_samples_file.readlines()]
+    preamble_samples_file.close()
+    print(synchronization.maximum_likelihood_sync(received_samples, synchronization_sequence=preamble_samples))
 
     # observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j])
     # plot_helper.plot_complex_symbols(observation_test, "observation", "blue")

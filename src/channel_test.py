@@ -11,8 +11,8 @@ if __name__ == "__main__":
     launcher.launch()
 
     # Load the input and output samples from their respective files
-    input = np.loadtxt(params.message_sample_path)
-    output = np.loadtxt(params.output_sample_path)
+    input = np.loadtxt(params.input_sample_file_path)
+    output = np.loadtxt(params.output_sample_file_path)
 
     # Plot the input and output samples in Time domain
     plot_helper.two_simple_plots(input, output, "Input and output in Time domain", "Input", "Output")

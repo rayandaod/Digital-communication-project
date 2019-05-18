@@ -2,7 +2,7 @@ import numpy as np
 
 import params
 
-f = open(params.message_sample_path, "w")
+f = open(params.input_sample_file_path, "w")
 
 
 def write_gaussian_noise(duration, mean, std):
@@ -21,15 +21,22 @@ def write_gaussian_noise(duration, mean, std):
     return None
 
 
-def write_samples(samples):
+def write_samples(samples, preamble=False):
     """
     Write samples in the input sample file
     :param samples: samples array to write in the file
+    :param preamble: boolean to decide if we write in the preamble_samples file
     :return: None
     """
-    for i in range(len(samples)):
-        f.write(str(samples[i]) + '\n')
-    f.close()
+    if preamble:
+        preamble_sample_file = open(params.preamble_sample_file_path, "w")
+        for i in range(len(samples)):
+            preamble_sample_file.write(str(samples[i]) + '\n')
+        preamble_sample_file.close()
+    else:
+        for i in range(len(samples)):
+            f.write(str(samples[i]) + '\n')
+        f.close()
     return None
 
 

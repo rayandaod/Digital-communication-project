@@ -4,12 +4,6 @@ import scipy.signal as sc
 import params
 import fourier_helper
 
-# Preamble sequence generated randomly among the symbols of the chosen mapping
-PREAMBLE = []
-
-# Preamble sequence shaped with the chosen pulse, used to synchronize the signal at the receiver side
-preamble_shaped = []
-
 
 def maximum_likelihood_sync(received_signal, synchronization_sequence):
     """
@@ -34,7 +28,7 @@ def maximum_likelihood_sync(received_signal, synchronization_sequence):
     frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, shift=False)
     removed_freq_range = fourier_helper.find_removed_freq_range(RX_mapped)
     if params.verbose:
-        print("Frequency range that has been removed: {}".format(removed_freq_range))
+        print("Frequency range that has been removed: {}".format(removed_freq_range+1))
 
     # Remove it from the training sequence
     S = np.fft.fft(synchronization_sequence)

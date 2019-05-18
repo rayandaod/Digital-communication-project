@@ -1,6 +1,5 @@
 import numpy as np
 
-
 import params
 
 
@@ -56,9 +55,9 @@ def find_removed_freq_range(X):
     :param X: the fourier transform of the signal
     :return: the index in params.FREQ_RANGES corresponding to the removed frequency range
     """
-    n_frequncies = len(params.FREQ_RANGES)
-    means = np.zeros(n_frequncies)
-    for i in range(n_frequncies):
+    n_frequencies = len(params.FREQ_RANGES)
+    means = np.zeros(n_frequencies)
+    for i in range(n_frequencies):
         means[i] = np.mean(X[params.FREQ_RANGES[i][0]:params.FREQ_RANGES[i][1]])
     return np.argmin(means)
 
