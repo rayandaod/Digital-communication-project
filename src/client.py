@@ -24,7 +24,8 @@ import channel_helper as ch
 def parse_args():
     parser = argparse.ArgumentParser(description="COM-302 black-box channel simulator. (client)",
                                      formatter_class=argparse.RawTextHelpFormatter,
-                                     epilog="To promote efficient communication schemes, transmissions are limited to 1 Mega-sample.")
+                                     epilog="To promote efficient communication schemes, transmissions are limited to "
+                                            "1 Mega-sample.")
 
     parser.add_argument('--input_file', type=str, required=True,
                         help='.txt file containing (N_sample,) rows of float samples.')

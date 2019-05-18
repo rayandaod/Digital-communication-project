@@ -18,6 +18,7 @@ def message_to_ints():
     # Retrieve the message from file
     message_file = open(params.message_file_path)
     message = message_file.readline()
+    print("Sent message:\n{}".format(message))
 
     # Tried to compress message
     message_encoded = message.encode('ascii')
@@ -40,7 +41,6 @@ def message_to_ints():
     ints = [int(b, 2) for b in new_bits]
 
     if params.verbose:
-        print("Original message:\n{}".format(message))
         print("Encoded message:\n{}".format(message_encoded))
         print("Size (in bytes) of encoded message:\n{}".format(sys.getsizeof(message_encoded)))
         print("Compressed message: {}".format(compressed_message))
@@ -86,11 +86,20 @@ def symbols_to_samples(h, symbols, USF):
     # else:
     #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
+    # Insert the synchronization sequence
+    params.PREAMBLE = np.random.choice(helper.mapping, size=int(np.ceil(len(symbols)*params.PREAMBLE_LENGTH_RATIO)))
+    symbols = np.concatenate((params.PREAMBLE, symbols))
+    if params.verbose:
+        print("Synchronization sequence:\n{}".format(params.PREAMBLE))
+        print("--------------------------------------------------------")
+
+    # TODO can/should I remove the ramp-up and ramp_down?
     samples = upfirdn(h, symbols, USF)
     maximum = max(samples)
 
     if params.verbose:
         print("Samples to be sent:\n{}".format(samples))
+        print("Up-sampling factor: {}".format(params.USF))
         print("Number of samples: {}".format(len(samples)))
         print("Minimum sample: {}".format(min(samples)))
         print("Maximum sample: {}".format(maximum))
@@ -115,25 +124,32 @@ def symbols_to_samples(h, symbols, USF):
             print("--------------------------------------------------------")
             plot_helper.plot_complex_function(samples, "Input samples after modulation")
 
+    # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
+    samples = samples/(maximum*(2-params.ABS_SAMPLE_RANGE))
+    maximum = max(samples)
+
+    if params.verbose:
+        print("Scaling the signal...")
+        print("Minimum sample after scaling: {}".format(min(samples)))
+        print("Maximum sample after scaling: {}".format(maximum))
+        print("--------------------------------------------------------")
+
     return maximum, samples
 
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == '__main__':
-    print("Transmitter:")
+    # Encode the message
     symbols = encoder(message_to_ints(), helper.mapping)
 
-    # time_indices, h_rrc = helper.root_raised_cosine(N)
-    time_indices, h_rrc = pulses.root_raised_cosine(params.SPAN, params.BETA, params.T, params.Fs)
+    # Generate the root-raised_cosine
+    _, h = pulses.root_raised_cosine(params.SPAN, params.BETA, params.T, params.Fs)
 
-    maximum, input_samples = symbols_to_samples(h_rrc, symbols, params.USF)
+    # Construct the signal to send
+    maximum, input_samples = symbols_to_samples(h, symbols, params.USF)
 
-    # Scale to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    input_samples = input_samples/(maximum*(2-params.ABS_SAMPLE_RANGE))
-
+    # Write the samples in the input file
     writers.write_samples(input_samples)
-    # writers.write_gaussian_noise(1, 0, 1/4)
-    # writers.write_sinus(1, 4000, scaling_factor=0.5)
 
 # TODO Add checks everywhere on the sizes of the arrays etc
 # TODO Try with a longer/shorter message
