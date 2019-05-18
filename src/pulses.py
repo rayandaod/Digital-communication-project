@@ -56,7 +56,7 @@ def root_raised_cosine2(SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
     return time_indices, rrc
 
 
-def root_raised_cosine(SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
+def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
     """
     :param SPAN: number of samples in output
     :param beta: rolloff factor (0<=beta<1)

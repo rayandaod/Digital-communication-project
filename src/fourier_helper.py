@@ -26,7 +26,7 @@ def dft_shift(X):
         return np.arange(-int((N-1)/2), int((N-1)/2) + 1), np.concatenate((X[int((N+1)/2):], X[:int((N+1)/2)]))
 
 
-def dft_map(X, Fs, shift=True):
+def dft_map(X, Fs=params.Fs, shift=True):
     """
     In order to look at the spectrum of the sound file with a DFT we need to map the digital frequency "bins" of the
     DFT to real-world frequencies. The k-th basis function over C_N completes k periods over N samples.
@@ -49,39 +49,46 @@ def dft_map(X, Fs, shift=True):
     return f, Y
 
 
-# TODO do we need that
-def dft_unmap(X, Fs, shift=True):
-    if shift:
-        # TODO
-        return None
-    else:
-        return X
-
-
 # TODO additional checks on the certainty of the decision on the removed freq. range
 def find_removed_freq_range(X):
     """
     Checks which range of frequencies has been removed by the channel (among 1-3kHz, 3-5kHz, 5-7kHz, 7-9kHz)
-    :param X: a fourier transform
+    :param X: the fourier transform of the signal
     :return: the index in params.FREQ_RANGES corresponding to the removed frequency range
     """
-    mean_1 = np.mean(X[params.FREQ_RANGES[0][0], params.FREQ_RANGES[0][1]])
-    mean_2 = np.mean(X[params.FREQ_RANGES[1][0], params.FREQ_RANGES[1][1]])
-    mean_3 = np.mean(X[params.FREQ_RANGES[2][0], params.FREQ_RANGES[2][1]])
-    mean_4 = np.mean(X[params.FREQ_RANGES[3][0], params.FREQ_RANGES[3][1]])
-
-    means = [mean_1, mean_2, mean_3, mean_4]
+    n_frequncies = len(params.FREQ_RANGES)
+    means = np.zeros(n_frequncies)
+    for i in range(n_frequncies):
+        means[i] = np.mean(X[params.FREQ_RANGES[i][0]:params.FREQ_RANGES[i][1]])
     return np.argmin(means)
 
 
-def modulate(samples, freqs):
+def modulate(samples, frequencies):
+    """
+    Modulate the signal by shifting duplicates of it in the given frequencies
+    :param samples: the signal to modulate
+    :param frequencies: the frequencies we want the signal to be duplicated and shifted in
+    :return: the modulated signals
+    """
     n_sample = len(samples)
     time_indices = np.arange(n_sample)/params.Fs
     re_samples = np.real(samples)
     im_samples = np.imag(samples)
     new_samples = np.zeros(n_sample)
     for n in range(n_sample):
-        for f in freqs:
+        for f in frequencies:
             new_samples[n] += re_samples[n] * np.sqrt(2) * np.cos(2 * np.pi * f * time_indices[n]) - \
                              im_samples[n] * np.sqrt(2) * np.sin(2 * np.pi * f * time_indices[n])
     return new_samples.real
+
+
+def vertical_lines_frequency_ranges(plot):
+    """
+    Plots 4 vertical red lines showing the frequency ranges we are interested in
+    :param plot: the current plot
+    :return:
+    """
+    for i in range(len(params.FREQ_RANGES)):
+        if i == 0:
+            plot.axvline(x=params.FREQ_RANGES[i][0], color='r')
+        plot.axvline(x=params.FREQ_RANGES[i][1], color='r')

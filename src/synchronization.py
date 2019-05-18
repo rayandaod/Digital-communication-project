@@ -5,7 +5,10 @@ import params
 import fourier_helper
 
 
-def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
+PREAMBLE = []
+
+
+def maximum_likelihood_sync(received_signal, synchronization_sequence):
     """
     Synchronizes the received signal, i.e returns the number of samples after which the data signal begins.\n
 
@@ -17,7 +20,7 @@ def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
     the delay.\n
 
     :param received_signal: signal received from the server
-    :param training_sequence: real-valued sequence used to synchronize the received signal
+    :param synchronization_sequence: real-valued sequence used to synchronize the received signal
     :return: delay in number of samples
     """
     n = len(received_signal)
@@ -25,12 +28,14 @@ def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
     # Identify which range of frequencies has been removed
     # TODO Do we need to compute the fourier of the whole signal? only the [preamble + data] part is relevant in freq.
     RX = np.fft.fft(received_signal)
-    frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, params.Fs, shift=False)
+    frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, shift=False)
     removed_freq_range = fourier_helper.find_removed_freq_range(RX_mapped)
+    if params.verbose:
+        print("Frequency range that has been removed: {}".format(removed_freq_range))
 
     # Remove it from the training sequence
-    S = np.fft.fft(training_sequence)
-    frequencies_mapped, S_mapped = fourier_helper.dft_map(S, params.Fs, shift=False)
+    S = np.fft.fft(synchronization_sequence)
+    frequencies_mapped, S_mapped = fourier_helper.dft_map(S, shift=False)
     S_mapped[params.FREQ_RANGES[removed_freq_range][0]:params.FREQ_RANGES[removed_freq_range][1]] = 0
     new_training_sequence = np.fft.ifft(S_mapped)
 
@@ -41,7 +46,7 @@ def maximum_likelihood_sync(received_signal, training_sequence=params.PREAMBLE):
     # TODO Should we put abs here? Useful only if the channel multiplies the training sequence by -1
     index = np.argmax(abs(correlation_array))
 
-    M = max(len(received_signal), len(training_sequence))
+    M = max(len(received_signal), len(synchronization_sequence))
     delay_range = np.arange(-M+1, M-1)
 
     return delay_range[index]

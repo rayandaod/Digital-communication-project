@@ -3,6 +3,7 @@ import numpy as np
 import params
 import helper
 import plot_helper
+import synchronization
 
 
 def decoder(y, mapping):
@@ -81,7 +82,14 @@ def ints_to_message(ints):
 # Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
     print("Receiver:")
-    observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j])
-    plot_helper.plot_complex_symbols(observation_test, "observation", "blue")
-    ints = decoder(observation_test, helper.mapping)
-    ints_to_message(ints)
+    output_sample_file = open(params.output_sample_path, "r")
+    received_samples = [float(line) for line in output_sample_file.readlines()]
+    output_sample_file.close()
+    print(received_samples)
+    plot_helper.plot_complex_function(received_samples, "")
+    print(synchronization.maximum_likelihood_sync(received_samples))
+
+    # observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j])
+    # plot_helper.plot_complex_symbols(observation_test, "observation", "blue")
+    # ints = decoder(observation_test, helper.mapping)
+    # ints_to_message(ints)

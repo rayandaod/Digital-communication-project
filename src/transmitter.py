@@ -9,6 +9,7 @@ import writers
 import plot_helper
 import pulses
 import fourier_helper
+import synchronization
 
 
 def message_to_ints():
@@ -72,10 +73,10 @@ def encoder(indices, mapping):
     return np.asarray(symbols)
 
 
-def symbols_to_samples(h, symbols, USF):
+def symbols_to_samples(h, symbols_to_send, USF=params.USF):
     """
     :param h: the sampled pulse
-    :param symbols: the symbols modulating the pulse
+    :param symbols_to_send: the symbols modulating the pulse
     :param USF: the up-sampling factor (number of samples per symbols)
     :return: the samples of a modulated pulse train to send to the server
     """
@@ -87,14 +88,16 @@ def symbols_to_samples(h, symbols, USF):
     #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
     # Insert the synchronization sequence
-    params.PREAMBLE = np.random.choice(helper.mapping, size=int(np.ceil(len(symbols)*params.PREAMBLE_LENGTH_RATIO)))
-    symbols = np.concatenate((params.PREAMBLE, symbols))
+    synchronization.PREAMBLE = np.random.choice(helper.mapping,
+                                                size=int(np.ceil(len(symbols_to_send) * params.PREAMBLE_LENGTH_RATIO)))
+    symbols_to_send = np.concatenate((synchronization.PREAMBLE, symbols_to_send))
     if params.verbose:
-        print("Synchronization sequence:\n{}".format(params.PREAMBLE))
+        print("Synchronization sequence:\n{}".format(synchronization.PREAMBLE))
         print("--------------------------------------------------------")
 
     # TODO can/should I remove the ramp-up and ramp_down?
-    samples = upfirdn(h, symbols, USF)
+    # Shape the signal with the pulse h
+    samples = upfirdn(h, symbols_to_send, USF)
     maximum = max(samples)
 
     if params.verbose:
@@ -143,10 +146,10 @@ if __name__ == '__main__':
     symbols = encoder(message_to_ints(), helper.mapping)
 
     # Generate the root-raised_cosine
-    _, h = pulses.root_raised_cosine(params.SPAN, params.BETA, params.T, params.Fs)
+    _, h_pulse = pulses.root_raised_cosine()
 
     # Construct the signal to send
-    maximum, input_samples = symbols_to_samples(h, symbols, params.USF)
+    maximum, input_samples = symbols_to_samples(h_pulse, symbols)
 
     # Write the samples in the input file
     writers.write_samples(input_samples)

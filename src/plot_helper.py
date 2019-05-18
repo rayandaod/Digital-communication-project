@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 import params
+import fourier_helper
 
 
 # TODO manage to plot without waiting for closing
@@ -47,3 +49,61 @@ def plot_complex_function(complex_values, title):
     plt.plot(indices, im)
     plt.show()
     return None
+
+
+def two_fft_plots(samples_1, samples_2, title, y_label_1, y_label_2):
+    X = np.fft.fft(samples_1)
+    Y = np.fft.fft(samples_2)
+
+    f_x, y_x = fourier_helper.dft_map(X, shift=False)
+    f_y, y_y = fourier_helper.dft_map(Y, shift=False)
+
+    _, axs = plt.subplots(2, 1)
+    fig = plt.figure(2)
+    fig.suptitle(title)
+
+    axs[0].plot(f_x, abs(y_x))
+    axs[0].set_ylabel(y_label_1)
+    fourier_helper.vertical_lines_frequency_ranges(axs[0])
+    axs[0].set_xlim(params.FREQ_RANGES[0][0] - 1000, params.FREQ_RANGES[3][1] + 1000)
+
+    axs[1].plot(f_y, abs(y_y))
+    axs[1].set_xlabel("Frequency (in Hz)")
+    axs[1].set_ylabel(y_label_2)
+    fourier_helper.vertical_lines_frequency_ranges(axs[1])
+    axs[1].set_xlim(params.FREQ_RANGES[0][0] - 1000, params.FREQ_RANGES[3][1] + 1000)
+
+    plt.interactive(False)
+    plt.show()
+
+
+def two_plots(samples_1, samples_2, title, y_label_1, y_label_2):
+    _, axs = plt.subplots(2, 1)
+    plt.figure(1).suptitle(title)
+
+    axs[0].plot(range(len(samples_1)), samples_1)
+    axs[0].set_ylabel(y_label_1)
+
+    axs[1].plot(range(len(samples_2)), samples_2)
+    axs[1].set_xlabel("Samples")
+    axs[1].set_ylabel(y_label_2)
+
+    axs[0].grid(True)
+    axs[1].grid(True)
+
+
+def fft_plot(samples, title):
+    X = np.fft.fft(samples)
+    f_x, y_x = fourier_helper.dft_map(X, shift=False)
+
+    fig = plt.figure()
+    fig.suptitle(title)
+
+    plt.plot(f_x, abs(y_x))
+    plt.xlabel("Frequency (in Hz)")
+    plt.ylabel("Amplitude")
+    fourier_helper.vertical_lines_frequency_ranges(plt)
+    plt.xlim(params.FREQ_RANGES[0][0] - 1000, params.FREQ_RANGES[3][1] + 1000)
+
+    plt.interactive(False)
+    plt.show()

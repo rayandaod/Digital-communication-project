@@ -49,13 +49,5 @@ ABS_SAMPLE_RANGE = 0.8  # samples amplitude must be between -1 and 1, but we kee
 
 # TODO Check that this ratio is right
 PREAMBLE_LENGTH_RATIO = 0.15  # Ratio of synchronization symbol sequence compared to the number of symbols to send
-PREAMBLE = []
-# PREAMBLE = [-1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1,  # training sequence
-#             -1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
-#             1, -1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1,
-#             -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, 1, -1, -1, -1, 1, 1, 1,
-#             1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, 1, -1, 1, -1, -1, -1, 1, 1,
-#             -1, -1, 1, -1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, 1, 1, 1, -1, 1, -1,
-#             1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1]
 
 # TODO check that the length of the pn-sequence is optimal

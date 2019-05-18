@@ -17,6 +17,7 @@ def write_gaussian_noise(duration, mean, std):
     samples = np.random.normal(mean, std, n_samples)
     for i in range(n_samples):
         f.write(str(samples[i]) + '\n')
+    f.close()
     return None
 
 
@@ -28,6 +29,7 @@ def write_samples(samples):
     """
     for i in range(len(samples)):
         f.write(str(samples[i]) + '\n')
+    f.close()
     return None
 
 
@@ -46,6 +48,7 @@ def write_sinus(duration, freqs, scaling_factor=1.):
         samples += np.sin(freq * 2 * np.pi * t)
     for i in range(n_samples):
         f.write(str(samples[i]*scaling_factor) + '\n')
+    f.close()
     return None
 
 
