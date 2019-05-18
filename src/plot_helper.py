@@ -77,7 +77,7 @@ def two_fft_plots(samples_1, samples_2, title, y_label_1, y_label_2):
     plt.show()
 
 
-def two_plots(samples_1, samples_2, title, y_label_1, y_label_2):
+def two_simple_plots(samples_1, samples_2, title, y_label_1, y_label_2):
     _, axs = plt.subplots(2, 1)
     plt.figure(1).suptitle(title)
 
@@ -106,4 +106,13 @@ def fft_plot(samples, title):
     plt.xlim(params.FREQ_RANGES[0][0] - 1000, params.FREQ_RANGES[3][1] + 1000)
 
     plt.interactive(False)
+    plt.show()
+
+
+def simple_plot(x_axis, y_axis, title, x_label, y_label):
+    plt.plot(x_axis, y_axis)
+    plt.title(title)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.grid()
     plt.show()

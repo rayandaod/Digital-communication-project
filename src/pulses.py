@@ -1,8 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import time
 
 import params
+import plot_helper
 
 
 def root_raised_cosine2(SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
@@ -47,12 +47,7 @@ def root_raised_cosine2(SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
               "samples per second (Hz)".format(SPAN, beta, T, Fs))
         print("Highest value = {}".format(1 - beta + (4 * beta / np.pi)))
         print("--------------------------------------------------------")
-        plt.plot(time_indices, rrc)
-        plt.title("Root-raised-cosine")
-        plt.xlabel("Time (in seconds)")
-        plt.ylabel("Amplitude")
-        plt.grid()
-        plt.show()
+        plot_helper.simple_plot(time_indices, rrc, "Root-raised-cosine", "Time (in seconds)", "Amplitude")
     return time_indices, rrc
 
 
@@ -99,16 +94,11 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
             rrc[n] = first_term * (np.cos((1.0 + beta) * np.pi * t/T) + second_term * (np.sin(np.pi*(1.0 - beta)*t/T)/(np.pi*(1.0 - beta)*t/T)))/(1.0 - third_term*t*t)
 
     if params.verbose:
-        print("Root-raised-cosine:\nN = {} samples, beta = {}, T = {} seconds, Fs = {} "
-              "samples per second (Hz)".format(SPAN, beta, T, Fs))
+        print("Root-raised-cosine:\nN = {} samples, beta = {}, T = {} seconds, Fs = {} samples per second (Hz)"
+              .format(SPAN, beta, T, Fs))
         print("Highest value = {}".format(1 - beta + (4 * beta / np.pi)))
         print("--------------------------------------------------------")
-        plt.plot(time_indices, rrc)
-        plt.title("Root-raised-cosine")
-        plt.xlabel("Time (in seconds)")
-        plt.ylabel("Amplitude")
-        plt.grid()
-        plt.show()
+        plot_helper.simple_plot(time_indices, rrc, "Root-raised-cosine", "Time (in seconds)", "Amplitude")
     return time_indices, rrc
 
 
@@ -118,5 +108,7 @@ if __name__ == "__main__":
     intermediate = time.time()
     _, b = root_raised_cosine2(100000)
     end = time.time()
-    print("My new rrc: {}\nMy old rrc (rrc2) : {}".format(intermediate - start, end - intermediate))
+    print("My new rrc: {}\n"
+          "My old rrc (rrc2) : {}"
+          .format(intermediate - start, end - intermediate))
     print((a == b).all())
