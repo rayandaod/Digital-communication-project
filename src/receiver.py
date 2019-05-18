@@ -1,7 +1,7 @@
 import numpy as np
 
 import params
-import helper
+import enc_dec_helper
 import plot_helper
 import synchronization
 
@@ -73,7 +73,7 @@ def ints_to_message(ints):
         print(new_bits)
 
     # Convert from array of bytes to string
-    message = ''.join(helper.bits2string(new_bits))
+    message = ''.join(enc_dec_helper.bits2string(new_bits))
     print("Message received:\n{}".format(message))
 
     return message

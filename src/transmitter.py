@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from scipy.signal import upfirdn
 
-import helper
+import enc_dec_helper
 import params
 import writers
 import plot_helper
@@ -26,7 +26,7 @@ def message_to_ints():
     compressed_message = zlib.compress(message_encoded)
 
     # Retrieve the message as a sequences of binary bytes
-    string_bytes = helper.string2bits(message)
+    string_bytes = enc_dec_helper.string2bits(message)
 
     # Next step is to re-arrange string_bytes in agreement with M. Indeed, with a symbol constellation of M points,
     # we can only represent BITS_PER_SYMBOL=log2(M) bits per symbol. Thus, we want to re-structure string_bytes
@@ -88,7 +88,7 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
     #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
     # Insert the synchronization sequence
-    synchronization.PREAMBLE = np.random.choice(helper.mapping,
+    synchronization.PREAMBLE = np.random.choice(enc_dec_helper.mapping,
                                                 size=int(np.ceil(len(symbols_to_send) * params.PREAMBLE_LENGTH_RATIO)))
     symbols_to_send = np.concatenate((synchronization.PREAMBLE, symbols_to_send))
     if params.verbose:
@@ -152,7 +152,7 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
 # Intended for testing (to run the program, run main.py)
 if __name__ == '__main__':
     # Encode the message
-    symbols = encoder(message_to_ints(), helper.mapping)
+    symbols = encoder(message_to_ints(), enc_dec_helper.mapping)
 
     # Generate the root-raised_cosine
     _, h_pulse = pulses.root_raised_cosine()
