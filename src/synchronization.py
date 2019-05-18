@@ -4,8 +4,11 @@ import scipy.signal as sc
 import params
 import fourier_helper
 
-
+# Preamble sequence generated randomly among the symbols of the chosen mapping
 PREAMBLE = []
+
+# Preamble sequence shaped with the chosen pulse, used to synchronize the signal at the receiver side
+preamble_shaped = []
 
 
 def maximum_likelihood_sync(received_signal, synchronization_sequence):
@@ -53,14 +56,4 @@ def maximum_likelihood_sync(received_signal, synchronization_sequence):
 
 
 if __name__ == "__main__":
-    print(maximum_likelihood_sync([-1, 1, 1, 1, 1, 1, 1, -1,
-                                   -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1,  # starts here
-                                   -1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
-                                   1, -1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1,
-                                   -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, 1, -1, -1, -1, 1, 1, 1,
-                                   1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, 1, -1, 1, -1, -1, -1, 1, 1,
-                                   -1, -1, 1, -1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, 1, 1, 1, -1, 1, -1,
-                                   1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, 1, -1, 1, -1,                     # ends here
-                                   -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1,
-                                   -1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
-                                   1, -1, -1, 1, 1, 1, -1], params.PREAMBLE))
+    print("synchronization.py")

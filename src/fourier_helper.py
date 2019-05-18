@@ -80,15 +80,3 @@ def modulate(samples, frequencies):
             new_samples[n] += re_samples[n] * np.sqrt(2) * np.cos(2 * np.pi * f * time_indices[n]) - \
                              im_samples[n] * np.sqrt(2) * np.sin(2 * np.pi * f * time_indices[n])
     return new_samples.real
-
-
-def vertical_lines_frequency_ranges(plot):
-    """
-    Plots 4 vertical red lines showing the frequency ranges we are interested in
-    :param plot: the current plot
-    :return:
-    """
-    for i in range(len(params.FREQ_RANGES)):
-        if i == 0:
-            plot.axvline(x=params.FREQ_RANGES[i][0], color='r')
-        plot.axvline(x=params.FREQ_RANGES[i][1], color='r')

@@ -23,7 +23,7 @@ def bits2string(b=None):
 
 def choose_mapping(normalize=False):
     """
-    :return: The mapping corresponding to the given modulation type
+    :return: The mapping corresponding to the given mapping
     """
     if params.MAPPING == "qam":
         chosen_mapping = mappings.qam_map(params.M)

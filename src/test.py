@@ -6,6 +6,9 @@ import plot_helper
 import fourier_helper
 
 
+"""
+Testing file
+"""
 if __name__ == "__main__":
     synchronization_sequence = np.random.choice(helper.mapping, size=4)
     _, h = pulses.root_raised_cosine()

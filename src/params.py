@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def choose_T():
+def choose_symbol_period():
     if MODULATION_TYPE == 1:
         return (1+BETA)/1900
     elif MODULATION_TYPE == 2:
@@ -39,7 +39,8 @@ MODULATION_TYPE = 1  # 1 = naive approach (duplicate 4 times)
 # 2 = less naive approach (duplicate 2 times, (care about covering 4000Hz with the rrc --> choose T accordingly))
 
 BETA = 0.5  # rolloff factor of our root-raised-cosine pulse
-T = choose_T()  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying Nyquist crit.
+T = choose_symbol_period()  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying
+# Nyquist crit.
 
 USF = int(np.ceil(T * Fs))  # up-sampling factor, i.e the number of zeros to add between any 2 symbols before
 # pulse shaping
@@ -47,7 +48,5 @@ SPAN = 20 * USF  # size of our pulse in number of samples
 
 ABS_SAMPLE_RANGE = 0.8  # samples amplitude must be between -1 and 1, but we keep a little margin for the noise
 
-# TODO Check that this ratio is right
+# TODO Check that this ratio is right (test with other ratios)
 PREAMBLE_LENGTH_RATIO = 0.15  # Ratio of synchronization symbol sequence compared to the number of symbols to send
-
-# TODO check that the length of the pn-sequence is optimal

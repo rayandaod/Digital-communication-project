@@ -8,7 +8,7 @@ import plot_helper
 def root_raised_cosine2(SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
     """
     :param SPAN: number of samples in output
-    :param beta: rolloff factor (0<=beta<1)
+    :param beta: rolloff factor (0<=beta<=1)
     :param T: symbol period (in seconds)
     :param Fs: sampling frequency (in Hz)
     :return: time indices, and 1-dimensional FIR (finite-impulse response) filter coefficients
@@ -54,7 +54,7 @@ def root_raised_cosine2(SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
 def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params.Fs):
     """
     :param SPAN: number of samples in output
-    :param beta: rolloff factor (0<=beta<1)
+    :param beta: rolloff factor (0<=beta<=1)
     :param T: symbol period (in seconds)
     :param Fs: sampling frequency (in Hz)
     :return: time indices, and 1-dimensional FIR (finite-impulse response) filter coefficients

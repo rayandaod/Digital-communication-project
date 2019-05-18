@@ -101,6 +101,7 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
     maximum = max(samples)
 
     if params.verbose:
+        print("Shaping the preamble and the data...")
         print("Samples to be sent:\n{}".format(samples))
         print("Up-sampling factor: {}".format(params.USF))
         print("Number of samples: {}".format(len(samples)))
@@ -108,6 +109,14 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
         print("Maximum sample: {}".format(maximum))
         print("--------------------------------------------------------")
         plot_helper.plot_complex_function(samples, "Input samples")
+
+    synchronization.preamble_shaped = upfirdn(h, synchronization.PREAMBLE, USF)
+    if params.verbose:
+        print("Shaping the preamble...")
+        print("Synchronization sequence shaped:\n{}".format(synchronization.preamble_shaped))
+        print("Number of samples for the preamble: {}".format(len(synchronization.preamble_shaped)))
+        plot_helper.plot_complex_function(synchronization.preamble_shaped, "Synchronization sequence shaped")
+        print("--------------------------------------------------------")
 
     if np.any(np.iscomplex(samples)):
         if params.MODULATION_TYPE == 1:

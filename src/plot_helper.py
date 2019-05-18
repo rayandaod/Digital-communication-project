@@ -51,7 +51,28 @@ def plot_complex_function(complex_values, title):
     return None
 
 
+def vertical_lines_frequency_ranges(plot):
+    """
+    Plots 4 vertical red lines showing the frequency ranges we are interested in
+    :param plot: the current plot
+    :return:
+    """
+    for i in range(len(params.FREQ_RANGES)):
+        if i == 0:
+            plot.axvline(x=params.FREQ_RANGES[i][0], color='r')
+        plot.axvline(x=params.FREQ_RANGES[i][1], color='r')
+
+
 def two_fft_plots(samples_1, samples_2, title, y_label_1, y_label_2):
+    """
+    Plots 2 fft plots, one above the other
+    :param samples_1: the first sample array
+    :param samples_2: the second sample array
+    :param title: the title for both plots
+    :param y_label_1: the first y axis label
+    :param y_label_2: the second y axis label
+    :return: None
+    """
     X = np.fft.fft(samples_1)
     Y = np.fft.fft(samples_2)
 
@@ -64,20 +85,31 @@ def two_fft_plots(samples_1, samples_2, title, y_label_1, y_label_2):
 
     axs[0].plot(f_x, abs(y_x))
     axs[0].set_ylabel(y_label_1)
-    fourier_helper.vertical_lines_frequency_ranges(axs[0])
+    vertical_lines_frequency_ranges(axs[0])
     axs[0].set_xlim(params.FREQ_RANGES[0][0] - 1000, params.FREQ_RANGES[3][1] + 1000)
 
     axs[1].plot(f_y, abs(y_y))
     axs[1].set_xlabel("Frequency (in Hz)")
     axs[1].set_ylabel(y_label_2)
-    fourier_helper.vertical_lines_frequency_ranges(axs[1])
+    vertical_lines_frequency_ranges(axs[1])
     axs[1].set_xlim(params.FREQ_RANGES[0][0] - 1000, params.FREQ_RANGES[3][1] + 1000)
 
     plt.interactive(False)
     plt.show()
 
+    return None
+
 
 def two_simple_plots(samples_1, samples_2, title, y_label_1, y_label_2):
+    """
+    Plots 2 simple plots, one above the other
+    :param samples_1: the first sample array
+    :param samples_2: the second sample array
+    :param title: the title for both plots
+    :param y_label_1: the first y axis label
+    :param y_label_2: the second y axis label
+    :return: None
+    """
     _, axs = plt.subplots(2, 1)
     plt.figure(1).suptitle(title)
 
@@ -91,8 +123,16 @@ def two_simple_plots(samples_1, samples_2, title, y_label_1, y_label_2):
     axs[0].grid(True)
     axs[1].grid(True)
 
+    return None
+
 
 def fft_plot(samples, title):
+    """
+    Plots a simple fft plot
+    :param samples: the sample array
+    :param title: the title for the plot
+    :return: None
+    """
     X = np.fft.fft(samples)
     f_x, y_x = fourier_helper.dft_map(X, shift=False)
 
@@ -102,17 +142,33 @@ def fft_plot(samples, title):
     plt.plot(f_x, abs(y_x))
     plt.xlabel("Frequency (in Hz)")
     plt.ylabel("Amplitude")
-    fourier_helper.vertical_lines_frequency_ranges(plt)
+    vertical_lines_frequency_ranges(plt)
     plt.xlim(params.FREQ_RANGES[0][0] - 1000, params.FREQ_RANGES[3][1] + 1000)
 
     plt.interactive(False)
     plt.show()
 
+    return None
+
 
 def simple_plot(x_axis, y_axis, title, x_label, y_label):
+    """
+    Plots a simple plot
+    :param x_axis: the x axis
+    :param y_axis: the y axis
+    :param title: the title of the plot
+    :param x_label: the x axis label
+    :param y_label: the y axis label
+    :return: None
+    """
     plt.plot(x_axis, y_axis)
+
     plt.title(title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
+
     plt.grid()
     plt.show()
+
+    return None
+
