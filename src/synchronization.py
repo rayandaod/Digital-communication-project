@@ -3,6 +3,7 @@ import scipy.signal as sc
 
 import params
 import fourier_helper
+import plot_helper
 
 
 def maximum_likelihood_sync(received_signal, synchronization_sequence):
@@ -28,7 +29,8 @@ def maximum_likelihood_sync(received_signal, synchronization_sequence):
     frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, shift=False)
     removed_freq_range = fourier_helper.find_removed_freq_range(RX_mapped)
     if params.verbose:
-        print("Frequency range that has been removed: {}".format(removed_freq_range+1))
+        print(plot_helper.fft_plot(received_signal, ""))
+        print("Frequency range that has been removed: {}".format(removed_freq_range))
 
     # Remove it from the training sequence
     S = np.fft.fft(synchronization_sequence)

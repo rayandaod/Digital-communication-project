@@ -110,7 +110,7 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
         print("--------------------------------------------------------")
         plot_helper.plot_complex_function(samples, "Input samples")
 
-    # Write the preamble shaped's samples in the preamble_samples file
+    # Write the preamble shaped's samples (baseband, so might be complex), in the preamble_samples file
     preamble_shaped = upfirdn(h, PREAMBLE, USF)
     writers.write_samples(preamble_shaped, preamble=True)
 

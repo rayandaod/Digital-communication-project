@@ -91,8 +91,19 @@ if __name__ == "__main__":
     plot_helper.fft_plot(received_samples, "Received samples in frequency domain")
 
     preamble_samples_file = open(params.preamble_sample_file_path, "r")
-    preamble_samples = [float(line) for line in preamble_samples_file.readlines()]
+    preamble_samples = [complex(line) for line in preamble_samples_file.readlines()]
     preamble_samples_file.close()
+
+    # TODO Demodulate (cos and sin to go to baseband)
+    # TODO      Modulation type 1: choose 1 of the 3 available frequency ranges, and shift it to 0
+    # TODO      Modulation type 2: choose the available frequency range among the 2 sent, and shift it to 0
+    # TODO Lowpass (Discard other frequency ranges and noise)
+    # TODO      Modulation type 1: low-pass between -1000Hz and 1000Hz
+    # TODO      Modulation type 2: low_pass between -2000Hz and 2000Hz
+    # TODO After all that, we can do the synchronization between received_samples_baseband and preamble_samples
+    # TODO When the delay is found, we can start sampling (depends on SPAN and T I guess)
+    # TODO Then, we give this complex array to the decoder
+
     print(synchronization.maximum_likelihood_sync(received_samples, synchronization_sequence=preamble_samples))
 
     # observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j])
