@@ -71,7 +71,11 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
     if beta == 0.0:
         for n in sample_numbers:
             t = time_indices[n]
-            rrc[n] = (1/np.sqrt(T)) * np.sinc(t/T)
+            if t != 0.0:
+                rrc[n] = (1/np.sqrt(T)) * (np.sin(np.pi * t / T) / (np.pi * t / T))
+            else:
+                rrc[n] = (1 / np.sqrt(T))
+
     else:
         forbidden_value_t = T / (4 * beta)
         rrc_beta_forbidden_value = (beta/(np.pi * np.sqrt(2.0 * T))) * ((np.pi + 2.0)* np.sin(np.pi/(4.0*beta)) + (np.pi - 2.0)* np.cos(np.pi/(4.0*beta)))
@@ -88,7 +92,7 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
                 rrc[n] = first_term * (np.cos((1.0 + beta) * np.pi * t / T) + second_term) / (1.0 - third_term*t*t)
             else:
                 rrc[n] = first_term * \
-                         (np.cos((1+beta) * pi * t/T) + second_term * (np.sin(pi*(1-beta)*t/T)/(np.pi*(1-beta)*t/T))) /\
+                         (np.cos((1+beta) * np.pi * t/T) + second_term * (np.sin(np.pi*(1-beta)*t/T)/(np.pi*(1-beta)*t/T))) /\
                          (1 - third_term*t**2)
 
     if params.verbose:
