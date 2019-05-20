@@ -63,52 +63,42 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
     if T <= 0 or SPAN <= 0 or Fs <= 0 or beta < 0 or beta > 1:
         raise AttributeError("Be careful, we must have T>0, N>0, Fs>0, 0<=beta<=1!")
 
-    Ts = 1 / Fs  # time between each sample
+    Ts = 1/Fs
     rrc = np.zeros(SPAN)
-    time_indices = (np.arange(SPAN) - SPAN / 2) * Ts
+    time_indices = (np.arange(SPAN) - SPAN/2)*Ts
     sample_numbers = np.arange(SPAN)
-    if beta != 0.0:
-        forbidden_value_t = abs(T/(4.0 * beta))
-    rrc_beta_0 = 0.0
-    if beta == 0.0:
-        if (1.0/T).is_integer():
-            rrc_beta_0 = 0
-        else:
-            rrc_beta_0 = np.sqrt(1.0 / T) * np.sin(np.pi/T) * T/np.pi
-    rrc_beta_forbidden_value = 0.0
-    if beta != 0.0:
-        rrc_beta_forbidden_value = (beta/(np.pi * np.sqrt(2.0 * T))) * ((np.pi + 2.0)* np.sin(np.pi/(4.0*beta)) + (np.pi - 2.0)* np.cos(np.pi/(4.0*beta)))
-    first_term = (4.0 * beta/(np.pi * np.sqrt(T)))
-    second_term = (1.0 - beta) * np.pi / (4.0 * beta)
-    third_term = (4.0 * beta / T) * (4.0 * beta / T)
 
-    for n in sample_numbers:
-        t = time_indices[n]
-        if beta == 0.0:
-            rrc[n] = rrc_beta_0
-        elif abs(t) == forbidden_value_t:
-            rrc[n] = rrc_beta_forbidden_value
-        elif beta == 1.0 or t == 0.0:
-            rrc[n] = first_term * (np.cos((1.0 + beta) * np.pi * t / T) + second_term) / (1.0 - third_term*t*t)
-        else:
-            rrc[n] = first_term * (np.cos((1.0 + beta) * np.pi * t/T) + second_term * (np.sin(np.pi*(1.0 - beta)*t/T)/(np.pi*(1.0 - beta)*t/T)))/(1.0 - third_term*t*t)
+    if beta == 0.0:
+        for n in sample_numbers:
+            t = time_indices[n]
+            rrc[n] = (1/np.sqrt(T)) * np.sinc(t/T)
+    else:
+        forbidden_value_t = T / (4 * beta)
+        rrc_beta_forbidden_value = (beta/(np.pi * np.sqrt(2.0 * T))) * ((np.pi + 2.0)* np.sin(np.pi/(4.0*beta)) + (np.pi - 2.0)* np.cos(np.pi/(4.0*beta)))
+        first_term = (4.0 * beta/(np.pi * np.sqrt(T)))
+        second_term = (1.0 - beta) * np.pi / (4.0 * beta)
+        third_term = (4.0 * beta / T) ** 2
+        pi = np.pi
+
+        for n in sample_numbers:
+            t = time_indices[n]
+            if abs(t) == forbidden_value_t:
+                rrc[n] = rrc_beta_forbidden_value
+            elif beta == 1.0 or t == 0.0:
+                rrc[n] = first_term * (np.cos((1.0 + beta) * np.pi * t / T) + second_term) / (1.0 - third_term*t*t)
+            else:
+                rrc[n] = first_term * \
+                         (np.cos((1+beta) * pi * t/T) + second_term * (np.sin(pi*(1-beta)*t/T)/(np.pi*(1-beta)*t/T))) /\
+                         (1 - third_term*t**2)
 
     if params.verbose:
         print("Root-raised-cosine:\nN = {} samples, beta = {}, T = {} seconds, Fs = {} samples per second (Hz)"
               .format(SPAN, beta, T, Fs))
-        print("Highest value = {}".format(1 - beta + (4 * beta / np.pi)))
+        print("Highest value = {}".format(max(rrc)))
         print("--------------------------------------------------------")
         plot_helper.simple_plot(time_indices, rrc, "Root-raised-cosine", "Time (in seconds)", "Amplitude")
     return time_indices, rrc
 
 
 if __name__ == "__main__":
-    start = time.time()
-    _, a = root_raised_cosine(100000)
-    intermediate = time.time()
-    _, b = root_raised_cosine2(100000)
-    end = time.time()
-    print("My new rrc: {}\n"
-          "My old rrc (rrc2) : {}"
-          .format(intermediate - start, end - intermediate))
-    print((a == b).all())
+    _, pulse = root_raised_cosine(1000)

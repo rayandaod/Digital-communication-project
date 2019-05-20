@@ -48,6 +48,7 @@ def recv_ndarray(sock):
         data = np.load(f)
     return data
 
+
 def recv_bytes(sock, N_byte):
     """
     Receive bytes from the network.

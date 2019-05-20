@@ -95,7 +95,7 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
         print("Synchronization sequence:\n{}".format(PREAMBLE))
         print("--------------------------------------------------------")
 
-    # TODO can/should I remove the ramp-up and ramp_down?
+    # TODO can/should I remove the ramp-up and ramp_down? (less samples to send)
     # Shape the signal with the pulse h
     samples = upfirdn(h, symbols_to_send, USF)
     maximum = max(samples)

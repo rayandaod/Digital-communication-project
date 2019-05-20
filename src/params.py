@@ -30,16 +30,16 @@ FREQ_RANGES = [[1000, 3000],  # frequency ranges authorized by the channel
                [5000, 7000],
                [7000, 9000]]
 # /!\ -------------------------------------- /!\
-FREQUENCY_MARGIN = 50  # Hz - You can tweak this one but be careful
 
 # Communication parameters (you should only tweak the first 5 ones for this project)
 M = 16  # length of the mapping (must be of the form 2^2k if QAM is chosen)
 MAPPING = "qam"  # mapping: qam or psk or pam for now
 BITS_PER_SYMBOL = int(np.log2(M))  # number of bits we transmit per symbol
-MODULATION_TYPE = 1  # 1 = naive approach (duplicate 4 times)
+MODULATION_TYPE = 1
+# 1 = naive approach (duplicate 4 times)
 # 2 = less naive approach (duplicate 2 times, (care about covering 4000Hz with the rrc --> choose T accordingly))
 
-BETA = 0.5  # rolloff factor of our root-raised-cosine pulse
+BETA = 0.22  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
 T = choose_symbol_period()  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying
 # Nyquist crit.
 
@@ -49,5 +49,6 @@ SPAN = 20 * USF  # size of our pulse in number of samples
 
 ABS_SAMPLE_RANGE = 0.8  # samples amplitude must be between -1 and 1, but we keep a little margin for the noise
 
-# TODO Check that this ratio is right (test with other ratios)
 PREAMBLE_LENGTH_RATIO = 0.15  # Ratio of synchronization symbol sequence compared to the number of symbols to send
+
+# TODO test with different values for all parameters
