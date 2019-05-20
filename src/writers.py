@@ -61,5 +61,5 @@ def write_sinus(duration, freqs, scaling_factor=1.):
 
 if __name__ == "__main__":
     # write_samples(input_samples)
-    write_gaussian_noise(1, 0, 1/4)
+    write_gaussian_noise(1, mean=0, std=1/4)
     # write_sinus(1, [2000, 4000, 6000, 8000], scaling_factor=1/8)

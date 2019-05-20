@@ -1,11 +1,12 @@
 import transmitter
 import receiver
+import mappings
 import enc_dec_helper
 
 if __name__ == "__main__":
     # Encoder
     ints = transmitter.message_to_ints()
-    mapping = enc_dec_helper.mapping
+    mapping = mappings.mapping
     symbols = transmitter.encoder(ints, mapping)
 
     # Receiver
