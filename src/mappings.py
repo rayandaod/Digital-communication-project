@@ -14,8 +14,25 @@ def qam_map(M):
         raise ValueError('Parameter[M] is not of the form 2^2K, K a positive integer.')
     N = np.sqrt(M) - 1
     aux = np.arange(-N, N + 1, 2)
-    x, y = np.meshgrid(aux, aux[::-1])
-    return (x + 1j * y).T.flatten()
+    x, y = np.meshgrid(aux[::-1], aux[::-1])
+    a = (x + y * 1j).T
+    size_a = len(a) * len(a)
+    b = np.zeros(size_a, dtype=complex)
+    c = 0
+    i = 0
+    j = 0
+    print(a)
+    while c < size_a:
+        b[c] = a[j][i]
+        c += 1
+        if (i == len(a) - 1 and j % 2 == 0) or (i == 0 and j % 2 == 1):
+            j += 1
+            continue
+        if j % 2 == 1:
+            i -= 1
+        else:
+            i += 1
+    return b
 
 
 def psk_map(M):
@@ -65,3 +82,7 @@ def choose_mapping(normalize=False):
 mapping = choose_mapping(normalize=True)
 
 # TODO make qam_map output counter-clockwise or clockwise, starting with 1+j
+# DONE bang bang
+
+if __name__ == "__main__":
+    print(qam_map(64))
