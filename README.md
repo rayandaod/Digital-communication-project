@@ -1,4 +1,4 @@
-# PDC_project
+# PDC project: Transmission over a continuous-time channel with impairments
 ## Team: Jean Chambras, Ruben Ganansia, and Rayan Daod
 
 To know more about the project instructions, please read the project.pdf
