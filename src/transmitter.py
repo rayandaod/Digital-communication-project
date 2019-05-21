@@ -108,7 +108,8 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
         print("Minimum sample: {}".format(min(samples)))
         print("Maximum sample: {}".format(maximum))
         print("--------------------------------------------------------")
-        plot_helper.plot_complex_function(samples, "Input samples")
+        plot_helper.plot_complex_function(samples, "Input samples in Time domain")
+        plot_helper.fft_plot(samples, "Input samples in Frequency domain", shift=True)
 
     # Write the preamble shaped's samples (baseband, so might be complex), in the preamble_samples file
     preamble_shaped = upfirdn(h, PREAMBLE, USF)
@@ -116,9 +117,9 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
 
     if params.verbose:
         print("Shaping the preamble...")
-        print("Synchronization sequence shaped:\n{}".format(preamble_shaped))
         print("Number of samples for the preamble: {}".format(len(preamble_shaped)))
-        plot_helper.plot_complex_function(preamble_shaped, "Synchronization sequence shaped")
+        plot_helper.plot_complex_function(preamble_shaped, "Synchronization sequence shaped, in Time domain")
+        plot_helper.fft_plot(preamble_shaped, "Synchronization sequence shaped, in Frequency domain", shift=True)
         print("--------------------------------------------------------")
 
     if np.any(np.iscomplex(samples)):
@@ -137,7 +138,8 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
             print("Minimum sample after modulation: {}".format(min(samples)))
             print("Maximum sample after modulation: {}".format(maximum))
             print("--------------------------------------------------------")
-            plot_helper.plot_complex_function(samples, "Input samples after modulation")
+            plot_helper.plot_complex_function(samples, "Input samples after modulation, in Time domain")
+            plot_helper.fft_plot(samples, "Input samples after modulation, in Frequency domain", shift=True)
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
     samples = samples/(maximum*(2-params.ABS_SAMPLE_RANGE))

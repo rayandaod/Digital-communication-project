@@ -27,6 +27,7 @@ def maximum_likelihood_sync(received_signal, synchronization_sequence):
     # TODO Do we need to compute the fourier of the whole signal? only the [preamble + data] part is relevant in freq.
     RX = np.fft.fft(received_signal)
     frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, shift=False)
+    print(frequencies_mapped)
     removed_freq_range = fourier_helper.find_removed_freq_range(RX_mapped)
     if params.verbose:
         print(plot_helper.fft_plot(received_signal, ""))

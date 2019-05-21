@@ -16,12 +16,11 @@ def qam_map(M):
     aux = np.arange(-N, N + 1, 2)
     x, y = np.meshgrid(aux[::-1], aux[::-1])
     a = (x + y * 1j).T
-    size_a = len(a) * len(a)
+    size_a = len(a) ** 2
     b = np.zeros(size_a, dtype=complex)
     c = 0
     i = 0
     j = 0
-    print(a)
     while c < size_a:
         b[c] = a[j][i]
         c += 1
@@ -54,7 +53,7 @@ def pam_map(M):
     return np.arange(-N, N + 1, 2)
 
 
-def choose_mapping(normalize=False):
+def choose_mapping(normalize=params.NORMALIZE_MAPPING):
     """
     :return: The mapping corresponding to the given mapping
     """
@@ -73,16 +72,13 @@ def choose_mapping(normalize=False):
     if params.verbose:
         print("Chosen mapping:\n{}".format(chosen_mapping))
         print("--------------------------------------------------------")
-        plot_helper.plot_complex_symbols(chosen_mapping, "Chosen mapping", "red")
+        plot_helper.plot_complex_symbols(chosen_mapping, title="Chosen mapping, normalized={}".format(normalize)
+                                         , color="red")
 
     return chosen_mapping
 
 
-# TODO why does this work
-mapping = choose_mapping(normalize=True)
-
-# TODO make qam_map output counter-clockwise or clockwise, starting with 1+j
-# DONE bang bang
+mapping = choose_mapping()
 
 if __name__ == "__main__":
-    print(qam_map(64))
+    print(qam_map(16))

@@ -85,7 +85,6 @@ if __name__ == "__main__":
     output_sample_file = open(params.output_sample_file_path, "r")
     received_samples = [float(line) for line in output_sample_file.readlines()]
     output_sample_file.close()
-    print(received_samples)
 
     plot_helper.plot_complex_function(received_samples, "Received samples in time domain")
     plot_helper.fft_plot(received_samples, "Received samples in frequency domain")

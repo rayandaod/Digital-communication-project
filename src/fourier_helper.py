@@ -1,6 +1,7 @@
 import numpy as np
 
 import params
+import plot_helper
 
 
 def dft_shift(X):
@@ -39,6 +40,7 @@ def dft_map(X, Fs=params.Fs, shift=True):
     :return: a real-world-frequency DFT
     """
     resolution = float(Fs) / len(X)
+    print("len X", len(X))
     if shift:
         n, Y = dft_shift(X)
     else:
@@ -46,6 +48,8 @@ def dft_map(X, Fs=params.Fs, shift=True):
         n = np.arange(0, len(Y))
     f = n * resolution
     return f, Y
+
+# 1806 -> 3010
 
 
 # TODO additional checks on the certainty of the decision on the removed freq. range
@@ -58,7 +62,18 @@ def find_removed_freq_range(X):
     n_frequencies = len(params.FREQ_RANGES)
     means = np.zeros(n_frequencies)
     for i in range(n_frequencies):
-        means[i] = np.mean(X[params.FREQ_RANGES[i][0]:params.FREQ_RANGES[i][1]])
+        means[i] = np.mean(
+            np.real(
+                X[params.FREQ_RANGES[i][0]:params.FREQ_RANGES[i][1]])) + \
+                   1j * np.mean(
+            np.imag(
+                X[params.FREQ_RANGES[i][0]:params.FREQ_RANGES[i][1]]))
+    if params.verbose:
+        print("4 frequency ranges means: {}".format(means))
+    print(np.mean(X[602:1807]))
+    print(np.mean(X[1806:3010]))
+    print(np.mean(X[3009:4214]))
+    print(np.mean(X[4213:5420]))
     return np.argmin(means)
 
 
