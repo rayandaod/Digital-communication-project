@@ -4,6 +4,15 @@ import scipy.signal as sc
 import params
 import fourier_helper
 import plot_helper
+import mappings
+
+
+def generate_sync_sequence(n_symbols_to_send):
+    syn_seq = np.random.choice(mappings.mapping, size=int(np.ceil(n_symbols_to_send * params.PREAMBLE_LENGTH_RATIO)))
+    if params.verbose:
+        print("Synchronization sequence:\n{}".format(syn_seq))
+        print("--------------------------------------------------------")
+    return syn_seq
 
 
 def maximum_likelihood_sync(received_signal, synchronization_sequence):
@@ -33,14 +42,15 @@ def maximum_likelihood_sync(received_signal, synchronization_sequence):
         print(plot_helper.fft_plot(received_signal, ""))
         print("Frequency range that has been removed: {}".format(removed_freq_range))
 
-    # Remove it from the training sequence
-    S = np.fft.fft(synchronization_sequence)
-    frequencies_mapped, S_mapped = fourier_helper.dft_map(S, shift=False)
-    S_mapped[params.FREQ_RANGES[removed_freq_range][0]:params.FREQ_RANGES[removed_freq_range][1]] = 0
-    new_training_sequence = np.fft.ifft(S_mapped)
+    # TODO According to Prandoni, it should work without that
+    # # Remove it from the training sequence
+    # S = np.fft.fft(synchronization_sequence)
+    # frequencies_mapped, S_mapped = fourier_helper.dft_map(S, shift=False)
+    # S_mapped[params.FREQ_RANGES[removed_freq_range][0]:params.FREQ_RANGES[removed_freq_range][1]] = 0
+    # synchronization_sequence = np.fft.ifft(S_mapped)
 
-    # Correlation between the received signal and the NEW training sequence to find the delay
-    padded_new_training_sequence = np.pad(new_training_sequence, (0, n - len(new_training_sequence)), 'constant')
+    # Correlation between the received signal and the sync sequence to find the delay
+    padded_new_training_sequence = np.pad(synchronization_sequence, (0, n - len(synchronization_sequence)), 'constant')
     correlation_array = sc.correlate(received_signal, padded_new_training_sequence)
 
     # TODO Should we put abs here? Useful only if the channel multiplies the training sequence by -1

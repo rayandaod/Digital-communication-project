@@ -10,6 +10,7 @@ import plot_helper
 import pulses
 import fourier_helper
 import mappings
+import synchronization
 
 
 def message_to_ints():
@@ -21,7 +22,7 @@ def message_to_ints():
     message = message_file.readline()
     print("Sent message:\n{}".format(message))
 
-    # Tried to compress message
+    # TODO Tried to compress message
     message_encoded = message.encode('ascii')
     compressed_message = zlib.compress(message_encoded)
 
@@ -34,10 +35,13 @@ def message_to_ints():
 
     # Remove the most significant bit (0) as it is useless in ASCII (do not forget to put it again in the receiver!)
     new_bits = [b[1:] for b in string_bytes]
+
     # Make a new string with these cropped bytes
     new_bits = ''.join(new_bits)
+
     # New structure with bits_per_symbol bits by row
     new_bits = [new_bits[i:i + params.BITS_PER_SYMBOL] for i in range(0, len(new_bits), params.BITS_PER_SYMBOL)]
+
     # Convert this new bits sequence to an integer sequence
     ints = [int(b, 2) for b in new_bits]
 
@@ -87,13 +91,9 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
     # else:
     #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
-    # Insert the synchronization sequence
-    PREAMBLE = np.random.choice(mappings.mapping,
-                                size=int(np.ceil(len(symbols_to_send) * params.PREAMBLE_LENGTH_RATIO)))
+    # Concatenate the synchronization sequence with the symbols to send
+    PREAMBLE = synchronization.generate_sync_sequence(len(symbols_to_send))
     symbols_to_send = np.concatenate((PREAMBLE, symbols_to_send))
-    if params.verbose:
-        print("Synchronization sequence:\n{}".format(PREAMBLE))
-        print("--------------------------------------------------------")
 
     # TODO can/should I remove the ramp-up and ramp_down? (less samples to send)
     # Shape the signal with the pulse h

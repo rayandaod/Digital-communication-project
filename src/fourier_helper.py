@@ -1,7 +1,6 @@
 import numpy as np
 
 import params
-import plot_helper
 
 
 def dft_shift(X):
@@ -40,7 +39,6 @@ def dft_map(X, Fs=params.Fs, shift=True):
     :return: a real-world-frequency DFT
     """
     resolution = float(Fs) / len(X)
-    print("len X", len(X))
     if shift:
         n, Y = dft_shift(X)
     else:

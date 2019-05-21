@@ -81,14 +81,16 @@ def ints_to_message(ints):
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
-    print("Receiver:")
+    # Read the received samples form the server
     output_sample_file = open(params.output_sample_file_path, "r")
     received_samples = [float(line) for line in output_sample_file.readlines()]
     output_sample_file.close()
 
+    # Plot the received samples
     plot_helper.plot_complex_function(received_samples, "Received samples in time domain")
     plot_helper.fft_plot(received_samples, "Received samples in frequency domain")
 
+    # Read the preamble samples saved previously
     preamble_samples_file = open(params.preamble_sample_file_path, "r")
     preamble_samples = [complex(line) for line in preamble_samples_file.readlines()]
     preamble_samples_file.close()

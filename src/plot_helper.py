@@ -26,9 +26,13 @@ def plot_complex_symbols(complex_values, title, color="black"):
         disk1 = plt.Circle((0, 0), 1, color='k', fill=False)
         ax.add_artist(disk1)
 
-    for c in complex_values:
-        ax.annotate('({0: .2f} {1} {2:.2f}i)'
-                    .format(c.real, '+-'[c.imag < 0], abs(c.imag)), xy=(np.real(c), np.imag(c)))
+    if params.MAPPING == "pam":
+        for c in complex_values:
+            ax.annotate('({0:.2f}'.format(c), xy=(c, 0.001))
+    else:
+        for c in complex_values:
+            ax.annotate('({0: .2f} {1} {2:.2f}j)'
+                        .format(c.real, '+-'[c.imag < 0], abs(c.imag)), xy=(np.real(c), np.imag(c)+0.001))
 
     plt.axvline(linewidth=1, color="black")
     plt.axhline(linewidth=1, color="black")
