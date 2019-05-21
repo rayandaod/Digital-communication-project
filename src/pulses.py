@@ -58,7 +58,7 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
         print("Highest value = {}".format(max(rrc)))
         print("--------------------------------------------------------")
         plot_helper.simple_and_fft_plots(time_indices, rrc,
-                                         "Root-raised-cosine, normalized={}, in Time domain".format(normalize),
+                                         "Root-raised-cosine, normalized={}".format(normalize),
                                          shift=True)
     return time_indices, rrc
 

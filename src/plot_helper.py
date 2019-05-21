@@ -123,8 +123,8 @@ def two_simple_plots(samples_1, samples_2, title, y_label_1, y_label_2):
     :param y_label_2: the second y axis label
     :return: None
     """
-    _, axs = plt.subplots(2, 1)
-    plt.figure().suptitle(title)
+    fig, axs = plt.subplots(2, 1)
+    fig.suptitle(title)
 
     axs[0].plot(range(len(samples_1)), samples_1)
     axs[0].set_ylabel(y_label_1)
@@ -196,8 +196,8 @@ def simple_plot(x_axis, y_axis, title):
 
 
 def simple_and_fft_plots(time_indices, samples, title, shift=False):
-    _, axs = plt.subplots(2, 1)
-    plt.figure(1).suptitle(title)
+    fig, axs = plt.subplots(2, 1)
+    fig.suptitle(title)
 
     axs[0].plot(time_indices, samples)
     axs[0].set_ylabel("Amplitude")

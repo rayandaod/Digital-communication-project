@@ -1,9 +1,12 @@
 import numpy as np
+from scipy.signal import upfirdn
 
 import params
 import enc_dec_helper
 import plot_helper
 import synchronization
+import fourier_helper
+import pulses
 
 
 def decoder(y, mapping):
@@ -81,6 +84,12 @@ def ints_to_message(ints):
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
+    # Read the sent samples to the server (just for the length)
+    input_sample_file = open(params.input_sample_file_path, "r")
+    sent_samples = [float(line) for line in input_sample_file.readlines()]
+    input_sample_file.close()
+    print("Number of samples sent: {}".format(len(sent_samples)))
+
     # Read the received samples form the server
     output_sample_file = open(params.output_sample_file_path, "r")
     received_samples = [float(line) for line in output_sample_file.readlines()]
@@ -88,12 +97,53 @@ if __name__ == "__main__":
 
     # Plot the received samples
     plot_helper.plot_complex_function(received_samples, "Received samples in time domain")
-    plot_helper.fft_plot(received_samples, "Received samples in frequency domain")
+    plot_helper.fft_plot(received_samples, "Received samples in frequency domain", shift=True)
 
     # Read the preamble samples saved previously
     preamble_samples_file = open(params.preamble_sample_file_path, "r")
     preamble_samples = [complex(line) for line in preamble_samples_file.readlines()]
     preamble_samples_file.close()
+
+    plot_helper.plot_complex_function(preamble_samples, "Preamble samples in time domain")
+
+    # Find the frequency range that has been removed
+    range_indices, removed_freq_range = fourier_helper.find_removed_freq_range_2(received_samples)
+    print("Removed frequency range: {}".format(removed_freq_range))
+
+    # Choose a frequency among the 3 available frequency ranges
+    if removed_freq_range == 0:
+        fc = np.mean(params.FREQ_RANGES[1])
+    else:
+        fc = np.mean(params.FREQ_RANGES[0])
+
+    # Demodulate the samples with the appropriate frequency fc
+    demodulated_samples = fourier_helper.demodulate(received_samples, fc)
+
+    plot_helper.plot_complex_function(demodulated_samples, "Demodulated samples in Time domain")
+    plot_helper.fft_plot(demodulated_samples, "Demodulated samples in Time domain", shift=True)
+
+    # Low-pass the signal
+    _, h = pulses.root_raised_cosine()
+    lowpassed_samples = upfirdn(h, demodulated_samples)
+    plot_helper.plot_complex_function(lowpassed_samples, "Lowpassed samples in time domain")
+    plot_helper.fft_plot(lowpassed_samples, "Lowpassed samples in frequency domain", shift=True)
+
+    # Find the delay
+    delay = synchronization.maximum_likelihood_sync(lowpassed_samples, synchronization_sequence=preamble_samples)
+    print("The delay is of {} samples".format(delay))
+
+    plot_helper.plot_complex_function(lowpassed_samples[delay:], "Received samples after removing the delay")
+
+    samples = lowpassed_samples[delay+147:]
+    print("Number of samples after removing the delay: {}".format(len(samples)))
+    symbols = samples[0::params.USF]
+    print(len(samples))
+    plot_helper.plot_complex_symbols(symbols, "Symbols received")
+    symbols = symbols/np.linalg.norm(symbols)
+
+    import mappings
+    ints = decoder(symbols, mappings.mapping)
+    guessed_message = ints_to_message(ints)
 
     # TODO Demodulate (cos and sin to go to baseband)
     # TODO      Modulation type 1: choose 1 of the 3 available frequency ranges, and shift it to 0
@@ -104,8 +154,6 @@ if __name__ == "__main__":
     # TODO After all that, we can do the synchronization between received_samples_baseband and preamble_samples
     # TODO When the delay is found, we can start sampling (depends on SPAN and T I guess)
     # TODO Then, we give this complex array to the decoder
-
-    print(synchronization.maximum_likelihood_sync(received_samples, synchronization_sequence=preamble_samples))
 
     # observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j])
     # plot_helper.plot_complex_symbols(observation_test, "observation", "blue")

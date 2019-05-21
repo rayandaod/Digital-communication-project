@@ -35,12 +35,12 @@ def maximum_likelihood_sync(received_signal, synchronization_sequence):
     # Identify which range of frequencies has been removed
     # TODO Do we need to compute the fourier of the whole signal? only the [preamble + data] part is relevant in freq.
     RX = np.fft.fft(received_signal)
-    frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, shift=False)
+    frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, shift=True)
     print(frequencies_mapped)
-    removed_freq_range = fourier_helper.find_removed_freq_range(RX_mapped)
+    # removed_freq_range = fourier_helper.find_removed_freq_range(RX_mapped)
     if params.verbose:
-        print(plot_helper.fft_plot(received_signal, ""))
-        print("Frequency range that has been removed: {}".format(removed_freq_range))
+        print(plot_helper.fft_plot(received_signal, "", shift=True))
+        # print("Frequency range that has been removed: {}".format(removed_freq_range))
 
     # TODO According to Prandoni, it should work without that
     # # Remove it from the training sequence
