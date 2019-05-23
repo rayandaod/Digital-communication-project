@@ -73,7 +73,7 @@ def choose_mapping(normalize=params.NORMALIZE_MAPPING):
         print("Chosen mapping:\n{}".format(chosen_mapping))
         print("--------------------------------------------------------")
         plot_helper.plot_complex_symbols(chosen_mapping, title="Chosen mapping, normalized={}".format(normalize)
-                                         , color="red")
+                                         , color="red", annotate=True)
 
     return chosen_mapping
 

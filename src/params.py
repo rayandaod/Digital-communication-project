@@ -3,9 +3,9 @@ import numpy as np
 
 def choose_symbol_period():
     if MODULATION_TYPE == 1:
-        return (1+BETA)/1900
+        return np.floor(((1+BETA)/1900)*Fs)/Fs
     elif MODULATION_TYPE == 2:
-        return (1+BETA)/3900
+        return np.round(((1+BETA)/3900)*Fs)/Fs
     else:
         raise ValueError('This modulation type does not exist yet... Hehehe')
 
@@ -33,7 +33,7 @@ FREQ_RANGES = [[1000, 3000],  # frequency ranges authorized by the channel
 
 # Communication parameters (you should only tweak the first 5 ones for this project)
 MAPPING = "qam"  # mapping: qam or psk or pam for now
-NORMALIZE_MAPPING = True  # rather we normalize the mapping or not
+NORMALIZE_MAPPING = False  # rather we normalize the mapping or not
 M = 16  # length of the mapping (must be of the form 2^2k if QAM is chosen)
 BITS_PER_SYMBOL = int(np.log2(M))  # number of bits we transmit per symbol
 
@@ -50,7 +50,7 @@ USF = int(np.ceil(T * Fs))  # up-sampling factor, i.e the number of zeros to add
 # pulse shaping
 SPAN = 20 * USF  # size of our pulse in number of samples
 
-PREAMBLE_LENGTH_RATIO = 0.15  # Ratio of synchronization symbol sequence compared to the number of symbols to send
+PREAMBLE_LENGTH_RATIO = 0.36  # Ratio of synchronization symbol sequence compared to the number of symbols to send
 
 ABS_SAMPLE_RANGE = 0.8  # samples amplitude must be between -1 and 1, but we keep a little margin for the noise
 

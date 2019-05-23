@@ -34,15 +34,14 @@ def maximum_likelihood_sync(received_signal, synchronization_sequence):
 
     # Identify which range of frequencies has been removed
     # TODO Do we need to compute the fourier of the whole signal? only the [preamble + data] part is relevant in freq.
-    RX = np.fft.fft(received_signal)
-    frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, shift=True)
-    print(frequencies_mapped)
+    # RX = np.fft.fft(received_signal)
+    # frequencies_mapped, RX_mapped = fourier_helper.dft_map(RX, shift=True)
     # removed_freq_range = fourier_helper.find_removed_freq_range(RX_mapped)
-    if params.verbose:
-        print(plot_helper.fft_plot(received_signal, "", shift=True))
+    # if params.verbose:
+        # print(plot_helper.fft_plot(received_signal, "", shift=True))
         # print("Frequency range that has been removed: {}".format(removed_freq_range))
 
-    # TODO According to Prandoni, it should work without that
+    # TODO According to Prandoni, it should work without that (seems like it's true)
     # # Remove it from the training sequence
     # S = np.fft.fft(synchronization_sequence)
     # frequencies_mapped, S_mapped = fourier_helper.dft_map(S, shift=False)
@@ -52,6 +51,7 @@ def maximum_likelihood_sync(received_signal, synchronization_sequence):
     # Correlation between the received signal and the sync sequence to find the delay
     padded_new_training_sequence = np.pad(synchronization_sequence, (0, n - len(synchronization_sequence)), 'constant')
     correlation_array = sc.correlate(received_signal, padded_new_training_sequence)
+    print(correlation_array)
 
     # TODO Should we put abs here? Useful only if the channel multiplies the training sequence by -1
     index = np.argmax(abs(correlation_array))

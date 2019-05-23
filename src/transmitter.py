@@ -23,8 +23,8 @@ def message_to_ints():
     print("Sent message:\n{}".format(message))
 
     # TODO Tried to compress message
+    # compressed_message = zlib.compress(message_encoded)
     message_encoded = message.encode('ascii')
-    compressed_message = zlib.compress(message_encoded)
 
     # Retrieve the message as a sequences of binary bytes
     string_bytes = enc_dec_helper.string2bits(message)
@@ -47,9 +47,10 @@ def message_to_ints():
 
     if params.verbose:
         print("Encoded message:\n{}".format(message_encoded))
-        print("Size (in bytes) of encoded message:\n{}".format(sys.getsizeof(message_encoded)))
-        print("Compressed message: {}".format(compressed_message))
-        print("Size (in bytes) of compressed message:\n{}".format(sys.getsizeof(compressed_message)))
+        print("Corresponding bytes:\n{}".format(string_bytes))
+        # print("Size (in bytes) of encoded message:\n{}".format(sys.getsizeof(message_encoded)))
+        # print("Compressed message: {}".format(compressed_message))
+        # print("Size (in bytes) of compressed message:\n{}".format(sys.getsizeof(compressed_message)))
         print("Cropped and re-structured bits:\n{}".format(new_bits))
         print("Equivalent integers (indices for our mapping):\n{}".format(ints))
         print("--------------------------------------------------------")

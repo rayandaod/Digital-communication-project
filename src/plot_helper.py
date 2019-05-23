@@ -6,7 +6,7 @@ import fourier_helper
 
 
 # TODO manage to plot without waiting for closing
-def plot_complex_symbols(complex_values, title, color="black"):
+def plot_complex_symbols(complex_values, title, color="black", annotate=False):
     """
     :param complex_values: array of complex values to plot
     :param title: title of the plot
@@ -29,7 +29,7 @@ def plot_complex_symbols(complex_values, title, color="black"):
     if params.MAPPING == "pam":
         for c in complex_values:
             ax.annotate('({0:.2f}'.format(c), xy=(c, 0.001))
-    else:
+    elif annotate:
         for c in complex_values:
             ax.annotate('({0: .2f} {1} {2:.2f}j)'
                         .format(c.real, '+-'[c.imag < 0], abs(c.imag)), xy=(np.real(c), np.imag(c)+0.001))
@@ -42,7 +42,7 @@ def plot_complex_symbols(complex_values, title, color="black"):
     return None
 
 
-def plot_complex_function(complex_values, title):
+def plot_complex_function(complex_values, title, dots=False):
     """
     :param complex_values: complex values (e.g at the output of the pulse-shaping)
     :param title: title of the plot
@@ -54,7 +54,10 @@ def plot_complex_function(complex_values, title):
     plt.subplot(2, 1, 1)
     plt.suptitle(title)
     plt.ylabel("Re")
-    plt.plot(indices, re)
+    if dots:
+        plt.plot(indices, re, 'o')
+    else:
+        plt.plot(indices, re)
     plt.subplot(2, 1, 2)
     plt.ylabel("Im")
     plt.plot(indices, im)

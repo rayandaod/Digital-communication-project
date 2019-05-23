@@ -43,7 +43,10 @@ def decoder(y, mapping):
     S = np.size(y, 1)
 
     distances = np.transpose(abs(np.tile(y, (M, 1)) - np.tile(mapping, (1, S))))
-    return np.argmin(distances, 1)
+    ints = np.argmin(distances, 1)
+    if params.verbose:
+        print("Equivalent integers:\n{}".format(ints))
+    return ints
 
 
 def ints_to_message(ints):
@@ -52,28 +55,27 @@ def ints_to_message(ints):
     :return: the corresponding guessed message as a string
     """
 
-    # TODO make it work for any M
-    # Convert the ints to BITS_PER_SYMBOL bits (2 for now because M=4)
-    bits = ["{0:02b}".format(i) for i in ints]
+    # Convert the ints to BITS_PER_SYMBOL bits
+    bits = ["{0:0{bits_per_symbol}b}".format(i, bits_per_symbol=params.BITS_PER_SYMBOL) for i in ints]
     if params.verbose:
-        print(bits)
+        print("Groups of BITS_PER_SYMBOL bits representing each integer:\n{}".format(bits))
 
     # Make a new string with it
     bits = ''.join(bits)
     if params.verbose:
-        print(bits)
+        print("Bits grouped all together:\n{}".format(bits))
 
     # Slice the string into substrings of 7 characters
     bits = [bits[i:i+7] for i in range(0, len(bits), 7)]
     if params.verbose:
-        print(bits)
+        print("Groups of 7 bits:\n{}".format(bits))
 
     # Add a zero at the beginning of each substring (cf transmitter)
     new_bits = []
     for sub_string in bits:
         new_bits.append('0' + sub_string)
     if params.verbose:
-        print(new_bits)
+        print("Groups of 8 bits (0 added at the beginning, cf. transmitter):\n{}".format(new_bits))
 
     # Convert from array of bytes to string
     message = ''.join(enc_dec_helper.bits2string(new_bits))
@@ -82,15 +84,8 @@ def ints_to_message(ints):
     return message
 
 
-# Intended for testing (to run the program, run main.py)
-if __name__ == "__main__":
-    # Read the sent samples to the server (just for the length)
-    input_sample_file = open(params.input_sample_file_path, "r")
-    sent_samples = [float(line) for line in input_sample_file.readlines()]
-    input_sample_file.close()
-    print("Number of samples sent: {}".format(len(sent_samples)))
-
-    # Read the received samples form the server
+def received_from_server():
+    # Read the received samples from the server
     output_sample_file = open(params.output_sample_file_path, "r")
     received_samples = [float(line) for line in output_sample_file.readlines()]
     output_sample_file.close()
@@ -134,16 +129,71 @@ if __name__ == "__main__":
 
     plot_helper.plot_complex_function(lowpassed_samples[delay:], "Received samples after removing the delay")
 
-    samples = lowpassed_samples[delay+147:]
+    samples = lowpassed_samples[delay + 147:]
     print("Number of samples after removing the delay: {}".format(len(samples)))
     symbols = samples[0::params.USF]
     print(len(samples))
-    plot_helper.plot_complex_symbols(symbols, "Symbols received")
-    symbols = symbols/np.linalg.norm(symbols)
+    plot_helper.plot_complex_symbols(symbols, "Symbols received", annotate=False)
 
     import mappings
     ints = decoder(symbols, mappings.mapping)
-    guessed_message = ints_to_message(ints)
+    return ints_to_message(ints)
+
+
+def local_test():
+    # Read the input samples
+    input_samples_file = open(params.input_sample_file_path, "r")
+    input_samples = [float(line) for line in input_samples_file.readlines()]
+    input_samples_file.close()
+
+    # Plot the received samples
+    plot_helper.plot_complex_function(input_samples, "Received samples in time domain")
+    plot_helper.fft_plot(input_samples, "Received samples in frequency domain", shift=True)
+
+    # Read the preamble samples saved previously
+    preamble_samples_file = open(params.preamble_sample_file_path, "r")
+    preamble_samples = [complex(line) for line in preamble_samples_file.readlines()]
+    preamble_samples_file.close()
+
+    plot_helper.plot_complex_function(preamble_samples, "Preamble samples in time domain")
+
+    # Demodulate the samples with the appropriate frequency fc
+    demodulated_samples = fourier_helper.demodulate(input_samples, 2000)
+
+    plot_helper.plot_complex_function(demodulated_samples, "Demodulated samples in Time domain")
+    plot_helper.fft_plot(demodulated_samples, "Demodulated samples in Frequency domain", shift=True)
+
+    # Low-pass the signal
+    _, h = pulses.root_raised_cosine()
+    lowpassed_samples = upfirdn(h, demodulated_samples)
+    plot_helper.plot_complex_function(lowpassed_samples, "Lowpassed samples in time domain")
+    plot_helper.fft_plot(lowpassed_samples, "Lowpassed samples in frequency domain", shift=True)
+
+    # Find the delay (should be SPAN/2 here because of the filtering above)
+    delay = synchronization.maximum_likelihood_sync(lowpassed_samples, synchronization_sequence=preamble_samples)
+    print("Delay: {} samples".format(delay))
+
+    samples_without_delay = lowpassed_samples[int(params.SPAN/2):]  # choose the sync seq wisely
+    plot_helper.plot_complex_function(samples_without_delay, "Received samples after removing the delay")
+    print("Number of samples after removing the delay: {}".format(len(samples_without_delay)))
+
+    # This is surely false
+    samples = samples_without_delay[int(params.SPAN/2)-1:]
+    plot_helper.plot_complex_function(samples, "Samples after puting the right sampling time")
+    symbols = samples[::params.USF]
+    print(len(samples))
+    plot_helper.plot_complex_symbols(symbols, "Symbols received", annotate=False)
+
+    import mappings
+    ints = decoder(symbols, mappings.mapping)
+    return ints_to_message(ints)
+
+
+# Intended for testing (to run the program, run main.py)
+if __name__ == "__main__":
+
+    local_test()
+    # print(received_from_server())
 
     # TODO Demodulate (cos and sin to go to baseband)
     # TODO      Modulation type 1: choose 1 of the 3 available frequency ranges, and shift it to 0

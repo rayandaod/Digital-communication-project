@@ -53,7 +53,7 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
         rrc = rrc/np.linalg.norm(rrc)
 
     if params.verbose:
-        print("Root-raised-cosine:\nN = {} samples, beta = {}, T = {} seconds, Fs = {} samples per second (Hz)"
+        print("Root-raised-cosine:\nSPAN = {} samples, beta = {}, T = {} seconds, Fs = {} samples per second (Hz)"
               .format(SPAN, beta, T, Fs))
         print("Highest value = {}".format(max(rrc)))
         print("--------------------------------------------------------")
