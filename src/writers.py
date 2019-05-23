@@ -13,7 +13,7 @@ def write_gaussian_noise(duration, mean, std):
     :param std: standard deviation of thr gaussian noise
     :return: None
     """
-    n_samples = duration*params.Fs
+    n_samples = duration * params.Fs
     samples = np.random.normal(mean, std, n_samples)
     for i in range(n_samples):
         f.write(str(samples[i]) + '\n')
@@ -21,23 +21,28 @@ def write_gaussian_noise(duration, mean, std):
     return None
 
 
-def write_samples(samples, preamble=False):
+def write_samples(samples):
     """
     Write samples in the input sample file
     :param samples: samples array to write in the file
-    :param preamble: boolean to decide if we write in the preamble_samples file
     :return: None
     """
-    if preamble:
-        preamble_sample_file = open(params.preamble_sample_file_path, "w")
-        for i in range(len(samples)):
-            preamble_sample_file.write(str(samples[i]) + '\n')
-        preamble_sample_file.close()
-    else:
-        for i in range(len(samples)):
-            f.write(str(samples[i]) + '\n')
-        f.close()
+    for i in range(len(samples)):
+        f.write(str(samples[i]) + '\n')
+    f.close()
     return None
+
+
+def write_preamble_samples(preamble_samples):
+    """
+        Write preamble samples in the preamble sample file
+        :param preamble_samples: preamble samples array to write in the file
+        :return: None
+        """
+    preamble_sample_file = open(params.preamble_sample_file_path, "w")
+    for i in range(len(preamble_samples)):
+        preamble_sample_file.write(str(preamble_samples[i]) + '\n')
+    preamble_sample_file.close()
 
 
 def write_sinus(duration, freqs, scaling_factor=1.):
@@ -48,18 +53,30 @@ def write_sinus(duration, freqs, scaling_factor=1.):
     :param freqs: array of frequencies for the sum of sinus
     :return: None
     """
-    n_samples = int(np.ceil(duration*params.Fs))
-    t = np.arange(n_samples)/params.Fs
+    n_samples = int(np.ceil(duration * params.Fs))
+    t = np.arange(n_samples) / params.Fs
     samples = np.zeros(n_samples)
     for freq in freqs:
         samples += np.sin(freq * 2 * np.pi * t)
     for i in range(n_samples):
-        f.write(str(samples[i]*scaling_factor) + '\n')
+        f.write(str(samples[i] * scaling_factor) + '\n')
     f.close()
     return None
 
 
+def write_preamble_symbols(preamble_symbols):
+    """
+    Write preamble samples in the preamble sample file
+    :param preamble_symbols: preamble samples array to write in the file
+    :return: None
+    """
+    preamble_symbol_file = open(params.preamble_symbol_file_path, "w")
+    for i in range(len(preamble_symbols)):
+        preamble_symbol_file.write(str(preamble_symbols[i]) + '\n')
+    preamble_symbol_file.close()
+
+
 if __name__ == "__main__":
     # write_samples(input_samples)
-    write_gaussian_noise(1, mean=0, std=1/4)
+    write_gaussian_noise(1, mean=0, std=1 / 4)
     # write_sinus(1, [2000, 4000, 6000, 8000], scaling_factor=1/8)

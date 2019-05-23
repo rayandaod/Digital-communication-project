@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.signal import upfirdn
 
 import params
 import enc_dec_helper
@@ -7,6 +6,7 @@ import plot_helper
 import synchronization
 import fourier_helper
 import pulses
+import mappings
 
 
 def decoder(y, mapping):
@@ -113,87 +113,40 @@ def received_from_server():
 
     # Demodulate the samples with the appropriate frequency fc
     demodulated_samples = fourier_helper.demodulate(received_samples, fc)
-
     plot_helper.plot_complex_function(demodulated_samples, "Demodulated samples in Time domain")
     plot_helper.fft_plot(demodulated_samples, "Demodulated samples in Time domain", shift=True)
 
-    # Low-pass the signal
+    # Match filter
     _, h = pulses.root_raised_cosine()
-    lowpassed_samples = upfirdn(h, demodulated_samples)
-    plot_helper.plot_complex_function(lowpassed_samples, "Lowpassed samples in time domain")
-    plot_helper.fft_plot(lowpassed_samples, "Lowpassed samples in frequency domain", shift=True)
+    h_matched = np.conjugate(h[::-1])
+    y = np.convolve(demodulated_samples, h_matched)
+    plot_helper.plot_complex_function(y, "y in Time domain")
+    plot_helper.fft_plot(y, "y in Frequency domain", shift=True)
 
     # Find the delay
-    delay = synchronization.maximum_likelihood_sync(lowpassed_samples, synchronization_sequence=preamble_samples)
+    delay = synchronization.maximum_likelihood_sync(demodulated_samples, synchronization_sequence=preamble_samples)
     print("The delay is of {} samples".format(delay))
 
-    plot_helper.plot_complex_function(lowpassed_samples[delay:], "Received samples after removing the delay")
+    # Crop the samples (remove the ramp-up and ramp-down)
+    # TODO find the length of the ending garbage
+    garbage = []
+    data_samples = y[delay + len(preamble_samples) - int(len(h)/2) - 1:len(y) - int(len(h)/2) - len(garbage)]
+    plot_helper.plot_complex_function(data_samples, "y after puting the right sampling time")
 
-    samples = lowpassed_samples[delay + 147:]
-    print("Number of samples after removing the delay: {}".format(len(samples)))
-    symbols = samples[0::params.USF]
-    print(len(samples))
-    plot_helper.plot_complex_symbols(symbols, "Symbols received", annotate=False)
+    # Down-sample
+    symbols_received = data_samples[::params.USF]
+    print("Symbols received:\n{}", format(symbols_received))
+    plot_helper.plot_complex_symbols(symbols_received, "Data symbols received")
 
-    import mappings
-    ints = decoder(symbols, mappings.mapping)
-    return ints_to_message(ints)
-
-
-def local_test():
-    # Read the input samples
-    input_samples_file = open(params.input_sample_file_path, "r")
-    input_samples = [float(line) for line in input_samples_file.readlines()]
-    input_samples_file.close()
-
-    # Plot the received samples
-    plot_helper.plot_complex_function(input_samples, "Received samples in time domain")
-    plot_helper.fft_plot(input_samples, "Received samples in frequency domain", shift=True)
-
-    # Read the preamble samples saved previously
-    preamble_samples_file = open(params.preamble_sample_file_path, "r")
-    preamble_samples = [complex(line) for line in preamble_samples_file.readlines()]
-    preamble_samples_file.close()
-
-    plot_helper.plot_complex_function(preamble_samples, "Preamble samples in time domain")
-
-    # Demodulate the samples with the appropriate frequency fc
-    demodulated_samples = fourier_helper.demodulate(input_samples, 2000)
-
-    plot_helper.plot_complex_function(demodulated_samples, "Demodulated samples in Time domain")
-    plot_helper.fft_plot(demodulated_samples, "Demodulated samples in Frequency domain", shift=True)
-
-    # Low-pass the signal
-    _, h = pulses.root_raised_cosine()
-    lowpassed_samples = upfirdn(h, demodulated_samples)
-    plot_helper.plot_complex_function(lowpassed_samples, "Lowpassed samples in time domain")
-    plot_helper.fft_plot(lowpassed_samples, "Lowpassed samples in frequency domain", shift=True)
-
-    # Find the delay (should be SPAN/2 here because of the filtering above)
-    delay = synchronization.maximum_likelihood_sync(lowpassed_samples, synchronization_sequence=preamble_samples)
-    print("Delay: {} samples".format(delay))
-
-    samples_without_delay = lowpassed_samples[int(params.SPAN/2):]  # choose the sync seq wisely
-    plot_helper.plot_complex_function(samples_without_delay, "Received samples after removing the delay")
-    print("Number of samples after removing the delay: {}".format(len(samples_without_delay)))
-
-    # This is surely false
-    samples = samples_without_delay[int(params.SPAN/2)-1:]
-    plot_helper.plot_complex_function(samples, "Samples after puting the right sampling time")
-    symbols = samples[::params.USF]
-    print(len(samples))
-    plot_helper.plot_complex_symbols(symbols, "Symbols received", annotate=False)
-
-    import mappings
-    ints = decoder(symbols, mappings.mapping)
-    return ints_to_message(ints)
+    # Decode the symbols
+    ints = decoder(symbols_received, mappings.mapping)
+    ints_to_message(ints)
 
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
 
-    local_test()
-    # print(received_from_server())
+    received_from_server()
 
     # TODO Demodulate (cos and sin to go to baseband)
     # TODO      Modulation type 1: choose 1 of the 3 available frequency ranges, and shift it to 0

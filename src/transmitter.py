@@ -1,5 +1,3 @@
-import zlib
-import sys
 import numpy as np
 from scipy.signal import upfirdn
 
@@ -92,9 +90,12 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
     # else:
     #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
+    # Generate the preamble_symbols and store them in the appropriate file
+    preamble_symbols = synchronization.generate_sync_sequence(len(symbols_to_send))
+    writers.write_preamble_symbols(preamble_symbols)
+
     # Concatenate the synchronization sequence with the symbols to send
-    PREAMBLE = synchronization.generate_sync_sequence(len(symbols_to_send))
-    symbols_to_send = np.concatenate((PREAMBLE, symbols_to_send))
+    symbols_to_send = np.concatenate((preamble_symbols, symbols_to_send))
 
     # TODO can/should I remove the ramp-up and ramp_down? (less samples to send)
     # Shape the signal with the pulse h
@@ -113,8 +114,8 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
         plot_helper.fft_plot(samples, "Input samples in Frequency domain", shift=True)
 
     # Write the preamble shaped's samples (baseband, so might be complex), in the preamble_samples file
-    preamble_shaped = upfirdn(h, PREAMBLE, USF)
-    writers.write_samples(preamble_shaped, preamble=True)
+    preamble_shaped = upfirdn(h, preamble_symbols, USF)
+    writers.write_samples(preamble_shaped)
 
     if params.verbose:
         print("Shaping the preamble...")

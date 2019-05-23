@@ -17,6 +17,7 @@ output_file_path = "../data/output_text.txt"
 
 input_sample_file_path = "../data/input_samples.txt"
 output_sample_file_path = "../data/output_samples.txt"
+preamble_symbol_file_path = "../data/preamble_symbols.txt"
 preamble_sample_file_path = "../data/preamble_samples.txt"
 
 server_hostname = "iscsrv72.epfl.ch"
