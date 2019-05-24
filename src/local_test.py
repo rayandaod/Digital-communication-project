@@ -91,14 +91,44 @@ def local_test():
     # Channel simulation (delay (-> phase shift) and ending garbage)--------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
     print("Channel simulation...")
+
+    # Clip the data to [-1, 1]
+    samples = np.clip(samples, -1, 1)
+
+    # # Remove 1 frequency range among the 4 authorized ranges
+    # samples_fft = np.fft.fft(samples)
+    # f_x, samples_fft_mapped = fourier_helper.dft_map(samples_fft)
+    # samples_fft_mapped = samples_fft_mapped[int(len(samples_fft_mapped)/2):]
+    # f_x = f_x[int(len(f_x)/2):]
+    # range_to_remove = np.random.randint(4)
+    # for i in range(len(f_x)):
+    #     if (1000 + range_to_remove * 2000) <= f_x[i] <= (1000 + (range_to_remove + 1) * 2000):
+    #         samples_fft_mapped[i] = 0
+    # new_f_x = np.concatenate((f_x[::-1], f_x))
+    # new_samples_fft = np.concatenate((samples_fft_mapped[::-1], samples_fft_mapped))
+    # samples = (np.fft.ifft(new_samples_fft)).real
+    #
+    # new_samples_fft = np.fft.fft(samples)
+    # new_f_x, new_samples_fft_mapped = fourier_helper.dft_map(new_samples_fft)
+    # plot_helper.simple_plot(new_f_x, abs(new_samples_fft_mapped), "1 range removed by the channel")
+    # plot_helper.plot_complex_function(samples, "After 1 range removed, in Time domain")
+
+    # Introduce a delay and a garbage ending
     channel_delay = np.random.normal(0, np.sqrt(params.NOISE_VAR), size=np.random.randint(params.Fs))
     print("Delay introduced: {} samples".format(len(channel_delay)))
-    ending_garbage = np.random.normal(0, np.sqrt(params.NOISE_VAR), size=np.random.randint(params.Fs/2))
+    ending_garbage = np.random.normal(0, np.sqrt(params.NOISE_VAR), size=np.random.randint(params.Fs/5))
     print("Ending preamble after: {} samples".format(len(channel_delay) + len(samples)))
     samples = np.concatenate((channel_delay,
                               samples + np.random.normal(0, np.sqrt(params.NOISE_VAR), size=len(samples)),
                               ending_garbage))
-    # samples = samples/2
+
+    # Scale the samples down
+    channel_scaling = 1/(np.random.randint(5)+1)
+    samples = channel_scaling * samples
+    print("Scaling introduced: {}".format(channel_scaling))
+
+    # Clip the data to [-1, 1]
+    samples = np.clip(samples, -1, 1)
     print("--------------------------------------------------------")
     # ----------------------------------------------------------------------------------------------------------------
     # Channel simulation's end ---------------------------------------------------------------------------------------

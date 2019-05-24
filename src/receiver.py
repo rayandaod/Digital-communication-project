@@ -84,7 +84,6 @@ def ints_to_message(ints):
     return message
 
 
-# TODO: only works for modulation type 1
 def received_from_server():
     # Read the received samples from the server
     output_sample_file = open(params.output_sample_file_path, "r")
@@ -187,18 +186,3 @@ def received_from_server():
 if __name__ == "__main__":
 
     received_from_server()
-
-    # TODO Demodulate (cos and sin to go to baseband)
-    # TODO      Modulation type 1: choose 1 of the 3 available frequency ranges, and shift it to 0
-    # TODO      Modulation type 2: choose the available frequency range among the 2 sent, and shift it to 0
-    # TODO Lowpass (Discard other frequency ranges and noise)
-    # TODO      Modulation type 1: low-pass between -1000Hz and 1000Hz
-    # TODO      Modulation type 2: low_pass between -2000Hz and 2000Hz
-    # TODO After all that, we can do the synchronization between received_samples_baseband and preamble_samples
-    # TODO When the delay is found, we can start sampling (depends on SPAN and T I guess)
-    # TODO Then, we give this complex array to the decoder
-
-    # observation_test = np.array([1+2j, -1-0.5j, -1+0.5j, 1+0.1j, 1-2j, 1+2j, -1-0.5j])
-    # plot_helper.plot_complex_symbols(observation_test, "observation", "blue")
-    # ints = decoder(observation_test, helper.mapping)
-    # ints_to_message(ints)

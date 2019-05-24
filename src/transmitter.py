@@ -90,7 +90,7 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
     # else:
     #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
-    # Generate the preamble_symbols and store them in the appropriate file
+    # Generate the preamble_symbols and write them in the appropriate file
     synchronization.generate_preamble_symbols(len(data_symbols))
     preamble_symbols = helper.read_preamble_symbols()
     plot_helper.plot_complex_symbols(preamble_symbols, "Preamble symbols")

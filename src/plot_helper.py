@@ -5,7 +5,6 @@ import params
 import fourier_helper
 
 
-# TODO manage to plot without waiting for closing
 def plot_complex_symbols(complex_values, title, color="black", annotate=False):
     """
     :param complex_values: array of complex values to plot
