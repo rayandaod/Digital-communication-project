@@ -140,7 +140,7 @@ def received_from_server():
     plot_helper.fft_plot(y, "y in Frequency domain", shift=True)
 
     # Find the delay
-    delay = synchronization.maximum_likelihood_sync(demodulated_samples, synchronization_sequence=preamble_samples)
+    delay = synchronization.maximum_likelihood_sync(demodulated_samples, preamble_samples=preamble_samples)
     print("Delay: {} samples".format(delay))
     print("--------------------------------------------------------")
 

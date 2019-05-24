@@ -38,11 +38,11 @@ NORMALIZE_MAPPING = False  # rather we normalize the mapping or not
 M = 4  # length of the mapping (must be of the form 2^2k if QAM is chosen)
 BITS_PER_SYMBOL = int(np.log2(M))  # number of bits we transmit per symbol
 
-MODULATION_TYPE = 1
+MODULATION_TYPE = 2
 # 1 = naive approach (duplicate 4 times)
 # 2 = less naive approach (duplicate 2 times, (care about covering 4000Hz with the rrc --> choose T accordingly))
 
-BETA = 0.3  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
+BETA = 0.2  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
 T = choose_symbol_period()  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying
 # Nyquist crit.
 NORMALIZE_PULSE = True  # rather we normalize the pulse or not
