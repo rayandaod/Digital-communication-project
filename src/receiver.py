@@ -112,11 +112,19 @@ def received_from_server():
     range_indices, removed_freq_range = fourier_helper.find_removed_freq_range_2(received_samples)
     print("Removed frequency range: {}".format(removed_freq_range))
 
-    # Choose a frequency among the 3 available frequency ranges
-    if removed_freq_range == 0:
-        fc = np.mean(params.FREQ_RANGES[1])
+    # Choose a frequency among the 3 available frequency ranges / the only available frequency range
+    if params.MODULATION_TYPE == 1:
+        if removed_freq_range == 0:
+            fc = np.mean(params.FREQ_RANGES[1])
+        else:
+            fc = np.mean(params.FREQ_RANGES[0])
+    elif params.MODULATION_TYPE == 2:
+        if removed_freq_range == 0 or removed_freq_range == 1:
+            fc = 7000
+        else:
+            fc = 3000
     else:
-        fc = np.mean(params.FREQ_RANGES[0])
+        raise ValueError('This modulation type does not exist yet... Hehehe')
 
     # Demodulate the samples with the appropriate frequency fc
     demodulated_samples = fourier_helper.demodulate(received_samples, fc)
