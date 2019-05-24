@@ -1,7 +1,7 @@
 import numpy as np
 
 import params
-import enc_dec_helper
+import helper
 import plot_helper
 import synchronization
 import fourier_helper
@@ -78,12 +78,13 @@ def ints_to_message(ints):
         print("Groups of 8 bits (0 added at the beginning, cf. transmitter):\n{}".format(new_bits))
 
     # Convert from array of bytes to string
-    message = ''.join(enc_dec_helper.bits2string(new_bits))
+    message = ''.join(helper.bits2string(new_bits))
     print("Message received:\n{}".format(message))
 
     return message
 
 
+# TODO: only works for modulation type 1
 def received_from_server():
     # Read the received samples from the server
     output_sample_file = open(params.output_sample_file_path, "r")
@@ -98,6 +99,12 @@ def received_from_server():
     preamble_samples_file = open(params.preamble_sample_file_path, "r")
     preamble_samples = [complex(line) for line in preamble_samples_file.readlines()]
     preamble_samples_file.close()
+    len_preamble_samples = len(preamble_samples)
+
+    # Read the preamble symbols saved previously
+    preamble_symbol_file = open(params.preamble_symbol_file_path, "r")
+    preamble_symbols = [complex(line) for line in preamble_symbol_file.readlines()]
+    preamble_symbol_file.close()
 
     plot_helper.plot_complex_function(preamble_samples, "Preamble samples in time domain")
 
@@ -118,6 +125,7 @@ def received_from_server():
 
     # Match filter
     _, h = pulses.root_raised_cosine()
+    half_span_h = int(params.SPAN/2)
     h_matched = np.conjugate(h[::-1])
     y = np.convolve(demodulated_samples, h_matched)
     plot_helper.plot_complex_function(y, "y in Time domain")
@@ -125,18 +133,42 @@ def received_from_server():
 
     # Find the delay
     delay = synchronization.maximum_likelihood_sync(demodulated_samples, synchronization_sequence=preamble_samples)
-    print("The delay is of {} samples".format(delay))
+    print("Delay: {} samples".format(delay))
+    print("--------------------------------------------------------")
 
-    # Crop the samples (remove the ramp-up and ramp-down)
-    # TODO find the length of the ending garbage
-    garbage = []
-    data_samples = y[delay + len(preamble_samples) - int(len(h)/2) - 1:len(y) - int(len(h)/2) - len(garbage)]
-    plot_helper.plot_complex_function(data_samples, "y after puting the right sampling time")
+    # Extract the preamble samples
+    preamble_samples_received = y[half_span_h + delay - 1:half_span_h + delay + len_preamble_samples - 1]
+    plot_helper.two_simple_plots(preamble_samples_received, preamble_samples,
+                                 "Comparison between preamble samples received and preamble samples sent",
+                                 "received", "expected")
+    print("Number of samples for the actual preamble: {}".format(len_preamble_samples))
+    print("Number of samples for the received preamble: {}".format(len(preamble_samples_received)))
+
+    # Compute the frequency offset, and the scaling factor
+    # TODO: why dot works and not vdot (supposed to conjugate the first term in the formula)
+    dot_product = np.dot(preamble_samples[:len_preamble_samples - half_span_h],
+                         preamble_samples_received[:len(preamble_samples_received) - half_span_h])
+    print("Dot product: {}".format(dot_product))
+
+    frequency_offset_estim = np.angle(dot_product)
+    print("Frequency offset: {}".format(frequency_offset_estim))
+
+    # Crop the samples (remove the delay, and the ramp-up/ramp-down)
+    data_samples = y[delay + params.SPAN - 1:len(y) - params.SPAN + 1]
+    plot_helper.plot_complex_function(data_samples, "y after putting the right sampling time")
+
+    # TODO: why frequency_offset - pi/2 works ?
+    data_samples = data_samples * np.exp(-1j * (frequency_offset_estim - np.pi / 2))
 
     # Down-sample
     symbols_received = data_samples[::params.USF]
     print("Symbols received:\n{}", format(symbols_received))
-    plot_helper.plot_complex_symbols(symbols_received, "Data symbols received")
+
+    # Remove the preamble symbols at the beginning
+    data_symbols = symbols_received[len(preamble_symbols):]
+
+    plot_helper.plot_complex_function(data_symbols, "y without preamble")
+    plot_helper.plot_complex_symbols(data_symbols, "Data symbols received", annotate=False)
 
     # Decode the symbols
     ints = decoder(symbols_received, mappings.mapping)

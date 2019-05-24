@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.signal import upfirdn
 
-import enc_dec_helper
+import helper
 import params
 import writers
 import plot_helper
@@ -25,7 +25,7 @@ def message_to_ints():
     message_encoded = message.encode('ascii')
 
     # Retrieve the message as a sequences of binary bytes
-    string_bytes = enc_dec_helper.string2bits(message)
+    string_bytes = helper.string2bits(message)
 
     # Next step is to re-arrange string_bytes in agreement with M. Indeed, with a symbol constellation of M points,
     # we can only represent BITS_PER_SYMBOL=log2(M) bits per symbol. Thus, we want to re-structure string_bytes
@@ -71,56 +71,48 @@ def encoder(indices, mapping):
         print("Minimum symbol: {}".format(min(symbols)))
         print("Maximum symbol: {}".format(max(symbols)))
         print("--------------------------------------------------------")
-        plot_helper.plot_complex_symbols(symbols, "{} transmitted symbols".format(len(symbols)), "blue")
+        plot_helper.plot_complex_symbols(symbols, "{} data symbols to send".format(len(symbols)), "blue")
 
     return np.asarray(symbols)
 
 
-def symbols_to_samples(h, symbols_to_send, USF=params.USF):
+def symbols_to_samples(h, data_symbols, USF=params.USF):
     """
     :param h: the sampled pulse
-    :param symbols_to_send: the symbols modulating the pulse
+    :param data_symbols: the symbols modulating the pulse
     :param USF: the up-sampling factor (number of samples per symbols)
     :return: the samples of a modulated pulse train to send to the server
     """
     #
-    # # If symbols is not a column vector, make it a column vector
+    # # If symbols is not a column vector, make it one
     # if np.size(symbols, 0) == 1:
     #     symbols = symbols.reshape(np.size(symbols, 1), 1)
     # else:
     #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
     # Generate the preamble_symbols and store them in the appropriate file
-    if params.PREAMBLE_TYPE == "random":
-        preamble_symbols = synchronization.generate_random_preamble_symbols(len(symbols_to_send))
-    elif params.PREAMBLE_TYPE == "barker":
-        preamble_symbols = synchronization.generate_barker_preamble_symbols()
-    else:
-        raise ValueError('This preamble type does not exist yet... Hehehe')
-
-    if params.MAPPING == "qam" and not params.NORMALIZE_MAPPING:
-        writers.write_preamble_symbols(preamble_symbols*3)
-    else:
-        raise ValueError('TODO: automate the scaling of the barker sequence')
+    synchronization.generate_preamble_symbols(len(data_symbols))
+    preamble_symbols = helper.read_preamble_symbols()
+    plot_helper.plot_complex_symbols(preamble_symbols, "Preamble symbols")
 
     # Concatenate the synchronization sequence with the symbols to send
-    symbols_to_send = np.concatenate((preamble_symbols, symbols_to_send))
+    total_symbols = np.concatenate((preamble_symbols, data_symbols))
+    plot_helper.plot_complex_symbols(total_symbols, "Total symbols to send")
 
-    # TODO can/should I remove the ramp-up and ramp_down? (less samples to send)
+    # TODO can/should I remove the ramp-up and ramp_down? (then less samples to send)
     # Shape the signal with the pulse h
-    samples = upfirdn(h, symbols_to_send, USF)
-    maximum = max(samples)
+    total_samples = upfirdn(h, total_symbols, USF)
 
     if params.verbose:
         print("Shaping the preamble and the data...")
-        print("Samples to be sent:\n{}".format(samples))
+        print("Samples to be sent:\n{}".format(total_samples))
         print("Up-sampling factor: {}".format(params.USF))
-        print("Number of samples: {}".format(len(samples)))
-        print("Minimum sample: {}".format(min(samples)))
-        print("Maximum sample: {}".format(maximum))
+        print("Number of samples: {}".format(len(total_samples)))
+        print("Minimum sample: {}".format(min(total_samples)))
+        print("Maximum sample: {}".format(max(total_samples)))
         print("--------------------------------------------------------")
-        plot_helper.plot_complex_function(samples, "Input samples in Time domain")
-        plot_helper.fft_plot(samples, "Input samples in Frequency domain", shift=True)
+        plot_helper.plot_complex_function(total_samples, "Input samples in Time domain")
+        plot_helper.fft_plot(total_samples, "Input samples in Frequency domain", shift=True)
 
     # Write the preamble samples (base-band, so might be complex) in the preamble_samples file
     preamble_samples = upfirdn(h, preamble_symbols, USF)
@@ -133,36 +125,38 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
         plot_helper.fft_plot(preamble_samples, "Synchronization sequence shaped, in Frequency domain", shift=True)
         print("--------------------------------------------------------")
 
-    if np.any(np.iscomplex(samples)):
+    # Modulate the samples to fit in the required bands
+    if np.any(np.iscomplex(total_samples)):
         if params.MODULATION_TYPE == 1:
-            samples = fourier_helper.modulate(samples, params.np.mean(params.FREQ_RANGES, axis=1))
+            total_samples = fourier_helper.modulate_complex_samples(total_samples,
+                                                                    params.np.mean(params.FREQ_RANGES, axis=1))
         elif params.MODULATION_TYPE == 2:
-            samples = fourier_helper.modulate(samples, [params.FREQ_RANGES[0][1], params.FREQ_RANGES[2][1]])
+            total_samples = fourier_helper.modulate_complex_samples(total_samples, [params.FREQ_RANGES[0][1],
+                                                                                    params.FREQ_RANGES[2][1]])
         else:
             raise ValueError('This modulation type does not exist yet... Hehehe')
 
-        maximum = max(samples)
-
         if params.verbose:
             print("Modulation of the signal...")
-            print("Number of samples: {}".format(len(samples)))
-            print("Minimum sample after modulation: {}".format(min(samples)))
-            print("Maximum sample after modulation: {}".format(maximum))
+            print("Number of samples: {}".format(len(total_samples)))
+            print("Minimum sample after modulation: {}".format(min(total_samples)))
+            print("Maximum sample after modulation: {}".format(max(total_samples)))
             print("--------------------------------------------------------")
-            plot_helper.plot_complex_function(samples, "Input samples after modulation, in Time domain")
-            plot_helper.fft_plot(samples, "Input samples after modulation, in Frequency domain", shift=True)
+            plot_helper.plot_complex_function(total_samples, "Input samples after modulation, in Time domain")
+            plot_helper.fft_plot(total_samples, "Input samples after modulation, in Frequency domain", shift=True)
+    else:
+        raise ValueError("TODO: handle real samples (e.g SSB)")
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    samples = samples/(maximum*(2-params.ABS_SAMPLE_RANGE))
-    maximum = max(samples)
+    total_samples = total_samples/(max(total_samples)*(2-params.ABS_SAMPLE_RANGE))
 
     if params.verbose:
         print("Scaling the signal...")
-        print("Minimum sample after scaling: {}".format(min(samples)))
-        print("Maximum sample after scaling: {}".format(maximum))
+        print("Minimum sample after scaling: {}".format(min(total_samples)))
+        print("Maximum sample after scaling: {}".format(max(total_samples)))
         print("--------------------------------------------------------")
 
-    return maximum, samples
+    return total_samples
 
 
 # Intended for testing (to run the program, run main.py)
@@ -173,8 +167,8 @@ if __name__ == '__main__':
     # Generate the root-raised_cosine
     _, h_pulse = pulses.root_raised_cosine()
 
-    # Construct the signal to send
-    maximum, input_samples = symbols_to_samples(h_pulse, symbols)
+    # Construct the samples to send
+    input_samples = symbols_to_samples(h_pulse, symbols)
 
     # Write the samples in the input file
     writers.write_samples(input_samples)

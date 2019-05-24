@@ -3,6 +3,27 @@ import scipy.signal as sc
 
 import params
 import mappings
+import writers
+
+
+def generate_preamble_symbols(n_symbols_to_send):
+    if params.PREAMBLE_TYPE == "random":
+        preamble_symbols = generate_random_preamble_symbols(n_symbols_to_send)
+    elif params.PREAMBLE_TYPE == "barker":
+        preamble_symbols = generate_barker_preamble_symbols()
+    else:
+        raise ValueError('This preamble type does not exist yet... Hehehe')
+
+    if params.MAPPING == "qam" and not params.NORMALIZE_MAPPING:
+        # TODO: improve that
+        if params.M == 16:
+            writers.write_preamble_symbols(preamble_symbols*3)
+        elif params.M == 4:
+            writers.write_preamble_symbols(preamble_symbols)
+    else:
+        raise ValueError('TODO: automate the scaling of the barker sequence')
+
+    return None
 
 
 def generate_random_preamble_symbols(n_symbols_to_send):
@@ -17,17 +38,13 @@ def generate_random_preamble_symbols(n_symbols_to_send):
 # TODO see if 4 copies are enough/too much
 def generate_barker_preamble_symbols():
     barker_code_13 = np.array([1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1])
-
-    # Build our barker sequence
     preamble_symbols = np.hstack((barker_code_13, barker_code_13[::-1]))
     preamble_symbols = np.hstack((preamble_symbols, preamble_symbols))
-
-    # Return the complex equivalent
     return preamble_symbols + 1j*preamble_symbols
 
 
 # Estimate the frequency offset
-def moose_alg(samples):
+def moose_algorithm(samples):
     n_samples = samples.size
     print("N_samples: {}".format(n_samples))
     n_samples_half = int(n_samples/2)

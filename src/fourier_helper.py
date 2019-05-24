@@ -48,27 +48,28 @@ def dft_map(X, Fs=params.Fs, shift=True):
     return f, Y
 
 
-# TODO additional checks on the certainty of the decision on the removed freq. range
-def find_removed_freq_range(X):
-    """
-    Checks which range of frequencies has been removed by the channel (among 1-3kHz, 3-5kHz, 5-7kHz, 7-9kHz)
-    :param X: the fourier transform of the signal
-    :return: the index in params.FREQ_RANGES corresponding to the removed frequency range
-    """
-    n_frequencies = len(params.FREQ_RANGES)
-    means = np.zeros(n_frequencies)
-    for i in range(n_frequencies):
-        means[i] = np.mean(abs(
-            np.real(
-                X[params.FREQ_RANGES[i][0]:params.FREQ_RANGES[i][1]])) +
-                   1j * np.mean(
-            np.imag(
-                X[params.FREQ_RANGES[i][0]:params.FREQ_RANGES[i][1]])))
-    if params.verbose:
-        print("4 frequency ranges means: {}".format(means))
-    return np.argmin(means)
+# # TODO additional checks on the certainty of the decision on the removed freq. range
+# def find_removed_freq_range(X):
+#     """
+#     Checks which range of frequencies has been removed by the channel (among 1-3kHz, 3-5kHz, 5-7kHz, 7-9kHz)
+#     :param X: the fourier transform of the signal
+#     :return: the index in params.FREQ_RANGES corresponding to the removed frequency range
+#     """
+#     n_frequencies = len(params.FREQ_RANGES)
+#     means = np.zeros(n_frequencies)
+#     for i in range(n_frequencies):
+#         means[i] = np.mean(abs(
+#             np.real(
+#                 X[params.FREQ_RANGES[i][0]:params.FREQ_RANGES[i][1]])) +
+#                    1j * np.mean(
+#             np.imag(
+#                 X[params.FREQ_RANGES[i][0]:params.FREQ_RANGES[i][1]])))
+#     if params.verbose:
+#         print("4 frequency ranges means: {}".format(means))
+#     return np.argmin(means)
 
 
+# TODO awful code, change that ASAP
 def find_removed_freq_range_2(samples):
     """
         Checks which range of frequencies has been removed by the channel (among 1-3kHz, 3-5kHz, 5-7kHz, 7-9kHz)
@@ -80,7 +81,6 @@ def find_removed_freq_range_2(samples):
     f, Y = dft_map(X)
     # plt.plot(f, abs(Y))
 
-    # TODO awful code, change that ASAP
     range_indices = []
     for i in range(len(params.FREQ_RANGES)):
         j = 0
@@ -99,7 +99,7 @@ def find_removed_freq_range_2(samples):
     return range_indices, np.argmin(means)
 
 
-def modulate(samples, frequencies):
+def modulate_complex_samples(samples, frequencies):
     """
     Modulate the signal by shifting duplicates of it in the given frequencies
     :param samples: the signal to modulate
@@ -128,9 +128,7 @@ def demodulate(samples, f):
     n_sample = len(samples)
     time_indices = np.arange(n_sample)/params.Fs
     new_samples = []
-
     for n in range(n_sample):
-        new_samples.append(samples[n] * np.sqrt(2) * np.cos(2 * np.pi * f * time_indices[n]) - 1j * samples[n] *
-                           np.sqrt(2) * np.sin(2 * np.pi * f * time_indices[n]))
-
+        new_samples.append(samples[n] * np.sqrt(2) * np.cos(2 * np.pi * f * time_indices[n]) -
+                           1j * samples[n] * np.sqrt(2) * np.sin(2 * np.pi * f * time_indices[n]))
     return new_samples

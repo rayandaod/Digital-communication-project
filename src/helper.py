@@ -1,3 +1,5 @@
+import params
+
 def string2bits(s=''):
     """
     :param s: the string to be converted
@@ -14,5 +16,12 @@ def bits2string(b=None):
     return ''.join([chr(int(x, 2)) for x in b])
 
 
+def read_preamble_symbols():
+    preamble_symbol_file = open(params.preamble_symbol_file_path, "r")
+    preamble_symbols = [complex(line) for line in preamble_symbol_file.readlines()]
+    preamble_symbol_file.close()
+    return preamble_symbols
+
+
 if __name__ == "__main__":
-    print("enc_dec_helper.py")
+    print("helper.py")

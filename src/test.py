@@ -8,6 +8,7 @@ import params
 import transmitter
 import receiver
 import fourier_helper
+import helper
 
 
 """
@@ -33,13 +34,9 @@ def local_test():
     _, h = pulses.root_raised_cosine()
     half_span_h = int(params.SPAN/2)
 
-    # Generate the preamble symbols
-    preamble_symbols = synchronization.generate_barker_preamble_symbols()
-
-    if params.MAPPING == "qam" and not params.NORMALIZE_MAPPING:
-        preamble_symbols = preamble_symbols*3
-    else:
-        raise ValueError('TODO: automate the scaling of the barker sequence')
+    # Generate the preamble symbols and read it from the corresponding file
+    synchronization.generate_preamble_symbols(len(symbols))
+    preamble_symbols = helper.read_preamble_symbols()
 
     # Generate the preamble samples
     preamble_samples = upfirdn(h, preamble_symbols, params.USF)
@@ -70,11 +67,11 @@ def local_test():
 
     # Modulate the total_samples
     if params.MODULATION_TYPE == 1:
-        samples = fourier_helper.modulate(total_samples, params.np.mean(params.FREQ_RANGES, axis=1))
+        samples = fourier_helper.modulate_complex_samples(total_samples, params.np.mean(params.FREQ_RANGES, axis=1))
     elif params.MODULATION_TYPE == 2:
-        samples = fourier_helper.modulate(total_samples, [params.FREQ_RANGES[0][1], params.FREQ_RANGES[2][1]])
+        samples = fourier_helper.modulate_complex_samples(total_samples, [params.FREQ_RANGES[0][1], params.FREQ_RANGES[2][1]])
     else:
-        raise ValueError('This modulation type does not exist yet... Hehehe')
+        raise ValueError('This modulation type does not exist yet... He he he')
 
     maximum = max(samples)
 
@@ -88,16 +85,26 @@ def local_test():
         plot_helper.fft_plot(samples, "Input samples after modulation, in Frequency domain", shift=True)
 
     # ----------------------------------------------------------------------------------------------------------------
-    # Channel simulation (delay (-> phase shift) and scaling)
+    # Channel simulation (delay (-> phase shift) and scaling)---------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------
     samples = np.concatenate((generate_awgn(0, 0.05), samples))
     # samples = samples/2
     plot_helper.plot_complex_function(samples, "Samples received from the simulated channel")
+    # ----------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
 
     # Supposed to retrieve the preamble symbols and samples from the appropriate files, but here we got it above
 
     # Demodulate the samples with the appropriate frequency fc
-    demodulated_samples = fourier_helper.demodulate(samples, 3000)
+    if params.MODULATION_TYPE == 1:
+        fc = 2000
+    elif params.MODULATION_TYPE == 2:
+        fc = 3000
+    else:
+        raise ValueError('This modulation type does not exist yet... He he he')
+
+    demodulated_samples = fourier_helper.demodulate(samples, fc)
     plot_helper.plot_complex_function(demodulated_samples, "Demodulated samples in Time domain")
     plot_helper.fft_plot(demodulated_samples, "Demodulated samples in Frequency domain", shift=True)
 
@@ -151,7 +158,7 @@ def local_test():
     # Remove the preamble symbols at the beginning
     data_symbols = symbols_received[len(preamble_symbols):]
 
-    plot_helper.plot_complex_function(data_symbols, "y after puting the right sampling time")
+    plot_helper.plot_complex_function(data_symbols, "y without preamble")
     plot_helper.plot_complex_symbols(data_symbols, "Symbols received", annotate=False)
 
     # Decode the symbols
