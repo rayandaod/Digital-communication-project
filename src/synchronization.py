@@ -2,17 +2,43 @@ import numpy as np
 import scipy.signal as sc
 
 import params
-import fourier_helper
-import plot_helper
 import mappings
 
 
-def generate_sync_sequence(n_symbols_to_send):
-    syn_seq = np.random.choice(mappings.mapping, size=int(np.ceil(n_symbols_to_send * params.PREAMBLE_LENGTH_RATIO)))
+def generate_random_preamble_symbols(n_symbols_to_send):
+    preamble_symbols = np.random.choice(mappings.mapping,
+                                        size=int(np.ceil(n_symbols_to_send * params.PREAMBLE_LENGTH_RATIO)))
     if params.verbose:
-        print("Synchronization sequence:\n{}".format(syn_seq))
+        print("Synchronization sequence:\n{}".format(preamble_symbols))
         print("--------------------------------------------------------")
-    return syn_seq
+    return preamble_symbols
+
+
+# TODO see if 4 copies are enough/too much
+def generate_barker_preamble_symbols():
+    barker_code_13 = np.array([1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1])
+
+    # Build our barker sequence
+    preamble_symbols = np.hstack((barker_code_13, barker_code_13[::-1]))
+    preamble_symbols = np.hstack((preamble_symbols, preamble_symbols))
+
+    # Return the complex equivalent
+    return preamble_symbols + 1j*preamble_symbols
+
+
+# Estimate the frequency offset
+def moose_alg(samples):
+    n_samples = samples.size
+    print("N_samples: {}".format(n_samples))
+    n_samples_half = int(n_samples/2)
+    first_half = np.matrix(samples[:n_samples_half])
+    second_half = np.matrix(samples[n_samples_half:])
+    print("Dims: {}, {}".format(first_half.shape, second_half.shape))
+    phase_offset, _, _, _ = np.linalg.lstsq(first_half.transpose(), second_half.transpose())
+
+    # Use the phase offset to find the frequency
+    freq_shift = np.angle(phase_offset)/2/np.pi/(1/params.Fs*n_samples_half)
+    return freq_shift
 
 
 def maximum_likelihood_sync(received_signal, synchronization_sequence):

@@ -38,7 +38,7 @@ NORMALIZE_MAPPING = False  # rather we normalize the mapping or not
 M = 16  # length of the mapping (must be of the form 2^2k if QAM is chosen)
 BITS_PER_SYMBOL = int(np.log2(M))  # number of bits we transmit per symbol
 
-MODULATION_TYPE = 1
+MODULATION_TYPE = 2
 # 1 = naive approach (duplicate 4 times)
 # 2 = less naive approach (duplicate 2 times, (care about covering 4000Hz with the rrc --> choose T accordingly))
 
@@ -51,7 +51,8 @@ USF = int(np.ceil(T * Fs))  # up-sampling factor, i.e the number of zeros to add
 # pulse shaping
 SPAN = 20 * USF  # size of our pulse in number of samples
 
-PREAMBLE_LENGTH_RATIO = 0.36  # Ratio of synchronization symbol sequence compared to the number of symbols to send
+PREAMBLE_TYPE = "barker"  # Type of preamble to generate (barker or random for now)
+PREAMBLE_LENGTH_RATIO = 0.36  # Ratio of random preamble symbols compared to the number of symbols of the data
 
 ABS_SAMPLE_RANGE = 0.8  # samples amplitude must be between -1 and 1, but we keep a little margin for the noise
 

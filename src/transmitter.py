@@ -91,8 +91,17 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
     #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
     # Generate the preamble_symbols and store them in the appropriate file
-    preamble_symbols = synchronization.generate_sync_sequence(len(symbols_to_send))
-    writers.write_preamble_symbols(preamble_symbols)
+    if params.PREAMBLE_TYPE == "random":
+        preamble_symbols = synchronization.generate_random_preamble_symbols(len(symbols_to_send))
+    elif params.PREAMBLE_TYPE == "barker":
+        preamble_symbols = synchronization.generate_barker_preamble_symbols()
+    else:
+        raise ValueError('This preamble type does not exist yet... Hehehe')
+
+    if params.MAPPING == "qam" and not params.NORMALIZE_MAPPING:
+        writers.write_preamble_symbols(preamble_symbols*3)
+    else:
+        raise ValueError('TODO: automate the scaling of the barker sequence')
 
     # Concatenate the synchronization sequence with the symbols to send
     symbols_to_send = np.concatenate((preamble_symbols, symbols_to_send))
@@ -113,15 +122,15 @@ def symbols_to_samples(h, symbols_to_send, USF=params.USF):
         plot_helper.plot_complex_function(samples, "Input samples in Time domain")
         plot_helper.fft_plot(samples, "Input samples in Frequency domain", shift=True)
 
-    # Write the preamble shaped's samples (baseband, so might be complex), in the preamble_samples file
-    preamble_shaped = upfirdn(h, preamble_symbols, USF)
-    writers.write_samples(preamble_shaped)
+    # Write the preamble samples (base-band, so might be complex) in the preamble_samples file
+    preamble_samples = upfirdn(h, preamble_symbols, USF)
+    writers.write_preamble_samples(preamble_samples)
 
     if params.verbose:
         print("Shaping the preamble...")
-        print("Number of samples for the preamble: {}".format(len(preamble_shaped)))
-        plot_helper.plot_complex_function(preamble_shaped, "Synchronization sequence shaped, in Time domain")
-        plot_helper.fft_plot(preamble_shaped, "Synchronization sequence shaped, in Frequency domain", shift=True)
+        print("Number of samples for the preamble: {}".format(len(preamble_samples)))
+        plot_helper.plot_complex_function(preamble_samples, "Synchronization sequence shaped, in Time domain")
+        plot_helper.fft_plot(preamble_samples, "Synchronization sequence shaped, in Frequency domain", shift=True)
         print("--------------------------------------------------------")
 
     if np.any(np.iscomplex(samples)):
