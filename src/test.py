@@ -18,8 +18,8 @@ Testing file
 # np.random.seed(30)
 
 
-def generate_awgn(mean, std):
-    return np.random.normal(mean, std, size=np.random.randint(params.Fs))
+def generate_awgn(mean, std, len_samples):
+    return np.random.normal(mean, std, size=np.random.randint(params.Fs) + len_samples)
 
 
 def local_test():
@@ -73,21 +73,29 @@ def local_test():
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
 
-    maximum = max(samples)
+    print("Modulation of the signal...")
+    print("Number of samples: {}".format(len(samples)))
+    print("Minimum sample after modulation: {}".format(min(samples)))
+    print("Maximum sample after modulation: {}".format(max(samples)))
+    print("--------------------------------------------------------")
+    plot_helper.plot_complex_function(samples, "Input samples after modulation, in Time domain")
+    plot_helper.fft_plot(samples, "Input samples after modulation, in Frequency domain", shift=True)
 
-    if params.verbose:
-        print("Modulation of the signal...")
-        print("Number of samples: {}".format(len(samples)))
-        print("Minimum sample after modulation: {}".format(min(samples)))
-        print("Maximum sample after modulation: {}".format(maximum))
-        print("--------------------------------------------------------")
-        plot_helper.plot_complex_function(samples, "Input samples after modulation, in Time domain")
-        plot_helper.fft_plot(samples, "Input samples after modulation, in Frequency domain", shift=True)
+    # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
+    samples = samples/(max(samples)*(2-params.ABS_SAMPLE_RANGE))
+    print("Scaling the signal...")
+    print("Minimum sample after scaling: {}".format(min(total_samples)))
+    print("Maximum sample after scaling: {}".format(max(total_samples)))
+    print("--------------------------------------------------------")
 
     # ----------------------------------------------------------------------------------------------------------------
-    # Channel simulation (delay (-> phase shift) and scaling)---------------------------------------------------------
+    # Channel simulation (delay (-> phase shift))---------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
-    samples = np.concatenate((generate_awgn(0, 0.05), samples))
+    channel_delay = np.random.normal(0, np.sqrt(params.NOISE_VAR), size=np.random.randint(params.Fs))
+    ending_garbage = np.random.normal(0, np.sqrt(params.NOISE_VAR), size=np.random.randint(params.Fs/2))
+    samples = np.concatenate((channel_delay,
+                              samples + np.random.normal(0, np.sqrt(params.NOISE_VAR), size=len(samples)),
+                              ending_garbage))
     # samples = samples/2
     plot_helper.plot_complex_function(samples, "Samples received from the simulated channel")
     # ----------------------------------------------------------------------------------------------------------------
