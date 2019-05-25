@@ -3,10 +3,10 @@ import numpy as np
 import params
 import helper
 import plot_helper
-import synchronization
 import fourier_helper
 import pulses
 import mappings
+import parameter_estim
 
 
 def decoder(y, mapping):
@@ -123,7 +123,7 @@ def received_from_server():
         else:
             fc = 3000
     else:
-        raise ValueError('This modulation type does not exist yet... Hehehe')
+        raise ValueError('This modulation type does not exist yet... He he he')
 
     # Demodulate the samples with the appropriate frequency fc
     demodulated_samples = fourier_helper.demodulate(received_samples, fc)
@@ -139,7 +139,7 @@ def received_from_server():
     plot_helper.fft_plot(y, "y in Frequency domain", shift=True)
 
     # Find the delay
-    delay = synchronization.maximum_likelihood_sync(demodulated_samples, preamble_samples=preamble_samples)
+    delay = parameter_estim.ML_theta_estimation(demodulated_samples, preamble_samples=preamble_samples)
     print("Delay: {} samples".format(delay))
     print("--------------------------------------------------------")
 

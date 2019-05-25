@@ -72,8 +72,8 @@ def choose_mapping(normalize=params.NORMALIZE_MAPPING):
     if params.verbose:
         print("Chosen mapping:\n{}".format(chosen_mapping))
         print("--------------------------------------------------------")
-        plot_helper.plot_complex_symbols(chosen_mapping, title="Chosen mapping, normalized={}".format(normalize)
-                                         , color="red", annotate=True)
+        plot_helper.plot_complex_symbols(chosen_mapping, title="Chosen mapping, normalized={}".format(normalize),
+                                         color="red", annotate=True)
 
     return chosen_mapping
 

@@ -3,12 +3,13 @@ from scipy.signal import upfirdn
 import numpy as np
 import plot_helper
 import mappings
-import synchronization
+import preambles
 import params
 import transmitter
 import receiver
 import fourier_helper
-import helper
+import read_write
+import parameter_estim
 
 
 """
@@ -35,8 +36,8 @@ def local_test():
     half_span_h = int(params.SPAN/2)
 
     # Generate the preamble symbols and read it from the corresponding file
-    synchronization.generate_preamble_symbols(len(symbols))
-    preamble_symbols = helper.read_preamble_symbols()
+    preambles.generate_preamble_symbols(len(symbols))
+    preamble_symbols = read_write.read_preamble_symbols()
 
     # Generate the preamble samples
     preamble_samples = upfirdn(h, preamble_symbols, params.USF)
@@ -68,7 +69,8 @@ def local_test():
     if params.MODULATION_TYPE == 1:
         samples = fourier_helper.modulate_complex_samples(total_samples, params.np.mean(params.FREQ_RANGES, axis=1))
     elif params.MODULATION_TYPE == 2:
-        samples = fourier_helper.modulate_complex_samples(total_samples, [params.FREQ_RANGES[0][1], params.FREQ_RANGES[2][1]])
+        samples = fourier_helper.modulate_complex_samples(total_samples,
+                                                          [params.FREQ_RANGES[0][1], params.FREQ_RANGES[2][1]])
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
 
@@ -81,10 +83,10 @@ def local_test():
     plot_helper.fft_plot(samples, "Input samples after modulation, in Frequency domain", shift=True)
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    samples = samples/(max(samples)*(2-params.ABS_SAMPLE_RANGE))
+    samples = (samples / (max(samples)) * params.ABS_SAMPLE_RANGE)
     print("Scaling the signal...")
-    print("Minimum sample after scaling: {}".format(min(total_samples)))
-    print("Maximum sample after scaling: {}".format(max(total_samples)))
+    print("Minimum sample after scaling: {}".format(min(samples)))
+    print("Maximum sample after scaling: {}".format(max(samples)))
     print("--------------------------------------------------------")
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -94,6 +96,7 @@ def local_test():
 
     # Clip the data to [-1, 1]
     samples = np.clip(samples, -1, 1)
+    print("Samples clipped to [-1, 1]")
 
     # # Remove 1 frequency range among the 4 authorized ranges
     # samples_fft = np.fft.fft(samples)
@@ -129,6 +132,7 @@ def local_test():
 
     # Clip the data to [-1, 1]
     samples = np.clip(samples, -1, 1)
+    print("Samples clipped to [-1, 1]")
     print("--------------------------------------------------------")
     # ----------------------------------------------------------------------------------------------------------------
     # Channel simulation's end ---------------------------------------------------------------------------------------
@@ -156,7 +160,7 @@ def local_test():
     plot_helper.fft_plot(y, "y in Frequency domain", shift=True)
 
     # Find the delay
-    delay = synchronization.maximum_likelihood_sync(demodulated_samples, preamble_samples=preamble_samples)
+    delay = parameter_estim.ML_theta_estimation(demodulated_samples, preamble_samples=preamble_samples)
     print("Delay: {} samples".format(delay))
     print("--------------------------------------------------------")
 
@@ -168,8 +172,8 @@ def local_test():
     print("Number of samples for the actual preamble: {}".format(len_preamble_samples))
     print("Number of samples for the received preamble: {}".format(len(preamble_samples_received)))
 
-    # Compute the frequency offset, and the scaling factor
-    # We take remove the rrc-equivalent-tail because there is data on the tail we receive otherwise
+    # Compute the frequency offset
+    # We remove the rrc-equivalent-tail because there is data on the tail otherwise
     # TODO: why dot works and not vdot (supposed to conjugate the first term in the formula)
     dot_product = np.dot(preamble_samples[:len_preamble_samples - half_span_h],
                          preamble_samples_received[:len(preamble_samples_received) - half_span_h])
@@ -190,8 +194,7 @@ def local_test():
     data_samples = y[half_span_h + delay + len_preamble_samples - half_span_h + params.USF-1 - 1:]
 
     # Find the second_preamble_index
-    second_preamble_index = synchronization.maximum_likelihood_sync(data_samples,
-                                                                    preamble_samples=preamble_samples[::-1])
+    second_preamble_index = parameter_estim.ML_theta_estimation(data_samples, preamble_samples=preamble_samples[::-1])
     print("Second preamble index: {} samples".format(second_preamble_index))
     print("--------------------------------------------------------")
 
@@ -204,7 +207,7 @@ def local_test():
 
     # Down-sample the samples to obtain the symbols
     data_symbols = data_samples[::params.USF]
-    print("Data symbols received:\n{}", format(data_symbols))
+    print("Number of symbols received: {}".format(len(data_symbols)))
 
     plot_helper.plot_complex_function(data_symbols, "y without preamble")
     plot_helper.plot_complex_symbols(data_symbols, "Symbols received", annotate=False)

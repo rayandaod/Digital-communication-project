@@ -23,14 +23,18 @@ preamble_sample_file_path = "../data/preamble_samples.txt"
 server_hostname = "iscsrv72.epfl.ch"
 server_port = 80
 
+# ---------------------------------------------
 # /!\ DO NOT CHANGE THE FOLLOWING VARIABLES /!\
+# ---------------------------------------------
 NOISE_VAR = 0.0025  # channel noise variance
 Fs = 22050  # sampling frequency / sampling rate / samples per second (in Hz)
 FREQ_RANGES = [[1000, 3000],  # frequency ranges authorized by the channel
                [3000, 5000],  # one of them (at random) is set to 0 by the channel
                [5000, 7000],
                [7000, 9000]]
+# ---------------------------------------------
 # /!\ -------------------------------------- /!\
+# ---------------------------------------------
 
 # Communication parameters (you should only tweak the first 5 ones for this project)
 MAPPING = "qam"  # mapping: qam or psk or pam for now
@@ -42,7 +46,7 @@ MODULATION_TYPE = 2
 # 1 = naive approach (duplicate 4 times)
 # 2 = less naive approach (duplicate 2 times, (care about covering 4000Hz with the rrc --> choose T accordingly))
 
-BETA = 0.2  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
+BETA = 0.16  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
 T = choose_symbol_period()  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying
 # Nyquist crit.
 NORMALIZE_PULSE = True  # rather we normalize the pulse or not
@@ -52,8 +56,10 @@ USF = int(np.ceil(T*Fs))  # up-sampling factor, i.e the number of zeros to add b
 SPAN = 20*USF  # size of our pulse in number of samples
 
 PREAMBLE_TYPE = "barker"  # Type of preamble to generate (barker or random for now)
+BARKER_SEQUENCE_REPETITION = 4  # Number of repetitions of the barker sequence
 PREAMBLE_LENGTH_RATIO = 0.36  # Ratio of random preamble symbols compared to the number of symbols of the data
 
 ABS_SAMPLE_RANGE = 0.8  # samples amplitude must be between -1 and 1, but we keep a little margin for the noise
 
 # TODO test with different values for all parameters
+# TODO see if 4 repetitions of barker sequence are enough/too much

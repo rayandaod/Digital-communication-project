@@ -3,12 +3,12 @@ from scipy.signal import upfirdn
 
 import helper
 import params
-import writers
+import read_write
 import plot_helper
 import pulses
 import fourier_helper
 import mappings
-import synchronization
+import preambles
 
 
 def message_to_ints():
@@ -19,6 +19,7 @@ def message_to_ints():
     message_file = open(params.message_file_path)
     message = message_file.readline()
     print("Sent message:\n{}".format(message))
+    print("Length: {} characters".format(len(message)))
 
     # TODO Tried to compress message
     # compressed_message = zlib.compress(message_encoded)
@@ -62,18 +63,19 @@ def encoder(indices, mapping):
     :param mapping: the mapping corresponding to the given modulation type
     :return: the symbols/n-tuples
     """
-    symbols = [mapping[i] for i in indices]
+    corresponding_symbols = [mapping[i] for i in indices]
 
     if params.verbose:
-        print("Symbols/n-tuples to be sent:\n{}".format(symbols))
-        print("Average symbol energy: {}".format(np.mean(np.abs(symbols)**2)))
-        print("Number of symbols: {}".format(len(symbols)))
-        print("Minimum symbol: {}".format(min(symbols)))
-        print("Maximum symbol: {}".format(max(symbols)))
+        print("Symbols/n-tuples to be sent:\n{}".format(corresponding_symbols))
+        print("Average symbol energy: {}".format(np.mean(np.abs(corresponding_symbols)**2)))
+        print("Number of symbols: {}".format(len(corresponding_symbols)))
+        print("Minimum symbol: {}".format(min(corresponding_symbols)))
+        print("Maximum symbol: {}".format(max(corresponding_symbols)))
         print("--------------------------------------------------------")
-        plot_helper.plot_complex_symbols(symbols, "{} data symbols to send".format(len(symbols)), "blue")
+        plot_helper.plot_complex_symbols(corresponding_symbols, "{} data symbols to send"
+                                         .format(len(corresponding_symbols)), "blue")
 
-    return np.asarray(symbols)
+    return np.asarray(corresponding_symbols)
 
 
 def symbols_to_samples(h, data_symbols, USF=params.USF):
@@ -91,8 +93,11 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
     #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
     # Generate the preamble_symbols and write them in the appropriate file
-    synchronization.generate_preamble_symbols(len(data_symbols))
-    preamble_symbols = helper.read_preamble_symbols()
+    preambles.generate_preamble_symbols(len(data_symbols))
+    preamble_symbols = read_write.read_preamble_symbols()
+    if params.verbose:
+        print("Preamble symbols:\n{}".format(preamble_symbols))
+        print("--------------------------------------------------------")
     plot_helper.plot_complex_symbols(preamble_symbols, "Preamble symbols")
 
     # Concatenate the synchronization sequence with the symbols to send
@@ -116,7 +121,7 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
 
     # Write the preamble samples (base-band, so might be complex) in the preamble_samples file
     preamble_samples = upfirdn(h, preamble_symbols, USF)
-    writers.write_preamble_samples(preamble_samples)
+    read_write.write_preamble_samples(preamble_samples)
 
     if params.verbose:
         print("Shaping the preamble...")
@@ -148,7 +153,7 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
         raise ValueError("TODO: handle real samples (e.g SSB)")
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    total_samples = total_samples/(max(total_samples)*(2-params.ABS_SAMPLE_RANGE))
+    total_samples = (total_samples/(max(total_samples))*params.ABS_SAMPLE_RANGE)
 
     if params.verbose:
         print("Scaling the signal...")
@@ -171,7 +176,7 @@ if __name__ == '__main__':
     input_samples = symbols_to_samples(h_pulse, symbols)
 
     # Write the samples in the input file
-    writers.write_samples(input_samples)
+    read_write.write_samples(input_samples)
 
 # TODO Add checks everywhere on the sizes of the arrays etc
 # TODO Try with a longer/shorter message

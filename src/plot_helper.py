@@ -10,6 +10,7 @@ def plot_complex_symbols(complex_values, title, color="black", annotate=False):
     :param complex_values: array of complex values to plot
     :param title: title of the plot
     :param color: color of the points
+    :param annotate: rather we annotate the symbols or not
     :return: None (plot the graph)
     """
     re = [x.real for x in complex_values]
@@ -45,6 +46,7 @@ def plot_complex_function(complex_values, title, dots=False):
     """
     :param complex_values: complex values (e.g at the output of the pulse-shaping)
     :param title: title of the plot
+    :param dots: rather we want dots or not
     :return: None (plot the graph)
     """
     re = [x.real for x in complex_values]
@@ -147,9 +149,9 @@ def two_simple_plots(samples_1, samples_2, title, y_label_1, y_label_2):
 def fft_plot(samples, title, shift=False):
     """
     Plots a simple fft plot
+    :param shift: rather we shift the fft or not
     :param samples: the sample array
     :param title: the title for the plot
-    :param: shift: rather we shift the fft or not
     :return: None
     """
     X = np.fft.fft(samples)

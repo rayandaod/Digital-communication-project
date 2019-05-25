@@ -10,6 +10,7 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
     :param beta: rolloff factor (0<=beta<=1)
     :param T: symbol period (in seconds)
     :param Fs: sampling frequency (in Hz)
+    :param normalize: rather we normalize the rrc or not
     :return: time indices, and 1-dimensional FIR (finite-impulse response) filter coefficients
     """
 
@@ -43,7 +44,7 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
             if abs(t) == forbidden_value_t:
                 rrc[n] = rrc_beta_forbidden_value
             elif beta == 1 or t == 0:
-                rrc[n] = first_term * (np.cos((1+beta)* pi*t/T) + second_term) / (1-third_term*t**2)
+                rrc[n] = first_term * (np.cos((1+beta)*pi*t/T) + second_term) / (1-third_term*t**2)
             else:
                 rrc[n] = first_term * \
                          (np.cos((1+beta) * np.pi * t/T) + second_term *
