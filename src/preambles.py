@@ -1,7 +1,7 @@
 import numpy as np
 
-import params
 import mappings
+import params
 import read_write
 
 
@@ -39,4 +39,4 @@ def generate_random_preamble_symbols(n_symbols_to_send):
 def generate_barker_preamble_symbols():
     barker_code_13 = np.array([1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1])
     preamble_symbols = np.repeat(barker_code_13, params.BARKER_SEQUENCE_REPETITION)
-    return preamble_symbols + 1j*preamble_symbols
+    return preamble_symbols + 1j * preamble_symbols

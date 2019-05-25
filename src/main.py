@@ -1,6 +1,6 @@
-import transmitter
-import receiver
 import mappings
+import receiver
+import transmitter
 
 if __name__ == "__main__":
     # Encoder

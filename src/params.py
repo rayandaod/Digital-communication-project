@@ -3,9 +3,9 @@ import numpy as np
 
 def choose_symbol_period():
     if MODULATION_TYPE == 1:
-        return np.floor(((1+BETA)/1900)*Fs)/Fs
+        return np.floor(((1 + BETA) / 2000) * Fs) / Fs
     elif MODULATION_TYPE == 2:
-        return np.round(((1+BETA)/3900)*Fs)/Fs
+        return np.round(((1 + BETA) / 3900) * Fs) / Fs
     else:
         raise ValueError('This modulation type does not exist yet... Hehehe')
 
@@ -46,20 +46,20 @@ MODULATION_TYPE = 1
 # 1 = naive approach (duplicate 4 times)
 # 2 = less naive approach (duplicate 2 times, (care about covering 4000Hz with the rrc --> choose T accordingly))
 
-BETA = 0.3  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
+BETA = 0.2  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
 T = choose_symbol_period()  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying
 # Nyquist crit.
 NORMALIZE_PULSE = True  # rather we normalize the pulse or not
 
-USF = int(np.ceil(T*Fs))  # up-sampling factor, i.e the number of zeros to add between any 2 symbols before
+USF = int(np.ceil(T * Fs))  # up-sampling factor, i.e the number of zeros to add between any 2 symbols before
 # pulse shaping
-SPAN = 4*USF  # size of our pulse in number of samples
+SPAN = 4 * USF  # size of our pulse in number of samples
 
 PREAMBLE_TYPE = "barker"  # Type of preamble to generate (barker or random for now)
-BARKER_SEQUENCE_REPETITION = 2  # Number of repetitions of the barker sequence
+BARKER_SEQUENCE_REPETITION = 1  # Number of repetitions of the barker sequence
 PREAMBLE_LENGTH_RATIO = 0.36  # Ratio of random preamble symbols compared to the number of symbols of the data
 
-ABS_SAMPLE_RANGE = 0.8  # samples amplitude must be between -1 and 1, but we keep a little margin for the noise
+ABS_SAMPLE_RANGE = 0.85  # samples amplitude must be between -1 and 1, but we keep a little margin for the noise
 
 # TODO test with different values for all parameters
 # TODO see if 4 repetitions of barker sequence are enough/too much

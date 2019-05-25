@@ -1,14 +1,15 @@
 import numpy as np
 from scipy.signal import upfirdn
+import sys
 
-import helper
-import params
-import read_write
-import plot_helper
-import pulses
 import fourier_helper
+import helper
 import mappings
+import params
+import plot_helper
 import preambles
+import pulses
+import read_write
 
 
 def message_to_ints():
@@ -67,7 +68,7 @@ def encoder(indices, mapping):
 
     if params.verbose:
         print("Symbols/n-tuples to be sent:\n{}".format(corresponding_symbols))
-        print("Average symbol energy: {}".format(np.mean(np.abs(corresponding_symbols)**2)))
+        print("Average symbol energy: {}".format(np.mean(np.abs(corresponding_symbols) ** 2)))
         print("Number of symbols: {}".format(len(corresponding_symbols)))
         print("Minimum symbol: {}".format(min(corresponding_symbols)))
         print("Maximum symbol: {}".format(max(corresponding_symbols)))
@@ -153,7 +154,7 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
         raise ValueError("TODO: handle real samples (e.g SSB)")
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    total_samples = (total_samples/(max(total_samples))*params.ABS_SAMPLE_RANGE)
+    total_samples = (total_samples / (max(total_samples)) * params.ABS_SAMPLE_RANGE)
 
     if params.verbose:
         print("Scaling the signal...")
@@ -166,6 +167,9 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == '__main__':
+    log = open("../logs/test.log", "a")
+    sys.stdout = log
+
     # Encode the message
     symbols = encoder(message_to_ints(), mappings.mapping)
 

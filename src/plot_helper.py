@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-import params
 import fourier_helper
+import params
 
 
 def plot_complex_symbols(complex_values, title, color="black", annotate=False):
@@ -32,7 +32,7 @@ def plot_complex_symbols(complex_values, title, color="black", annotate=False):
     elif annotate:
         for c in complex_values:
             ax.annotate('({0: .2f} {1} {2:.2f}j)'
-                        .format(c.real, '+-'[c.imag < 0], abs(c.imag)), xy=(np.real(c), np.imag(c)+0.001))
+                        .format(c.real, '+-'[c.imag < 0], abs(c.imag)), xy=(np.real(c), np.imag(c) + 0.001))
 
     plt.axvline(linewidth=1, color="black")
     plt.axhline(linewidth=1, color="black")
@@ -113,7 +113,6 @@ def two_fft_plots(samples_1, samples_2, title, y_label_1, y_label_2):
 
     plt.interactive(False)
     plt.show()
-
     return None
 
 
@@ -142,7 +141,6 @@ def two_simple_plots(samples_1, samples_2, title, y_label_1, y_label_2):
 
     plt.interactive(False)
     plt.show()
-
     return None
 
 
@@ -174,7 +172,6 @@ def fft_plot(samples, title, shift=False):
     plt.subplots_adjust(hspace=0.5)
     plt.interactive(False)
     plt.show()
-
     return None
 
 
@@ -195,7 +192,6 @@ def simple_plot(x_axis, y_axis, title):
     plt.grid()
     plt.interactive(False)
     plt.show()
-
     return None
 
 
@@ -220,5 +216,4 @@ def simple_and_fft_plots(time_indices, samples, title, shift=False):
     plt.subplots_adjust(hspace=0.5)
     plt.interactive(False)
     plt.show()
-
     return None

@@ -19,10 +19,11 @@ def dft_shift(X):
     N = len(X)
     if N % 2 == 0:
         # even-length: return N+1 values
-        return np.arange(-int(N/2), int(N/2) + 1), np.concatenate((X[int(N/2):], X[:int(N/2)+1]))
+        return np.arange(-int(N / 2), int(N / 2) + 1), np.concatenate((X[int(N / 2):], X[:int(N / 2) + 1]))
     else:
         # odd-length: return N values
-        return np.arange(-int((N-1)/2), int((N-1)/2) + 1), np.concatenate((X[int((N+1)/2):], X[:int((N+1)/2)]))
+        return np.arange(-int((N - 1) / 2), int((N - 1) / 2) + 1), np.concatenate(
+            (X[int((N + 1) / 2):], X[:int((N + 1) / 2)]))
 
 
 def dft_map(X, Fs=params.Fs, shift=True):
@@ -107,14 +108,14 @@ def modulate_complex_samples(samples, frequencies):
     :return: the modulated signals
     """
     n_sample = len(samples)
-    time_indices = np.arange(n_sample)/params.Fs
+    time_indices = np.arange(n_sample) / params.Fs
     re_samples = np.real(samples)
     im_samples = np.imag(samples)
     new_samples = np.zeros(n_sample)
     for n in range(n_sample):
         for f in frequencies:
             new_samples[n] += re_samples[n] * np.sqrt(2) * np.cos(2 * np.pi * f * time_indices[n]) - \
-                             im_samples[n] * np.sqrt(2) * np.sin(2 * np.pi * f * time_indices[n])
+                              im_samples[n] * np.sqrt(2) * np.sin(2 * np.pi * f * time_indices[n])
     return new_samples.real
 
 
@@ -126,7 +127,7 @@ def demodulate(samples, f):
     :return: the demodulated signal
     """
     n_sample = len(samples)
-    time_indices = np.arange(n_sample)/params.Fs
+    time_indices = np.arange(n_sample) / params.Fs
     new_samples = []
     for n in range(n_sample):
         new_samples.append(samples[n] * np.sqrt(2) * np.cos(2 * np.pi * f * time_indices[n]) -

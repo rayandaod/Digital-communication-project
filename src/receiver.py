@@ -1,12 +1,13 @@
 import numpy as np
 
-import params
-import helper
-import plot_helper
 import fourier_helper
-import pulses
+import helper
 import mappings
 import parameter_estim
+import params
+import plot_helper
+import pulses
+import read_write
 
 
 def decoder(y, mapping):
@@ -66,7 +67,7 @@ def ints_to_message(ints):
         print("Bits grouped all together:\n{}".format(bits))
 
     # Slice the string into substrings of 7 characters
-    bits = [bits[i:i+7] for i in range(0, len(bits), 7)]
+    bits = [bits[i:i + 7] for i in range(0, len(bits), 7)]
     if params.verbose:
         print("Groups of 7 bits:\n{}".format(bits))
 
@@ -86,25 +87,22 @@ def ints_to_message(ints):
 
 def received_from_server():
     # Read the received samples from the server
-    output_sample_file = open(params.output_sample_file_path, "r")
-    samples = [float(line) for line in output_sample_file.readlines()]
-    output_sample_file.close()
+    samples = read_write.read_samples()
 
     # Read the preamble samples saved previously
-    preamble_samples_file = open(params.preamble_sample_file_path, "r")
-    preamble_samples = np.asarray([complex(line) for line in preamble_samples_file.readlines()])
-    preamble_samples_file.close()
+    preamble_samples = read_write.read_preamble_samples()
     len_preamble_samples = len(preamble_samples)
 
-    # Plot the received samples
-    plot_helper.plot_complex_function(samples, "Received samples in time domain")
-    plot_helper.fft_plot(samples, "Received samples in frequency domain", shift=True)
+    if params.verbose:
+        plot_helper.plot_complex_function(samples, "Received samples in time domain")
+        plot_helper.fft_plot(samples, "Received samples in frequency domain", shift=True)
 
     # Find the frequency range that has been removed
     range_indices, removed_freq_range = fourier_helper.find_removed_freq_range_2(samples)
-    print("Removed frequency range: {}".format(removed_freq_range))
+    if params.verbose:
+        print("Removed frequency range: {} (range {})".format(removed_freq_range, removed_freq_range + 1))
 
-    # Choose a frequency among the 3 available frequency ranges / the only available frequency range
+    # Choose a frequency for demodulation
     if params.MODULATION_TYPE == 1:
         if removed_freq_range == 0:
             fc = np.mean(params.FREQ_RANGES[1])
@@ -118,86 +116,78 @@ def received_from_server():
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
 
+    # Demodulate the received samples to base-band
     demodulated_samples = fourier_helper.demodulate(samples, fc)
-    plot_helper.plot_complex_function(demodulated_samples, "Demodulated samples in Time domain")
-    plot_helper.fft_plot(demodulated_samples, "Demodulated samples in Frequency domain", shift=True)
+    if params.verbose:
+        plot_helper.plot_complex_function(demodulated_samples, "Demodulated samples in Time domain")
+        plot_helper.fft_plot(demodulated_samples, "Demodulated samples in Frequency domain", shift=True)
 
     # Match filter (i.e Low-pass)
     _, h = pulses.root_raised_cosine()
-    half_span_h = int(params.SPAN/2)
+    half_span_h = int(params.SPAN / 2)
     h_matched = np.conjugate(h[::-1])
     y = np.convolve(demodulated_samples, h_matched)
-    plot_helper.plot_complex_function(y, "y in Time domain")
-    plot_helper.fft_plot(y, "y in Frequency domain", shift=True)
+    if params.verbose:
+        plot_helper.plot_complex_function(y, "y in Time domain")
+        plot_helper.fft_plot(y, "y in Frequency domain", shift=True)
 
     # Find the delay
     delay = parameter_estim.ML_theta_estimation(demodulated_samples, preamble_samples=preamble_samples)
-    print("Delay: {} samples".format(delay))
-    print("--------------------------------------------------------")
+    if params.verbose:
+        print("Delay: {} samples".format(delay))
+        print("--------------------------------------------------------")
 
     # Extract the preamble samples
     preamble_samples_received = y[half_span_h + delay - 1:half_span_h + delay + len_preamble_samples - 1]
-    plot_helper.two_simple_plots(preamble_samples_received.real, preamble_samples.real,
-                                 "Comparison between preamble samples received and preamble samples sent",
-                                 "received", "expected")
-    print("Number of samples for the actual preamble: {}".format(len_preamble_samples))
-    print("Number of samples for the received preamble: {}".format(len(preamble_samples_received)))
+    if params.verbose:
+        plot_helper.two_simple_plots(preamble_samples_received.real, preamble_samples.real,
+                                     "Comparison between preamble samples received and preamble samples sent",
+                                     "received", "expected")
+        print("Number of samples for the actual preamble: {}".format(len_preamble_samples))
+        print("Number of samples for the received preamble: {}".format(len(preamble_samples_received)))
 
-    # Compute the phase offset
-    # We remove the rrc-equivalent-tail because there is data on the tail otherwise
-    # TODO: why dot works and not vdot (supposed to conjugate the first term in the formula)
-    dot_product = np.dot(preamble_samples[:len_preamble_samples - half_span_h],
-                         preamble_samples_received[:len(preamble_samples_received) - half_span_h])
-    print("Dot product: {}".format(dot_product))
-
-    preamble_energy = 0
-    for i in range(len_preamble_samples - half_span_h):
-        preamble_energy += np.absolute(preamble_samples[i]) ** 2
-    print("Energy of the preamble: {}".format(preamble_energy))
-
-    frequency_offset_estim = np.angle(dot_product)
-    print("Frequency offset: {}".format(frequency_offset_estim))
-
-    scaling_factor = abs(dot_product) / preamble_energy
-    print("Scaling factor: {}".format(scaling_factor))
+    # Compute the phase shift
+    phase_shift_estim, scaling_factor = parameter_estim.ML_phase_scaling_estim(
+        preamble_samples[:len_preamble_samples - half_span_h],
+        preamble_samples_received[:len(preamble_samples_received) - half_span_h])
+    if params.verbose:
+        print("Frequency offset: {}".format(phase_shift_estim))
+        print("Scaling factor: {}".format(scaling_factor))
 
     # Crop the samples (remove the delay, the preamble, and the ramp-up)
     data_samples = y[half_span_h + delay + len_preamble_samples - half_span_h + params.USF - 1 - 1:]
 
     # Find the second_preamble_index
     second_preamble_index = parameter_estim.ML_theta_estimation(data_samples, preamble_samples=preamble_samples[::-1])
-    print("Second preamble index: {} samples".format(second_preamble_index))
-    print("--------------------------------------------------------")
+    if params.verbose:
+        print("Second preamble index: {} samples".format(second_preamble_index))
+        print("--------------------------------------------------------")
 
-    # Crop the samples (remove the preamble, and the garbage at the end)
+    # Crop the samples (remove the garbage at the end)
     data_samples = data_samples[:second_preamble_index + half_span_h - params.USF + 1]
-    plot_helper.plot_complex_function(data_samples, "y after removing the delay, the preamble, and the ramp-up")
+    if params.verbose:
+        plot_helper.plot_complex_function(data_samples, "y after removing the delay, the preamble, and the ramp-up")
 
+    # Correct the phase shift on the data samples
     # TODO: why frequency_offset - pi/2 works ?
-    data_samples = data_samples * np.exp(-1j * (frequency_offset_estim - np.pi / 2))
+    data_samples = data_samples * np.exp(-1j * (phase_shift_estim - np.pi / 2))
 
     # Down-sample the samples to obtain the symbols
     data_symbols = data_samples[::params.USF]
-    print("Number of symbols received: {}".format(len(data_symbols)))
-
-    plot_helper.plot_complex_function(data_symbols, "y without preamble")
-    plot_helper.plot_complex_symbols(data_symbols, "Symbols received", annotate=False)
+    if params.verbose:
+        print("Number of symbols received: {}".format(len(data_symbols)))
+        plot_helper.plot_complex_function(data_symbols, "y without preamble")
+        plot_helper.plot_complex_symbols(data_symbols, "Symbols received", annotate=False)
 
     # Decode the symbols
     ints = decoder(data_symbols, mappings.mapping)
     message_received = ints_to_message(ints)
+    read_write.write_message_received(message_received)
 
-    output_message_file = open(params.output_file_path, "w")
-    output_message_file.write(message_received)
-    output_message_file.close()
-
-    input_message_file = open(params.message_file_path)
-    message_sent = input_message_file.readline()
-    input_message_file.close()
-    print("Message sent == message received: {}".format(message_received == message_sent))
+    message_sent = read_write.read_message_sent()
+    print("Message sent:\n{}".format(message_sent))
 
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
-
     received_from_server()

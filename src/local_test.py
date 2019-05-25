@@ -1,20 +1,21 @@
-import pulses
-from scipy.signal import upfirdn
 import numpy as np
-import plot_helper
-import mappings
-import preambles
-import params
-import transmitter
-import receiver
-import fourier_helper
-import read_write
-import parameter_estim
+from scipy.signal import upfirdn
 
+import fourier_helper
+import mappings
+import parameter_estim
+import params
+import plot_helper
+import preambles
+import pulses
+import read_write
+import receiver
+import transmitter
 
 """
 Testing file
 """
+
 
 # np.random.seed(30)
 
@@ -33,7 +34,7 @@ def local_test():
 
     # Generate the pulse h
     _, h = pulses.root_raised_cosine()
-    half_span_h = int(params.SPAN/2)
+    half_span_h = int(params.SPAN / 2)
 
     # Generate the preamble symbols and read it from the corresponding file
     preambles.generate_preamble_symbols(len(symbols))
@@ -83,7 +84,7 @@ def local_test():
     plot_helper.fft_plot(samples, "Input samples after modulation, in Frequency domain", shift=True)
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    samples = (samples/(max(samples))*params.ABS_SAMPLE_RANGE)
+    samples = (samples / (max(samples)) * params.ABS_SAMPLE_RANGE)
     print("Scaling the signal...")
     print("Minimum sample after scaling: {}".format(min(samples)))
     print("Maximum sample after scaling: {}".format(max(samples)))
@@ -119,14 +120,14 @@ def local_test():
     # Introduce a delay and a garbage ending
     channel_delay = np.random.normal(0, np.sqrt(params.NOISE_VAR), size=np.random.randint(params.Fs))
     print("Delay introduced: {} samples".format(len(channel_delay)))
-    ending_garbage = np.random.normal(0, np.sqrt(params.NOISE_VAR), size=np.random.randint(params.Fs/5))
+    ending_garbage = np.random.normal(0, np.sqrt(params.NOISE_VAR), size=np.random.randint(params.Fs / 5))
     print("Ending preamble after: {} samples".format(len(channel_delay) + len(samples)))
     samples = np.concatenate((channel_delay,
                               samples + np.random.normal(0, np.sqrt(params.NOISE_VAR), size=len(samples)),
                               ending_garbage))
 
     # Scale the samples down
-    channel_scaling = 1/(np.random.randint(5)+1)
+    channel_scaling = 1 / (np.random.randint(5) + 1)
     samples = channel_scaling * samples
     print("Scaling introduced: {}".format(channel_scaling))
 
@@ -181,17 +182,17 @@ def local_test():
 
     preamble_energy = 0
     for i in range(len_preamble_samples - half_span_h):
-        preamble_energy += np.absolute(preamble_samples[i])**2
+        preamble_energy += np.absolute(preamble_samples[i]) ** 2
     print("Energy of the preamble: {}".format(preamble_energy))
 
     frequency_offset_estim = np.angle(dot_product)
     print("Frequency offset: {}".format(frequency_offset_estim))
 
-    scaling_factor = abs(dot_product)/preamble_energy
+    scaling_factor = abs(dot_product) / preamble_energy
     print("Scaling factor: {}".format(scaling_factor))
 
     # Crop the samples (remove the delay, the preamble, and the ramp-up)
-    data_samples = y[half_span_h + delay + len_preamble_samples - half_span_h + params.USF-1 - 1:]
+    data_samples = y[half_span_h + delay + len_preamble_samples - half_span_h + params.USF - 1 - 1:]
 
     # Find the second_preamble_index
     second_preamble_index = parameter_estim.ML_theta_estimation(data_samples, preamble_samples=preamble_samples[::-1])
@@ -199,11 +200,11 @@ def local_test():
     print("--------------------------------------------------------")
 
     # Crop the samples (remove the preamble, and the garbage at the end)
-    data_samples = data_samples[:second_preamble_index + half_span_h - params.USF+1]
+    data_samples = data_samples[:second_preamble_index + half_span_h - params.USF + 1]
     plot_helper.plot_complex_function(data_samples, "y after removing the delay, the preamble, and the ramp-up")
 
     # TODO: why frequency_offset - pi/2 works ?
-    data_samples = data_samples * np.exp(-1j*(frequency_offset_estim-np.pi/2))
+    data_samples = data_samples * np.exp(-1j * (frequency_offset_estim - np.pi / 2))
 
     # Down-sample the samples to obtain the symbols
     data_symbols = data_samples[::params.USF]
@@ -221,5 +222,6 @@ def local_test():
     print(message_received == message_sent)
 
 
+# Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
     local_test()

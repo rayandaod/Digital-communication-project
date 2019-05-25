@@ -1,5 +1,6 @@
-import params
 import subprocess
+
+import params
 
 
 def launch():
@@ -11,5 +12,6 @@ def launch():
                     shell=True)
 
 
+# Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
     launch()

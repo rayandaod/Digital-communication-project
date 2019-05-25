@@ -80,5 +80,6 @@ def choose_mapping(normalize=params.NORMALIZE_MAPPING):
 
 mapping = choose_mapping()
 
+# Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
     print(qam_map(16))

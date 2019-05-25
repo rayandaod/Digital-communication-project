@@ -7,11 +7,32 @@ Reading methods
 """
 
 
+def read_samples():
+    output_sample_file = open(params.output_sample_file_path, "r")
+    samples = [float(line) for line in output_sample_file.readlines()]
+    output_sample_file.close()
+    return samples
+
+
+def read_preamble_samples():
+    preamble_samples_file = open(params.preamble_sample_file_path, "r")
+    preamble_samples = np.asarray([complex(line) for line in preamble_samples_file.readlines()])
+    preamble_samples_file.close()
+    return preamble_samples
+
+
 def read_preamble_symbols():
     preamble_symbol_file = open(params.preamble_symbol_file_path, "r")
     preamble_symbols = [complex(line) for line in preamble_symbol_file.readlines()]
     preamble_symbol_file.close()
     return preamble_symbols
+
+
+def read_message_sent():
+    input_message_file = open(params.message_file_path)
+    message_sent = input_message_file.readline()
+    input_message_file.close()
+    return message_sent
 
 
 """
@@ -56,6 +77,12 @@ def write_preamble_samples(preamble_samples):
     preamble_sample_file.close()
 
 
+def write_message_received(message):
+    output_message_file = open(params.output_file_path, "w")
+    output_message_file.write(message)
+    output_message_file.close()
+
+
 def write_gaussian_noise(duration, mean, std):
     """
     Write a gaussian noise with the given parameters in the input file
@@ -93,6 +120,7 @@ def write_sinus(duration, freqs, scaling_factor=1.):
     return None
 
 
+# Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
     # write_samples(input_samples)
     write_gaussian_noise(1, mean=0, std=1 / 4)

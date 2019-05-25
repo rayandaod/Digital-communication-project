@@ -1,12 +1,11 @@
 import numpy as np
 
-import params
 import launcher
+import params
 import plot_helper
 
-
+# Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
-
     # Send the samples from the input file to the server, and get the output samples in the output file
     launcher.launch()
 

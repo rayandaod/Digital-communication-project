@@ -13,10 +13,10 @@ python3 client.py --input_file=[FILENAME] --output_file=[FILENAME] --srv_hostnam
 """
 
 import argparse
-import pathlib
 import socket
 
 import numpy as np
+import pathlib
 
 import channel_helper as ch
 

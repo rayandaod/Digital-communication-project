@@ -4,9 +4,10 @@
 # Author : Sepand KASHANI [sepand.kashani@epfl.ch]
 # ############################################################################
 
-import struct
-import numpy as np
 import io
+import struct
+
+import numpy as np
 
 
 def send_ndarray(sock, data):

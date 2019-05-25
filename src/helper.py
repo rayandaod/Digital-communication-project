@@ -14,5 +14,6 @@ def bits2string(b=None):
     return ''.join([chr(int(x, 2)) for x in b])
 
 
+# Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
     print("helper.py")
