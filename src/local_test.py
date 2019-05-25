@@ -83,7 +83,7 @@ def local_test():
     plot_helper.fft_plot(samples, "Input samples after modulation, in Frequency domain", shift=True)
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    samples = (samples / (max(samples)) * params.ABS_SAMPLE_RANGE)
+    samples = (samples/(max(samples))*params.ABS_SAMPLE_RANGE)
     print("Scaling the signal...")
     print("Minimum sample after scaling: {}".format(min(samples)))
     print("Maximum sample after scaling: {}".format(max(samples)))
@@ -172,7 +172,7 @@ def local_test():
     print("Number of samples for the actual preamble: {}".format(len_preamble_samples))
     print("Number of samples for the received preamble: {}".format(len(preamble_samples_received)))
 
-    # Compute the frequency offset
+    # Compute the phase offset
     # We remove the rrc-equivalent-tail because there is data on the tail otherwise
     # TODO: why dot works and not vdot (supposed to conjugate the first term in the formula)
     dot_product = np.dot(preamble_samples[:len_preamble_samples - half_span_h],
@@ -214,7 +214,11 @@ def local_test():
 
     # Decode the symbols
     ints = receiver.decoder(data_symbols, mappings.mapping)
-    receiver.ints_to_message(ints)
+    message_received = receiver.ints_to_message(ints)
+
+    message_file = open(params.message_file_path)
+    message_sent = message_file.readline()
+    print(message_received == message_sent)
 
 
 if __name__ == "__main__":

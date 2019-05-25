@@ -101,7 +101,7 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
     plot_helper.plot_complex_symbols(preamble_symbols, "Preamble symbols")
 
     # Concatenate the synchronization sequence with the symbols to send
-    total_symbols = np.concatenate((preamble_symbols, data_symbols))
+    total_symbols = np.concatenate((preamble_symbols, data_symbols, preamble_symbols[::-1]))
     plot_helper.plot_complex_symbols(total_symbols, "Total symbols to send")
 
     # TODO can/should I remove the ramp-up and ramp_down? (then less samples to send)
