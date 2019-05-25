@@ -2,7 +2,3 @@
 __pycache__
 .DS_Store
 venv
-data/input_samples.txt
-data/output_samples.txt
-data/preamble_samples.txt
-data/preamble_symbols.txt
