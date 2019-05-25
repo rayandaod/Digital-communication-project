@@ -5,7 +5,7 @@ def choose_symbol_period():
     if MODULATION_TYPE == 1:
         return np.floor(((1 + BETA) / 2000) * Fs) / Fs
     elif MODULATION_TYPE == 2:
-        return np.round(((1 + BETA) / 3900) * Fs) / Fs
+        return np.round(((1 + BETA) / 4000) * Fs) / Fs
     else:
         raise ValueError('This modulation type does not exist yet... Hehehe')
 
