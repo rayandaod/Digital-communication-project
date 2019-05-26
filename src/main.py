@@ -35,4 +35,4 @@ if __name__ == "__main__":
     receiver.received_from_server()
 
     sys.stdout = sys.__stdout__
-    input("Press Enter to finish transmission!")
+    input("Press Enter to end the transmission!")
