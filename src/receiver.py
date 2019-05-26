@@ -76,7 +76,11 @@ def ints_to_message(ints):
 
     # Convert from array of bytes to string
     message = ''.join(helper.bits2string(new_bits))
-    print("Message received:\n{}".format(message))
+
+    message_sent = read_write.read_message_sent()
+    print("Message sent: {:>50}".format(message_sent))
+
+    print("Message received: {:>50}".format(message))
 
     return message
 
@@ -191,9 +195,6 @@ def received_from_server():
     ints = decoder(data_symbols, np.asarray(mappings.choose_mapping()))
     message_received = ints_to_message(ints)
     read_write.write_message_received(message_received)
-
-    message_sent = read_write.read_message_sent()
-    print("Message sent:\n{}".format(message_sent))
 
 
 # Intended for testing (to run the program, run main.py)
