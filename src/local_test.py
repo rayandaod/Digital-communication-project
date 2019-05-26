@@ -33,7 +33,7 @@ def butter_bandpass(low_cut_freq, high_cut_freq, Fs=params.Fs, order=5):
 def butter_bandpass_filter(data, low_cut_freq, high_cut_freq, Fs=params.Fs, order=5):
         sos = butter_bandpass(low_cut_freq, high_cut_freq, Fs, order=order)
         y = sosfilt(sos, data)
-        if params.logs:
+        if params.plots:
             w, h = sosfreqz(sos, worN=2000)
             plt.plot((Fs * 0.5 / np.pi) * w, abs(h), label="order = %d" % order)
             plt.title("Output of butter bandpass")
@@ -76,20 +76,16 @@ def server_simulation(samples, clip=True, filter_freq=True, delay_start=True, de
             high_cut_freq_1 = params.FREQ_RANGES[0][1]
             low_cut_freq_2 = params.FREQ_RANGES[2][0]
             high_cut_freq_2 = params.FREQ_RANGES[3][1]
-            samples_1 = butter_bandpass_filter(samples, low_cut_freq_1, high_cut_freq_1,
-                                                              order=FILTER_ORDER)
-            samples_2 = butter_bandpass_filter(samples, low_cut_freq_2, high_cut_freq_2,
-                                                              order=FILTER_ORDER)
+            samples_1 = butter_bandpass_filter(samples, low_cut_freq_1, high_cut_freq_1, order=FILTER_ORDER)
+            samples_2 = butter_bandpass_filter(samples, low_cut_freq_2, high_cut_freq_2, order=FILTER_ORDER)
             samples = (samples_1 + samples_2)/2
         elif range_to_remove == 2:
             low_cut_freq_1 = params.FREQ_RANGES[0][0]
             high_cut_freq_1 = params.FREQ_RANGES[1][1]
             low_cut_freq_2 = params.FREQ_RANGES[3][0]
             high_cut_freq_2 = params.FREQ_RANGES[3][1]
-            samples_1 = butter_bandpass_filter(samples, low_cut_freq_1, high_cut_freq_1,
-                                                              order=FILTER_ORDER)
-            samples_2 = butter_bandpass_filter(samples, low_cut_freq_2, high_cut_freq_2,
-                                                              order=FILTER_ORDER)
+            samples_1 = butter_bandpass_filter(samples, low_cut_freq_1, high_cut_freq_1, order=FILTER_ORDER)
+            samples_2 = butter_bandpass_filter(samples, low_cut_freq_2, high_cut_freq_2, order=FILTER_ORDER)
             samples = (samples_1 + samples_2)/2
         else:
             low_cut_freq = params.FREQ_RANGES[0][0]
@@ -209,8 +205,7 @@ def local_test():
 
     # Find the frequency range that has been removed
     range_indices, removed_freq_range = fourier_helper.find_removed_freq_range(samples)
-    if params.logs:
-        print("Removed frequency range: {} (range {})".format(removed_freq_range, removed_freq_range + 1))
+    print("Removed frequency range: {} (range {})".format(removed_freq_range, removed_freq_range + 1))
 
     # Choose a frequency for demodulation
     if params.MODULATION_TYPE == 1:

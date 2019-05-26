@@ -24,8 +24,6 @@ def message_to_ints():
     if params.logs:
         print("Length: {} characters".format(len(message)))
 
-    message_encoded = message.encode('ascii')
-
     # Retrieve the message as a sequences of binary bytes
     string_bytes = helper.string2bits(message)
 
@@ -46,7 +44,6 @@ def message_to_ints():
     ints = [int(b, 2) for b in new_bits]
 
     if params.logs:
-        print("Encoded message:\n{}".format(message_encoded))
         print("Corresponding bytes:\n{}".format(string_bytes))
         print("Cropped and re-structured bits:\n{}".format(new_bits))
         print("Equivalent integers (indices for our mapping):\n{}".format(ints))
@@ -64,11 +61,9 @@ def encoder(indices, mapping):
     corresponding_symbols = [mapping[i] for i in indices]
 
     if params.logs:
+        print("Mapping the integers to the symbols in the mapping...")
         print("Symbols/n-tuples to be sent:\n{}".format(corresponding_symbols))
-        print("Average symbol energy: {}".format(np.mean(np.abs(corresponding_symbols) ** 2)))
         print("Number of symbols: {}".format(len(corresponding_symbols)))
-        print("Minimum symbol: {}".format(min(corresponding_symbols)))
-        print("Maximum symbol: {}".format(max(corresponding_symbols)))
         print("--------------------------------------------------------")
     if params.plots:
         plot_helper.plot_complex_symbols(corresponding_symbols, "{} data symbols to send"
@@ -111,8 +106,8 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
 
     if params.logs:
         print("Shaping the preamble and the data...")
-        print("Samples to be sent:\n{}".format(total_samples))
         print("Up-sampling factor: {}".format(params.USF))
+        print("Samples to be sent:\n{}".format(total_samples))
         print("Number of samples: {}".format(len(total_samples)))
         print("Minimum sample: {}".format(min(total_samples)))
         print("Maximum sample: {}".format(max(total_samples)))
@@ -127,6 +122,7 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
 
     if params.logs:
         print("Shaping the preamble...")
+        print("Samples for the preamble:\n{}".format(preamble_samples))
         print("Number of samples for the preamble: {}".format(len(preamble_samples)))
         print("--------------------------------------------------------")
     if params.plots:
@@ -146,7 +142,6 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
 
         if params.logs:
             print("Modulation of the signal...")
-            print("Number of samples: {}".format(len(total_samples)))
             print("Minimum sample after modulation: {}".format(min(total_samples)))
             print("Maximum sample after modulation: {}".format(max(total_samples)))
             print("--------------------------------------------------------")
@@ -184,8 +179,11 @@ def send_samples():
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == '__main__':
+    # Choose the mapping
+    mapping = mappings.choose_mapping()
+
     # Encode the message
-    symbols = encoder(message_to_ints(), mappings.choose_mapping())
+    symbols = encoder(message_to_ints(), mapping)
 
     # Generate the root-raised_cosine
     _, h_pulse = pulses.root_raised_cosine()

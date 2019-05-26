@@ -70,7 +70,9 @@ def choose_mapping(normalize=params.NORMALIZE_MAPPING):
         chosen_mapping = chosen_mapping / np.sqrt(np.mean(np.abs(chosen_mapping) ** 2))
 
     if params.logs:
-        print("Chosen mapping:\n{}".format(chosen_mapping))
+        print("Choosing the mapping...")
+        print("Mapping: {}".format(chosen_mapping))
+        print("Normalized = {}".format(params.NORMALIZE_MAPPING))
         print("--------------------------------------------------------")
     if params.plots:
         plot_helper.plot_complex_symbols(chosen_mapping, title="Chosen mapping, normalized={}".format(normalize),
