@@ -48,14 +48,14 @@ def butter_bandpass_filter(data, low_cut_freq, high_cut_freq, Fs=params.Fs, orde
 def server_simulation(samples, clip=True, filter_freq=True, delay_start=True, delay_end=True, noise=True, scale=True):
     """
     Simulate a server that clips the data to [-1, 1] adds delay, AWGN(0, params.NOISE_VAR), and some garbage at the end
-    :param scale:
-    :param noise:
-    :param delay_end:
-    :param delay_start:
-    :param filter_freq:
-    :param clip:
-    :param samples: samples to apply all those impairments to
-    :return: the new samples
+    :param scale: rather we scale the samples or not
+    :param noise: rather we noise the signal or not
+    :param delay_end: rather we add delay at the end or not
+    :param delay_start: rather we add delay at the beginning
+    :param filter_freq: rather we remove one of the 4 frequency ranges
+    :param clip: rather we clip the samples to [-1, 1]
+    :param samples: the samples to filter
+    :return: the filtered samples
     """
     print("Channel simulation...")
 
