@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.signal import upfirdn
 import sys
+import subprocess
 
 import fourier_helper
 import helper
@@ -17,13 +18,12 @@ def message_to_ints():
     :return: the mapping indices corresponding to our message
     """
     # Retrieve the message from file
-    message_file = open(params.message_file_path)
+    message_file = open(params.input_message_file_path)
     message = message_file.readline()
     print("Sent message:\n{}".format(message))
-    print("Length: {} characters".format(len(message)))
+    if params.logs:
+        print("Length: {} characters".format(len(message)))
 
-    # TODO Tried to compress message
-    # compressed_message = zlib.compress(message_encoded)
     message_encoded = message.encode('ascii')
 
     # Retrieve the message as a sequences of binary bytes
@@ -45,12 +45,9 @@ def message_to_ints():
     # Convert this new bits sequence to an integer sequence
     ints = [int(b, 2) for b in new_bits]
 
-    if params.verbose:
+    if params.logs:
         print("Encoded message:\n{}".format(message_encoded))
         print("Corresponding bytes:\n{}".format(string_bytes))
-        # print("Size (in bytes) of encoded message:\n{}".format(sys.getsizeof(message_encoded)))
-        # print("Compressed message: {}".format(compressed_message))
-        # print("Size (in bytes) of compressed message:\n{}".format(sys.getsizeof(compressed_message)))
         print("Cropped and re-structured bits:\n{}".format(new_bits))
         print("Equivalent integers (indices for our mapping):\n{}".format(ints))
         print("--------------------------------------------------------")
@@ -66,13 +63,14 @@ def encoder(indices, mapping):
     """
     corresponding_symbols = [mapping[i] for i in indices]
 
-    if params.verbose:
+    if params.logs:
         print("Symbols/n-tuples to be sent:\n{}".format(corresponding_symbols))
         print("Average symbol energy: {}".format(np.mean(np.abs(corresponding_symbols) ** 2)))
         print("Number of symbols: {}".format(len(corresponding_symbols)))
         print("Minimum symbol: {}".format(min(corresponding_symbols)))
         print("Maximum symbol: {}".format(max(corresponding_symbols)))
         print("--------------------------------------------------------")
+    if params.plots:
         plot_helper.plot_complex_symbols(corresponding_symbols, "{} data symbols to send"
                                          .format(len(corresponding_symbols)), "blue")
 
@@ -96,20 +94,22 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
     # Generate the preamble_symbols and write them in the appropriate file
     preambles.generate_preamble_symbols(len(data_symbols))
     preamble_symbols = read_write.read_preamble_symbols()
-    if params.verbose:
+    if params.logs:
         print("Preamble symbols:\n{}".format(preamble_symbols))
         print("--------------------------------------------------------")
-    plot_helper.plot_complex_symbols(preamble_symbols, "Preamble symbols")
+    if params.plots:
+        plot_helper.plot_complex_symbols(preamble_symbols, "Preamble symbols")
 
     # Concatenate the synchronization sequence with the symbols to send
     total_symbols = np.concatenate((preamble_symbols, data_symbols, preamble_symbols[::-1]))
-    plot_helper.plot_complex_symbols(total_symbols, "Total symbols to send")
+    if params.plots:
+        plot_helper.plot_complex_symbols(total_symbols, "Total symbols to send")
 
     # TODO can/should I remove the ramp-up and ramp_down? (then less samples to send)
     # Shape the signal with the pulse h
     total_samples = upfirdn(h, total_symbols, USF)
 
-    if params.verbose:
+    if params.logs:
         print("Shaping the preamble and the data...")
         print("Samples to be sent:\n{}".format(total_samples))
         print("Up-sampling factor: {}".format(params.USF))
@@ -117,6 +117,7 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
         print("Minimum sample: {}".format(min(total_samples)))
         print("Maximum sample: {}".format(max(total_samples)))
         print("--------------------------------------------------------")
+    if params.plots:
         plot_helper.plot_complex_function(total_samples, "Input samples in Time domain")
         plot_helper.fft_plot(total_samples, "Input samples in Frequency domain", shift=True)
 
@@ -124,12 +125,13 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
     preamble_samples = upfirdn(h, preamble_symbols, USF)
     read_write.write_preamble_samples(preamble_samples)
 
-    if params.verbose:
+    if params.logs:
         print("Shaping the preamble...")
         print("Number of samples for the preamble: {}".format(len(preamble_samples)))
+        print("--------------------------------------------------------")
+    if params.plots:
         plot_helper.plot_complex_function(preamble_samples, "Synchronization sequence shaped, in Time domain")
         plot_helper.fft_plot(preamble_samples, "Synchronization sequence shaped, in Frequency domain", shift=True)
-        print("--------------------------------------------------------")
 
     # Modulate the samples to fit in the required bands
     if np.any(np.iscomplex(total_samples)):
@@ -142,12 +144,13 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
         else:
             raise ValueError('This modulation type does not exist yet... Hehehe')
 
-        if params.verbose:
+        if params.logs:
             print("Modulation of the signal...")
             print("Number of samples: {}".format(len(total_samples)))
             print("Minimum sample after modulation: {}".format(min(total_samples)))
             print("Maximum sample after modulation: {}".format(max(total_samples)))
             print("--------------------------------------------------------")
+        if params.plots:
             plot_helper.plot_complex_function(total_samples, "Input samples after modulation, in Time domain")
             plot_helper.fft_plot(total_samples, "Input samples after modulation, in Frequency domain", shift=True)
     else:
@@ -156,7 +159,7 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
     total_samples = (total_samples / (max(total_samples)) * params.ABS_SAMPLE_RANGE)
 
-    if params.verbose:
+    if params.logs:
         print("Scaling the signal...")
         print("Minimum sample after scaling: {}".format(min(total_samples)))
         print("Maximum sample after scaling: {}".format(max(total_samples)))
@@ -165,13 +168,24 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
     return total_samples
 
 
+def send_samples():
+    """
+    Launch the client.py file with the correct arguments according to the parameters in the param file
+    :return: None
+    """
+    subprocess.call(["python3 client.py" +
+                     " --input_file=" + params.input_sample_file_path +
+                     " --output_file=" + params.output_sample_file_path +
+                     " --srv_hostname=" + params.server_hostname +
+                     " --srv_port=" + str(params.server_port)],
+                    shell=True)
+    return None
+
+
 # Intended for testing (to run the program, run main.py)
 if __name__ == '__main__':
-    log = open("../logs/test.log", "a")
-    sys.stdout = log
-
     # Encode the message
-    symbols = encoder(message_to_ints(), mappings.mapping)
+    symbols = encoder(message_to_ints(), mappings.choose_mapping())
 
     # Generate the root-raised_cosine
     _, h_pulse = pulses.root_raised_cosine()
@@ -182,9 +196,9 @@ if __name__ == '__main__':
     # Write the samples in the input file
     read_write.write_samples(input_samples)
 
+    # Send the samples to the server
+    send_samples()
+
 # TODO Add checks everywhere on the sizes of the arrays etc
-# TODO Try with a longer/shorter message
-# TODO Try with different M
-# TODO Add prints if verbose for debugging
 # TODO Try to make it work with text compression (?). Idea : first remove the useless zero,
 # TODO      then back to string, then compression

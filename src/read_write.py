@@ -7,14 +7,11 @@ Reading methods
 """
 
 
-def read_samples():
-    output_sample_file = open(params.output_sample_file_path, "r")
-    samples = [float(line) for line in output_sample_file.readlines()]
-    output_sample_file.close()
-    return samples
-
-
 def read_preamble_samples():
+    """
+    Read the samples from the preamble sample file
+    :return: The preamble samples
+    """
     preamble_samples_file = open(params.preamble_sample_file_path, "r")
     preamble_samples = np.asarray([complex(line) for line in preamble_samples_file.readlines()])
     preamble_samples_file.close()
@@ -22,6 +19,10 @@ def read_preamble_samples():
 
 
 def read_preamble_symbols():
+    """
+    Read the symbols from the preamble symbols file
+    :return: The preamble symbols
+    """
     preamble_symbol_file = open(params.preamble_symbol_file_path, "r")
     preamble_symbols = [complex(line) for line in preamble_symbol_file.readlines()]
     preamble_symbol_file.close()
@@ -29,7 +30,11 @@ def read_preamble_symbols():
 
 
 def read_message_sent():
-    input_message_file = open(params.message_file_path)
+    """
+    Read the message that was initially sent
+    :return: the sent message
+    """
+    input_message_file = open(params.input_message_file_path)
     message_sent = input_message_file.readline()
     input_message_file.close()
     return message_sent
@@ -67,10 +72,10 @@ def write_preamble_symbols(preamble_symbols):
 
 def write_preamble_samples(preamble_samples):
     """
-        Write preamble samples in the preamble sample file
-        :param preamble_samples: preamble samples array to write in the file
-        :return: None
-        """
+    Write preamble samples in the preamble sample file
+    :param preamble_samples: preamble samples array to write in the file
+    :return: None
+    """
     preamble_sample_file = open(params.preamble_sample_file_path, "w")
     for i in range(len(preamble_samples)):
         preamble_sample_file.write(str(preamble_samples[i]) + '\n')
@@ -78,9 +83,15 @@ def write_preamble_samples(preamble_samples):
 
 
 def write_message_received(message):
-    output_message_file = open(params.output_file_path, "w")
+    """
+    Write the message received in the appropriate file
+    :param message: the message to be stored
+    :return: None
+    """
+    output_message_file = open(params.output_message_file_path, "w")
     output_message_file.write(message)
     output_message_file.close()
+    return None
 
 
 def write_gaussian_noise(duration, mean, std):
@@ -100,19 +111,19 @@ def write_gaussian_noise(duration, mean, std):
     return None
 
 
-def write_sinus(duration, freqs, scaling_factor=1.):
+def write_sinus(duration, frequencies, scaling_factor=1.):
     """
     Write a sinus in the input sample file, at the given frequency
     :param scaling_factor:
     :param duration: duration of the sinus (in seconds)
-    :param freqs: array of frequencies for the sum of sinus
+    :param frequencies: array of frequencies for the sum of sinus
     :return: None
     """
     f = open(params.input_sample_file_path, "w")
     n_samples = int(np.ceil(duration * params.Fs))
     t = np.arange(n_samples) / params.Fs
     samples = np.zeros(n_samples)
-    for freq in freqs:
+    for freq in frequencies:
         samples += np.sin(freq * 2 * np.pi * t)
     for i in range(n_samples):
         f.write(str(samples[i] * scaling_factor) + '\n')

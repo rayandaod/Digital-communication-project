@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.signal import upfirdn
+from scipy.signal import butter, sosfilt, sosfreqz
+import matplotlib.pyplot as plt
 
 import fourier_helper
 import mappings
@@ -13,15 +15,117 @@ import receiver
 import transmitter
 
 """
-Testing file
+Local test, with a homemade simulation of the real server
 """
 
-
 # np.random.seed(30)
+FILTER_ORDER = 30
 
 
-def generate_awgn(mean, std, len_samples):
-    return np.random.normal(mean, std, size=np.random.randint(params.Fs) + len_samples)
+def butter_bandpass(low_cut_freq, high_cut_freq, Fs=params.Fs, order=5):
+        nyq = 0.5 * Fs
+        low = low_cut_freq / nyq
+        high = high_cut_freq / nyq
+        sos = butter(order, [low, high], analog=False, btype='band', output='sos')
+        return sos
+
+
+def butter_bandpass_filter(data, low_cut_freq, high_cut_freq, Fs=params.Fs, order=5):
+        sos = butter_bandpass(low_cut_freq, high_cut_freq, Fs, order=order)
+        y = sosfilt(sos, data)
+        if params.logs:
+            w, h = sosfreqz(sos, worN=2000)
+            plt.plot((Fs * 0.5 / np.pi) * w, abs(h), label="order = %d" % order)
+            plt.title("Output of butter bandpass")
+            plt.xlabel('Frequency (Hz)')
+            plt.ylabel('Gain')
+            plt.grid(True)
+            plt.legend(loc='best')
+            plt.show()
+        return y
+
+
+def server_simulation(samples, clip=True, filter_freq=True, delay_start=True, delay_end=True, noise=True, scale=True):
+    """
+    Simulate a server that clips the data to [-1, 1] adds delay, AWGN(0, params.NOISE_VAR), and some garbage at the end
+    :param scale:
+    :param noise:
+    :param delay_end:
+    :param delay_start:
+    :param filter_freq:
+    :param clip:
+    :param samples: samples to apply all those impairments to
+    :return: the new samples
+    """
+    print("Channel simulation...")
+
+    # Clip the data to [-1, 1]
+    if clip:
+        samples = np.clip(samples, -1, 1)
+        print("Samples clipped to [-1, 1]")
+
+    # # Remove 1 frequency range among the 4 authorized ranges
+    if filter_freq:
+        range_to_remove = np.random.randint(4)
+        if range_to_remove == 0:
+            low_cut_freq = params.FREQ_RANGES[1][0]
+            high_cut_freq = params.FREQ_RANGES[3][1]
+            samples = butter_bandpass_filter(samples, low_cut_freq, high_cut_freq, order=FILTER_ORDER)
+        elif range_to_remove == 1:
+            low_cut_freq_1 = params.FREQ_RANGES[0][0]
+            high_cut_freq_1 = params.FREQ_RANGES[0][1]
+            low_cut_freq_2 = params.FREQ_RANGES[2][0]
+            high_cut_freq_2 = params.FREQ_RANGES[3][1]
+            samples_1 = butter_bandpass_filter(samples, low_cut_freq_1, high_cut_freq_1,
+                                                              order=FILTER_ORDER)
+            samples_2 = butter_bandpass_filter(samples, low_cut_freq_2, high_cut_freq_2,
+                                                              order=FILTER_ORDER)
+            samples = (samples_1 + samples_2)/2
+        elif range_to_remove == 2:
+            low_cut_freq_1 = params.FREQ_RANGES[0][0]
+            high_cut_freq_1 = params.FREQ_RANGES[1][1]
+            low_cut_freq_2 = params.FREQ_RANGES[3][0]
+            high_cut_freq_2 = params.FREQ_RANGES[3][1]
+            samples_1 = butter_bandpass_filter(samples, low_cut_freq_1, high_cut_freq_1,
+                                                              order=FILTER_ORDER)
+            samples_2 = butter_bandpass_filter(samples, low_cut_freq_2, high_cut_freq_2,
+                                                              order=FILTER_ORDER)
+            samples = (samples_1 + samples_2)/2
+        else:
+            low_cut_freq = params.FREQ_RANGES[0][0]
+            high_cut_freq = params.FREQ_RANGES[3][0]
+            samples = butter_bandpass_filter(samples, low_cut_freq, high_cut_freq, order=FILTER_ORDER)
+        print("Frequency range removed: {}".format(range_to_remove))
+
+    # Introduce a delay at the beginning
+    if delay_start:
+        delay_start = np.zeros(np.random.randint(params.Fs))
+        samples = np.concatenate((delay_start, samples))
+        print("Delay introduced at the beginning: {} samples".format(len(delay_start)))
+
+    # Introduce a delay at the end
+    if delay_end:
+        delay_end = np.zeros(np.random.randint(params.Fs / 5))
+        print("Delay introduced at the end: {} samples".format(len(delay_end)))
+        samples = np.concatenate((samples, delay_end))
+
+    # Introduce AWGN(0, params.NOISE_VAR)
+    if noise:
+        samples += np.random.normal(0, np.sqrt(params.NOISE_VAR), size=len(samples))
+
+    # Scale the samples down
+    if scale:
+        channel_scaling = 1 / (np.random.randint(5) + 1)
+        samples = channel_scaling * samples
+        print("Scaling introduced: {}".format(channel_scaling))
+
+    # Clip the data to [-1, 1]
+    if clip:
+        samples = np.clip(samples, -1, 1)
+        print("Samples clipped to [-1, 1]")
+        print("--------------------------------------------------------")
+
+    return samples
 
 
 def local_test():
@@ -29,8 +133,9 @@ def local_test():
     Test the design locally with modulation and demodulation
     :return: None
     """
+    mapping = mappings.choose_mapping()
     ints = transmitter.message_to_ints()
-    symbols = transmitter.encoder(ints, mappings.mapping)
+    symbols = transmitter.encoder(ints, mapping)
 
     # Generate the pulse h
     _, h = pulses.root_raised_cosine()
@@ -91,62 +196,33 @@ def local_test():
     print("--------------------------------------------------------")
 
     # ----------------------------------------------------------------------------------------------------------------
-    # Channel simulation (delay (-> phase shift) and ending garbage)--------------------------------------------------
+    # Channel simulation ---------------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
-    print("Channel simulation...")
-
-    # Clip the data to [-1, 1]
-    samples = np.clip(samples, -1, 1)
-    print("Samples clipped to [-1, 1]")
-
-    # # Remove 1 frequency range among the 4 authorized ranges
-    # samples_fft = np.fft.fft(samples)
-    # f_x, samples_fft_mapped = fourier_helper.dft_map(samples_fft)
-    # samples_fft_mapped = samples_fft_mapped[int(len(samples_fft_mapped)/2):]
-    # f_x = f_x[int(len(f_x)/2):]
-    # range_to_remove = np.random.randint(4)
-    # for i in range(len(f_x)):
-    #     if (1000 + range_to_remove * 2000) <= f_x[i] <= (1000 + (range_to_remove + 1) * 2000):
-    #         samples_fft_mapped[i] = 0
-    # new_f_x = np.concatenate((f_x[::-1], f_x))
-    # new_samples_fft = np.concatenate((samples_fft_mapped[::-1], samples_fft_mapped))
-    # samples = (np.fft.ifft(new_samples_fft)).real
-    #
-    # new_samples_fft = np.fft.fft(samples)
-    # new_f_x, new_samples_fft_mapped = fourier_helper.dft_map(new_samples_fft)
-    # plot_helper.simple_plot(new_f_x, abs(new_samples_fft_mapped), "1 range removed by the channel")
-    # plot_helper.plot_complex_function(samples, "After 1 range removed, in Time domain")
-
-    # Introduce a delay and a garbage ending
-    channel_delay = np.random.normal(0, np.sqrt(params.NOISE_VAR), size=np.random.randint(params.Fs))
-    print("Delay introduced: {} samples".format(len(channel_delay)))
-    ending_garbage = np.random.normal(0, np.sqrt(params.NOISE_VAR), size=np.random.randint(params.Fs / 5))
-    print("Ending preamble after: {} samples".format(len(channel_delay) + len(samples)))
-    samples = np.concatenate((channel_delay,
-                              samples + np.random.normal(0, np.sqrt(params.NOISE_VAR), size=len(samples)),
-                              ending_garbage))
-
-    # Scale the samples down
-    channel_scaling = 1 / (np.random.randint(5) + 1)
-    samples = channel_scaling * samples
-    print("Scaling introduced: {}".format(channel_scaling))
-
-    # Clip the data to [-1, 1]
-    samples = np.clip(samples, -1, 1)
-    print("Samples clipped to [-1, 1]")
-    print("--------------------------------------------------------")
+    samples = server_simulation(samples, filter_freq=False)
     # ----------------------------------------------------------------------------------------------------------------
     # Channel simulation's end ---------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
 
     # Supposed to retrieve the preamble symbols and samples from the appropriate files, but here we got it above
-    plot_helper.plot_complex_function(samples, "Samples received from the simulated channel")
+    plot_helper.plot_complex_function(samples, "Samples received from the simulated channel, time domain")
+    plot_helper.fft_plot(samples, "Samples received from the simulated channel, frequency domain")
 
-    # Demodulate the samples with the appropriate frequency fc
+    # Find the frequency range that has been removed
+    range_indices, removed_freq_range = fourier_helper.find_removed_freq_range(samples)
+    if params.logs:
+        print("Removed frequency range: {} (range {})".format(removed_freq_range, removed_freq_range + 1))
+
+    # Choose a frequency for demodulation
     if params.MODULATION_TYPE == 1:
-        fc = 2000
+        if removed_freq_range == 0:
+            fc = np.mean(params.FREQ_RANGES[1])
+        else:
+            fc = np.mean(params.FREQ_RANGES[0])
     elif params.MODULATION_TYPE == 2:
-        fc = 3000
+        if removed_freq_range == 0 or removed_freq_range == 1:
+            fc = 7000
+        else:
+            fc = 3000
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
 
@@ -214,10 +290,10 @@ def local_test():
     plot_helper.plot_complex_symbols(data_symbols, "Symbols received", annotate=False)
 
     # Decode the symbols
-    ints = receiver.decoder(data_symbols, mappings.mapping)
+    ints = receiver.decoder(data_symbols, mapping)
     message_received = receiver.ints_to_message(ints)
 
-    message_file = open(params.message_file_path)
+    message_file = open(params.input_message_file_path)
     message_sent = message_file.readline()
     print(message_received == message_sent)
 

@@ -31,7 +31,7 @@ def generate_preamble_symbols(n_symbols_to_send):
 
 
 def generate_random_preamble_symbols(n_symbols_to_send):
-    preamble_symbols = np.random.choice(mappings.mapping,
+    preamble_symbols = np.random.choice(mappings.choose_mapping(),
                                         size=int(np.ceil(n_symbols_to_send * params.PREAMBLE_LENGTH_RATIO)))
     return preamble_symbols
 

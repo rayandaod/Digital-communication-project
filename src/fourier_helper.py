@@ -49,38 +49,15 @@ def dft_map(X, Fs=params.Fs, shift=True):
     return f, Y
 
 
-# # TODO additional checks on the certainty of the decision on the removed freq. range
-# def find_removed_freq_range(X):
-#     """
-#     Checks which range of frequencies has been removed by the channel (among 1-3kHz, 3-5kHz, 5-7kHz, 7-9kHz)
-#     :param X: the fourier transform of the signal
-#     :return: the index in params.FREQ_RANGES corresponding to the removed frequency range
-#     """
-#     n_frequencies = len(params.FREQ_RANGES)
-#     means = np.zeros(n_frequencies)
-#     for i in range(n_frequencies):
-#         means[i] = np.mean(abs(
-#             np.real(
-#                 X[params.FREQ_RANGES[i][0]:params.FREQ_RANGES[i][1]])) +
-#                    1j * np.mean(
-#             np.imag(
-#                 X[params.FREQ_RANGES[i][0]:params.FREQ_RANGES[i][1]])))
-#     if params.verbose:
-#         print("4 frequency ranges means: {}".format(means))
-#     return np.argmin(means)
-
-
 # TODO awful code, change that ASAP
-def find_removed_freq_range_2(samples):
+def find_removed_freq_range(samples):
     """
         Checks which range of frequencies has been removed by the channel (among 1-3kHz, 3-5kHz, 5-7kHz, 7-9kHz)
         :param samples: the samples received from the server
         :return: the index in params.FREQ_RANGES corresponding to the removed frequency range
     """
-    # import matplotlib.pyplot as plt
     X = np.fft.fft(samples)
     f, Y = dft_map(X)
-    # plt.plot(f, abs(Y))
 
     range_indices = []
     for i in range(len(params.FREQ_RANGES)):
@@ -89,12 +66,9 @@ def find_removed_freq_range_2(samples):
             while f[j] < params.FREQ_RANGES[i][0]:
                 j += 1
             range_indices.append(j)
-            print("FREQUENCY {}\nIndex: {}\nValue: {}\n".format(params.FREQ_RANGES[i][0], j, f[j]))
         while f[j] < params.FREQ_RANGES[i][1]:
             j += 1
         range_indices.append(j)
-        print("FREQUENCY {}\nIndex: {}\nValue: {}\n".format(params.FREQ_RANGES[i][1], j, f[j]))
-
     means = [np.mean(abs(Y[range_indices[0]:range_indices[1]])), np.mean(abs(Y[range_indices[1]:range_indices[2]])),
              np.mean(abs(Y[range_indices[2]:range_indices[3]])), np.mean(abs(Y[range_indices[3]:range_indices[4]]))]
     return range_indices, np.argmin(means)

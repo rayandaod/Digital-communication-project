@@ -11,9 +11,10 @@ def choose_symbol_period():
 
 
 # General variables
-verbose = True
-message_file_path = "../data/input_text.txt"
-output_file_path = "../data/output_text.txt"
+logs = True
+plots = False
+input_message_file_path = "../data/input_text.txt"
+output_message_file_path = "../data/output_text.txt"
 
 input_sample_file_path = "../data/input_samples.txt"
 output_sample_file_path = "../data/output_samples.txt"
