@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def choose_symbol_period():
     if MODULATION_TYPE == 1:
         return np.floor(((1 + BETA) / MODULATION_TYPE_1_BANDWIDTH) * Fs) / Fs
@@ -36,13 +37,13 @@ FREQ_RANGES = [[1000, 3000],  # frequency ranges authorized by the channel
 # /!\ -------------------------------------- /!\
 # ---------------------------------------------
 
-# Communication parameters (you should only tweak the first 5 ones for this project)
+# Communication parameters
 MAPPING = "qam"  # mapping: qam or psk or pam for now
 NORMALIZE_MAPPING = False  # rather we normalize the mapping or not
 M = 4  # length of the mapping (must be of the form 2^2k if QAM is chosen)
 BITS_PER_SYMBOL = int(np.log2(M))  # number of bits we transmit per symbol
 
-MODULATION_TYPE = 2
+MODULATION_TYPE = 1
 # 1 = naive approach (duplicate 4 times)
 # 2 = less naive approach (duplicate 2 times, (care about covering 4000Hz with the rrc --> choose T accordingly))
 MODULATION_TYPE_1_BANDWIDTH = 2000
@@ -69,11 +70,11 @@ def params_log():
     print("-----------------------PARAMETERS-----------------------")
     print("--------------------------------------------------------")
     print("Mapping: {}".format(MAPPING))
-    print("M = {}\n".format(M))
-    print("Normalized mapping: {}".format(NORMALIZE_MAPPING))
+    print("M = {}".format(M))
+    print("Normalized mapping: {}\n".format(NORMALIZE_MAPPING))
 
     print("Modulation type: {}".format(MODULATION_TYPE))
-    print("Bandwidth of the pulse: {}Hz\n".format(
+    print("Bandwidth of the pulse: {} Hz\n".format(
         MODULATION_TYPE_1_BANDWIDTH if MODULATION_TYPE == 1 else MODULATION_TYPE_2_BANDWIDTH))
 
     print("Root-raised-cosine:")

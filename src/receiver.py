@@ -34,10 +34,6 @@ def decoder(y, mapping):
     else:
         mapping = mapping.reshape(np.size(mapping, 0), 1)
 
-    if params.logs:
-        print("y: {}\n{}".format(np.shape(y), y))
-        print("mapping: {} \n{}".format(np.shape(mapping), mapping))
-
     # Number of symbols in the mapping
     M = np.size(mapping, 0)
     # Number of symbols received
