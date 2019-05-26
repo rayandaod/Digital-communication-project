@@ -10,7 +10,7 @@ import read_write
 
 if __name__ == "__main__":
     moment = time.strftime("%Y-%b-%d__%H_%M_%S", time.localtime())
-    log_file = open("../logs/" + moment + ".log", "w")
+    log_file = open("../logs/" + moment + ".log", "w+")
     if params.logs:
         sys.stdout = log_file
 
