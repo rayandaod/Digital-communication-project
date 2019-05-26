@@ -2,5 +2,6 @@
 __pycache__
 .DS_Store
 venv
-logs/*.log
-data/*.txt
+*.log
+*.txt
+!/data/input_text.txt
