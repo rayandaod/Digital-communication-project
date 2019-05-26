@@ -12,26 +12,32 @@ def qam_map(M):
     log_sqrt_m = np.log2(np.sqrt(M))
     if log_sqrt_m != np.ceil(log_sqrt_m):
         raise ValueError('Parameter[M] is not of the form 2^2K, K a positive integer.')
-    N = np.sqrt(M) - 1
-    aux = np.arange(-N, N + 1, 2)
-    x, y = np.meshgrid(aux[::-1], aux[::-1])
-    a = (x + y * 1j).T
-    size_a = len(a) ** 2
-    b = np.zeros(size_a, dtype=complex)
-    c = 0
-    i = 0
-    j = 0
-    while c < size_a:
-        b[c] = a[j][i]
-        c += 1
-        if (i == len(a) - 1 and j % 2 == 0) or (i == 0 and j % 2 == 1):
-            j += 1
-            continue
-        if j % 2 == 1:
-            i -= 1
-        else:
-            i += 1
-    return b
+    # Implement Gray code
+    if M == 4:
+        return [1+1j, 1-1j, -1+1j, -1-1j]
+    elif M == 16:
+        raise ValueError("TODO: implement gray code for M=16")
+    else:
+        N = np.sqrt(M) - 1
+        aux = np.arange(-N, N + 1, 2)
+        x, y = np.meshgrid(aux[::-1], aux[::-1])
+        a = (x + y * 1j).T
+        size_a = len(a) ** 2
+        b = np.zeros(size_a, dtype=complex)
+        c = 0
+        i = 0
+        j = 0
+        while c < size_a:
+            b[c] = a[j][i]
+            c += 1
+            if (i == len(a) - 1 and j % 2 == 0) or (i == 0 and j % 2 == 1):
+                j += 1
+                continue
+            if j % 2 == 1:
+                i -= 1
+            else:
+                i += 1
+        return b
 
 
 def psk_map(M):

@@ -187,7 +187,7 @@ def received_from_server():
         plot_helper.plot_complex_symbols(data_symbols, "Symbols received", annotate=False)
 
     # Decode the symbols
-    ints = decoder(data_symbols, mappings.choose_mapping())
+    ints = decoder(data_symbols, np.asarray(mappings.choose_mapping()))
     message_received = ints_to_message(ints)
     read_write.write_message_received(message_received)
 

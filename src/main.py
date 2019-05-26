@@ -22,12 +22,13 @@ if __name__ == "__main__":
     transmitter.send_samples()
 
     # Wait for the user to press enter (in case the server is down for example)
+    sys.stdout = sys.__stdout__
+    input("Press Enter to continue...")
     if params.logs:
-        sys.stdout = sys.__stdout__
-        input("Press Enter to continue...\n")
         sys.stdout = log_file
-    else:
-        input("Press Enter to continue...\n")
 
     # Receiver
     receiver.received_from_server()
+
+    sys.stdout = sys.__stdout__
+    input("Transmission finished!")
