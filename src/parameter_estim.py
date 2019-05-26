@@ -32,6 +32,13 @@ def ML_theta_estimation(received_signal, preamble_samples):
 
 
 def ML_phase_scaling_estim(preamble_samples, preamble_samples_received):
+    """
+    Estimate the phase shift and the scaling factor applied by the server to the samples (to be called after finding
+    the right theta for synchronization)
+    :param preamble_samples: the preamble the receiver knows
+    :param preamble_samples_received: the received preamble
+    :return: the phase shift and the scaling factor estimates
+    """
     # TODO: why dot works and not vdot (supposed to conjugate the first term in the formula)
     dot_product = np.dot(preamble_samples, preamble_samples_received)
     preamble_energy = 0
