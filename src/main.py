@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # Transmitter
     symbols = transmitter.encoder(transmitter.message_to_ints(), mappings.choose_mapping())
     _, h = pulses.root_raised_cosine()
-    samples_to_send = transmitter.symbols_to_samples(h, symbols)
+    samples_to_send = transmitter.waveform_former(h, symbols)
     read_write.write_samples(samples_to_send)
     transmitter.send_samples()
 

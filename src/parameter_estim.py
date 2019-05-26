@@ -39,7 +39,7 @@ def ML_phase_scaling_estim(preamble_samples, preamble_samples_received):
     :param preamble_samples_received: the received preamble
     :return: the phase shift and the scaling factor estimates
     """
-    # TODO: why dot works and not vdot (supposed to conjugate the first term in the formula)
+
     dot_product = np.dot(preamble_samples, preamble_samples_received)
     preamble_energy = 0
     for i in range(len(preamble_samples) - int(params.SPAN / 2)):

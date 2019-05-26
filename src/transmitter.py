@@ -15,6 +15,7 @@ import read_write
 
 def message_to_ints():
     """
+    Convert the message into an array of integers corresponding to the indices in the chosen mapping
     :return: the mapping indices corresponding to our message
     """
     # Retrieve the message from file
@@ -37,6 +38,9 @@ def message_to_ints():
     # Make a new string with these cropped bytes
     new_bits = ''.join(new_bits)
 
+    # Cut the bit-stream in 3 parts
+    # if params.MODULATION_TYPE == 3:
+
     # New structure with bits_per_symbol bits by row
     new_bits = [new_bits[i:i + params.BITS_PER_SYMBOL] for i in range(0, len(new_bits), params.BITS_PER_SYMBOL)]
 
@@ -52,6 +56,7 @@ def message_to_ints():
     return ints
 
 
+# TODO: merge both into an encoder method
 def encoder(indices, mapping):
     """
     :param indices: the mapping indices corresponding to our message
@@ -72,19 +77,13 @@ def encoder(indices, mapping):
     return np.asarray(corresponding_symbols)
 
 
-def symbols_to_samples(h, data_symbols, USF=params.USF):
+def waveform_former(h, data_symbols, USF=params.USF):
     """
     :param h: the sampled pulse
     :param data_symbols: the symbols modulating the pulse
     :param USF: the up-sampling factor (number of samples per symbols)
     :return: the samples of a modulated pulse train to send to the server
     """
-    #
-    # # If symbols is not a column vector, make it one
-    # if np.size(symbols, 0) == 1:
-    #     symbols = symbols.reshape(np.size(symbols, 1), 1)
-    # else:
-    #     symbols = symbols.reshape(np.size(symbols, 0), 1)
 
     # Generate the preamble_symbols and write them in the appropriate file
     preambles.generate_preamble_symbols(len(data_symbols))
@@ -185,7 +184,7 @@ if __name__ == '__main__':
     _, h_pulse = pulses.root_raised_cosine()
 
     # Construct the samples to send
-    input_samples = symbols_to_samples(h_pulse, symbols)
+    input_samples = waveform_former(h_pulse, symbols)
 
     # Write the samples in the input file
     read_write.write_samples(input_samples)
@@ -193,6 +192,3 @@ if __name__ == '__main__':
     # Send the samples to the server
     send_samples()
 
-# TODO Add checks everywhere on the sizes of the arrays etc
-# TODO Try to make it work with text compression (?). Idea : first remove the useless zero,
-# TODO      then back to string, then compression

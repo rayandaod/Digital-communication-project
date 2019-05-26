@@ -12,6 +12,7 @@ import read_write
 
 def decoder(y, mapping):
     """
+    Map the received symbols to the closest symbols of our mapping
     :param y: the observation vector, i.e the received symbols
     :param mapping: the chosen mapping for the communication
     :return: integers between 0 and M-1, i.e integers corresponding to the bits sent
@@ -48,8 +49,9 @@ def decoder(y, mapping):
 
 def ints_to_message(ints):
     """
+    Map the integers (i.e indices in our mapping) to the received message
     :param ints: integers between 0 and M-1, i.e integers corresponding to the bits sent
-    :return: the corresponding guessed message as a string
+    :return: the corresponding received message
     """
 
     # Convert the ints to BITS_PER_SYMBOL bits
@@ -75,18 +77,17 @@ def ints_to_message(ints):
         print("Groups of 8 bits (0 added at the beginning, cf. transmitter):\n{}".format(new_bits))
 
     # Convert from array of bytes to string
-    message = ''.join(helper.bits2string(new_bits))
+    message_received = ''.join(helper.bits2string(new_bits))
 
     message_sent = read_write.read_message_sent()
     print("Message sent:     {}".format(message_sent))
+    print("Message received: {}".format(message_received))
+    helper.compare_messages(message_sent, message_received)
 
-    print("Message received: {}".format(message))
-
-    helper.compare_messages(message_sent, message)
-
-    return message
+    return message_received
 
 
+# TODO: Slice it in smaller methods
 def received_from_server():
     # Load the input and output samples from their respective files
     input_samples = np.loadtxt(params.input_sample_file_path)
