@@ -14,7 +14,7 @@ def qam_map(M):
         raise ValueError('Parameter[M] is not of the form 2^2K, K a positive integer.')
     # Implement Gray code
     if M == 4:
-        return [1+1j, 1-1j, -1+1j, -1-1j]
+        return [1 + 1j, 1 - 1j, -1 + 1j, -1 - 1j]
     elif M == 16:
         raise ValueError("TODO: implement gray code for M=16")
     else:

@@ -2,11 +2,11 @@ import sys
 import time
 
 import mappings
+import params
+import pulses
+import read_write
 import receiver
 import transmitter
-import pulses
-import params
-import read_write
 
 if __name__ == "__main__":
     moment = time.strftime("%Y-%b-%d__%H_%M_%S", time.localtime())
@@ -35,4 +35,4 @@ if __name__ == "__main__":
     receiver.received_from_server()
 
     sys.stdout = sys.__stdout__
-    input("Transmission finished!")
+    input("Press Enter to finish transmission!")

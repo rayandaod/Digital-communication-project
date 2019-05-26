@@ -49,7 +49,7 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
                 rrc[n] = first_term * \
                          (np.cos((1 + beta) * np.pi * t / T) + second_term *
                           (np.sin(np.pi * (1 - beta) * t / T) / (np.pi * (1 - beta) * t / T))) / (
-                                     1 - third_term * t ** 2)
+                                 1 - third_term * t ** 2)
 
     if normalize:
         rrc = rrc / np.linalg.norm(rrc)

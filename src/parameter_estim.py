@@ -35,6 +35,6 @@ def ML_phase_scaling_estim(preamble_samples, preamble_samples_received):
     # TODO: why dot works and not vdot (supposed to conjugate the first term in the formula)
     dot_product = np.dot(preamble_samples, preamble_samples_received)
     preamble_energy = 0
-    for i in range(len(preamble_samples) - int(params.SPAN/2)):
+    for i in range(len(preamble_samples) - int(params.SPAN / 2)):
         preamble_energy += np.absolute(preamble_samples[i]) ** 2
     return np.angle(dot_product), abs(dot_product) / preamble_energy

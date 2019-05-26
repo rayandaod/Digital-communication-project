@@ -78,22 +78,13 @@ def ints_to_message(ints):
     message = ''.join(helper.bits2string(new_bits))
 
     message_sent = read_write.read_message_sent()
-    print("Message sent:     {:>50}".format(message_sent))
+    print("Message sent:     {}".format(message_sent))
 
-    print("Message received: {:>50}".format(message))
+    print("Message received: {}".format(message))
 
-    comparison = ""
-    for i in range(max(len(message_sent), len(message))):
-        if i == min(len(message_sent), len(message)):
-            raise ValueError("Messages are not of the same length")
-        if message_sent[i] == message[i]:
-            comparison += message_sent.lstrip()[i]
-        else:
-            comparison += '_'
-    print("Comparison : " + comparison)
+    helper.compare_messages(message_sent, message)
 
     return message
-
 
 
 def received_from_server():

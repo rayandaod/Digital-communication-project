@@ -1,7 +1,7 @@
-import numpy as np
-from scipy.signal import upfirdn
-from scipy.signal import butter, sosfilt, sosfreqz
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.signal import butter, sosfilt, sosfreqz
+from scipy.signal import upfirdn
 
 import fourier_helper
 import mappings
@@ -18,31 +18,45 @@ import transmitter
 Local test, with a homemade simulation of the real server
 """
 
-# np.random.seed(30)
 FILTER_ORDER = 30
 
 
 def butter_bandpass(low_cut_freq, high_cut_freq, Fs=params.Fs, order=5):
-        nyq = 0.5 * Fs
-        low = low_cut_freq / nyq
-        high = high_cut_freq / nyq
-        sos = butter(order, [low, high], analog=False, btype='band', output='sos')
-        return sos
+    """
+    :param low_cut_freq: the low cut frequency
+    :param high_cut_freq: the high cut frequency
+    :param Fs: the sampling frequency
+    :param order: the order of the filter
+    :return:
+    """
+    nyq = 0.5 * Fs
+    low = low_cut_freq / nyq
+    high = high_cut_freq / nyq
+    sos = butter(order, [low, high], analog=False, btype='band', output='sos')
+    return sos
 
 
 def butter_bandpass_filter(data, low_cut_freq, high_cut_freq, Fs=params.Fs, order=5):
-        sos = butter_bandpass(low_cut_freq, high_cut_freq, Fs, order=order)
-        y = sosfilt(sos, data)
-        if params.plots:
-            w, h = sosfreqz(sos, worN=2000)
-            plt.plot((Fs * 0.5 / np.pi) * w, abs(h), label="order = %d" % order)
-            plt.title("Output of butter bandpass")
-            plt.xlabel('Frequency (Hz)')
-            plt.ylabel('Gain')
-            plt.grid(True)
-            plt.legend(loc='best')
-            plt.show()
-        return y
+    """
+    :param data: the samples to filter
+    :param low_cut_freq: the low cut frequency
+    :param high_cut_freq: the high cut frequency
+    :param Fs: the sampling frequency
+    :param order: the order of the filter
+    :return: the filtered samples
+    """
+    sos = butter_bandpass(low_cut_freq, high_cut_freq, Fs, order=order)
+    y = sosfilt(sos, data)
+    if params.plots:
+        w, h = sosfreqz(sos, worN=2000)
+        plt.plot((Fs * 0.5 / np.pi) * w, abs(h), label="order = %d" % order)
+        plt.title("Output of butter bandpass")
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Gain')
+        plt.grid(True)
+        plt.legend(loc='best')
+        plt.show()
+    return y
 
 
 def server_simulation(samples, clip=True, filter_freq=True, delay_start=True, delay_end=True, noise=True, scale=True):
@@ -78,7 +92,7 @@ def server_simulation(samples, clip=True, filter_freq=True, delay_start=True, de
             high_cut_freq_2 = params.FREQ_RANGES[3][1]
             samples_1 = butter_bandpass_filter(samples, low_cut_freq_1, high_cut_freq_1, order=FILTER_ORDER)
             samples_2 = butter_bandpass_filter(samples, low_cut_freq_2, high_cut_freq_2, order=FILTER_ORDER)
-            samples = (samples_1 + samples_2)/2
+            samples = (samples_1 + samples_2) / 2
         elif range_to_remove == 2:
             low_cut_freq_1 = params.FREQ_RANGES[0][0]
             high_cut_freq_1 = params.FREQ_RANGES[1][1]
@@ -86,7 +100,7 @@ def server_simulation(samples, clip=True, filter_freq=True, delay_start=True, de
             high_cut_freq_2 = params.FREQ_RANGES[3][1]
             samples_1 = butter_bandpass_filter(samples, low_cut_freq_1, high_cut_freq_1, order=FILTER_ORDER)
             samples_2 = butter_bandpass_filter(samples, low_cut_freq_2, high_cut_freq_2, order=FILTER_ORDER)
-            samples = (samples_1 + samples_2)/2
+            samples = (samples_1 + samples_2) / 2
         else:
             low_cut_freq = params.FREQ_RANGES[0][0]
             high_cut_freq = params.FREQ_RANGES[3][0]
