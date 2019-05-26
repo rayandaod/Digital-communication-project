@@ -107,10 +107,7 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
     if params.logs:
         print("Shaping the preamble and the data...")
         print("Up-sampling factor: {}".format(params.USF))
-        print("Samples to be sent:\n{}".format(total_samples))
         print("Number of samples: {}".format(len(total_samples)))
-        print("Minimum sample: {}".format(min(total_samples)))
-        print("Maximum sample: {}".format(max(total_samples)))
         print("--------------------------------------------------------")
     if params.plots:
         plot_helper.plot_complex_function(total_samples, "Input samples in Time domain")
@@ -122,7 +119,6 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
 
     if params.logs:
         print("Shaping the preamble...")
-        print("Samples for the preamble:\n{}".format(preamble_samples))
         print("Number of samples for the preamble: {}".format(len(preamble_samples)))
         print("--------------------------------------------------------")
     if params.plots:
@@ -152,7 +148,7 @@ def symbols_to_samples(h, data_symbols, USF=params.USF):
         raise ValueError("TODO: handle real samples (e.g SSB)")
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    total_samples = (total_samples / (max(total_samples)) * params.ABS_SAMPLE_RANGE)
+    total_samples = (total_samples / (max(abs(total_samples))) * params.ABS_SAMPLE_RANGE)
 
     if params.logs:
         print("Scaling the signal...")

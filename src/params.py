@@ -12,7 +12,7 @@ def choose_symbol_period():
 
 # General variables
 logs = True
-plots = False
+plots = True
 input_message_file_path = "../data/input_text.txt"
 output_message_file_path = "../data/output_text.txt"
 
@@ -61,6 +61,3 @@ BARKER_SEQUENCE_REPETITION = 1  # Number of repetitions of the barker sequence
 PREAMBLE_LENGTH_RATIO = 0.36  # Ratio of random preamble symbols compared to the number of symbols of the data
 
 ABS_SAMPLE_RANGE = 0.85  # samples amplitude must be between -1 and 1, but we keep a little margin for the noise
-
-# TODO test with different values for all parameters
-# TODO see if 4 repetitions of barker sequence are enough/too much

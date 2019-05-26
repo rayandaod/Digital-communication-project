@@ -176,7 +176,6 @@ def received_from_server():
         plot_helper.plot_complex_function(data_samples, "y after removing the delay, the preamble, and the ramp-up")
 
     # Correct the phase shift on the data samples
-    # TODO: why frequency_offset - pi/2 works ?
     data_samples = data_samples * np.exp(-1j * (phase_shift_estim - np.pi / 2))
 
     # Down-sample the samples to obtain the symbols

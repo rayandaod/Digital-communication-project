@@ -55,9 +55,9 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
         rrc = rrc / np.linalg.norm(rrc)
 
     if params.logs:
-        print("Root-raised-cosine:\nSPAN = {} samples, beta = {}, T = {} seconds, Fs = {} samples per second (Hz), "
-              "normalized = {}"
-              .format(SPAN, beta, T, Fs, params.NORMALIZE_PULSE))
+        print("Root-raised-cosine:\nSPAN = {} samples, beta = {}, T = {} seconds, Fs = {} samples per second (Hz)"
+              .format(SPAN, beta, T, Fs))
+        print("Normalized = {}".format(params.NORMALIZE_PULSE))
         print("--------------------------------------------------------")
     if params.plots:
         plot_helper.simple_and_fft_plots(time_indices, rrc,

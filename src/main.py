@@ -9,9 +9,9 @@ import params
 import read_write
 
 if __name__ == "__main__":
+    moment = time.strftime("%Y-%b-%d__%H_%M_%S", time.localtime())
+    log_file = open("../logs/" + moment + ".log", "w")
     if params.logs:
-        moment = time.strftime("%Y-%b-%d__%H_%M_%S", time.localtime())
-        log_file = open("../logs/" + moment + ".log", "w")
         sys.stdout = log_file
 
     # Transmitter
@@ -26,6 +26,8 @@ if __name__ == "__main__":
         sys.stdout = sys.__stdout__
         input("Press Enter to continue...\n")
         sys.stdout = log_file
+    else:
+        input("Press Enter to continue...\n")
 
     # Receiver
     receiver.received_from_server()

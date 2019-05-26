@@ -185,7 +185,7 @@ def local_test():
     plot_helper.fft_plot(samples, "Input samples after modulation, in Frequency domain", shift=True)
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    samples = (samples / (max(samples)) * params.ABS_SAMPLE_RANGE)
+    samples = (samples / (max(abs(samples))) * params.ABS_SAMPLE_RANGE)
     print("Scaling the signal...")
     print("Minimum sample after scaling: {}".format(min(samples)))
     print("Maximum sample after scaling: {}".format(max(samples)))
