@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.signal import upfirdn
-import sys
 import subprocess
 
 import fourier_helper

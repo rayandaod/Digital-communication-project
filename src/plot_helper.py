@@ -196,6 +196,14 @@ def simple_plot(x_axis, y_axis, title):
 
 
 def simple_and_fft_plots(time_indices, samples, title, shift=False):
+    """
+    Plot a simple and an fft plot of the samples
+    :param time_indices: time array for the samples
+    :param samples: the samples to plot
+    :param title: the title of the plot
+    :param shift: rather we shift the fft or not
+    :return: None
+    """
     fig, axs = plt.subplots(2, 1)
     fig.suptitle(title)
 
