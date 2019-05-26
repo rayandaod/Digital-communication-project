@@ -92,8 +92,10 @@ def received_from_server():
 
     # Plot the input and output samples in Time domain and Frequency domain
     if params.plots:
-        plot_helper.two_simple_plots(input_samples, received_samples, "Input and output in Time domain", "Input", "Output")
-        plot_helper.two_fft_plots(input_samples, received_samples, "Input and output in Frequency domain", "Input", "Output")
+        plot_helper.two_simple_plots(input_samples, received_samples, "Input and output in Time domain", "Input",
+                                     "Output")
+        plot_helper.two_fft_plots(input_samples, received_samples, "Input and output in Frequency domain", "Input",
+                                  "Output")
 
     # Read the preamble samples saved previously
     preamble_samples = read_write.read_preamble_samples()
@@ -116,11 +118,14 @@ def received_from_server():
             fc = np.mean(params.FREQ_RANGES[0])
     elif params.MODULATION_TYPE == 2:
         if removed_freq_range == 0 or removed_freq_range == 1:
-            fc = 7000
+            fc = np.mean([params.FREQ_RANGES[2][0], params.FREQ_RANGES[3][1]])
         else:
-            fc = 3000
+            fc = np.mean([params.FREQ_RANGES[0][0], params.FREQ_RANGES[2][1]])
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
+
+    if params.logs:
+        print("Chosen fc for demodulation: {}".format(fc))
 
     # Demodulate the received samples to base-band
     demodulated_samples = fourier_helper.demodulate(received_samples, fc)

@@ -14,6 +14,10 @@ if __name__ == "__main__":
     if params.logs:
         sys.stdout = log_file
 
+    # Write the parameters in the log file
+    if params.logs:
+        params.params_log()
+
     # Transmitter
     symbols = transmitter.encoder(transmitter.message_to_ints(), mappings.choose_mapping())
     _, h = pulses.root_raised_cosine()
