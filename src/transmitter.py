@@ -166,8 +166,7 @@ def waveform_former(h, data_symbols, USF=params.USF):
         print("--------------------------------------------------------")
     if params.plots:
         for i in range(len(samples)):
-            plot_helper.plot_complex_function(samples[i], "Input samples {} in Time domain".format(i))
-            plot_helper.fft_plot(samples[i], "Input samples {} in Frequency domain".format(i), shift=True)
+            plot_helper.samples_fft_plots(samples[i], "Samples {}".format(i), shift=True)
 
     # Write the preamble samples (base-band, so might be complex) cropped in the preamble_samples file
     preamble_samples = upfirdn(h, preamble_symbols, USF)
@@ -180,8 +179,7 @@ def waveform_former(h, data_symbols, USF=params.USF):
         print("Number of samples for the preamble: {}".format(len(preamble_samples)))
         print("--------------------------------------------------------")
     if params.plots:
-        plot_helper.plot_complex_function(preamble_samples, "Synchronization sequence shaped, in Time domain")
-        plot_helper.fft_plot(preamble_samples, "Synchronization sequence shaped, in Frequency domain", shift=True)
+        plot_helper.samples_fft_plots(preamble_samples, "Preamble samples", shift=True)
 
     # Choose the modulation frequencies
     if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 3:
@@ -207,8 +205,7 @@ def waveform_former(h, data_symbols, USF=params.USF):
             print("Maximum sample after modulation: {}".format(max(samples)))
             print("--------------------------------------------------------")
         if params.plots:
-            plot_helper.plot_complex_function(samples, "Input samples after modulation, in Time domain")
-            plot_helper.fft_plot(samples, "Input samples after modulation, in Frequency domain", shift=True)
+            plot_helper.samples_fft_plots(samples, "Samples to send", time=True)
     else:
         raise ValueError("TODO: handle real samples (e.g SSB)")
 

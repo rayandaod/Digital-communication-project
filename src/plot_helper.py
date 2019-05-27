@@ -225,3 +225,45 @@ def simple_and_fft_plots(time_indices, samples, title, shift=False):
     plt.interactive(False)
     plt.show()
     return None
+
+
+def samples_fft_plots(samples, title, shift=False, time=False):
+    num_plots = 3 if any(np.iscomplex(samples)) else 2
+
+    fig, axs = plt.subplots(num_plots, 1)
+    fig.suptitle(title)
+    x_axis = np.arange(len(samples))
+    x_label = "Samples"
+
+    if time:
+        x_axis = x_axis/params.Fs
+        x_label = "Time (in seconds)"
+
+    axs[0].plot(x_axis, np.real(samples))
+    axs[0].set_xlabel(x_label)
+    axs[0].set_ylabel("Real")
+
+    if num_plots == 3:
+        axs[1].plot(x_axis, np.imag(samples))
+        axs[1].set_xlabel(x_label)
+        axs[1].set_ylabel("Imaginary")
+
+    X = np.fft.fft(samples)
+    f_x, y_x = fourier_helper.dft_map(X, shift=shift)
+
+    axs[num_plots - 1].plot(f_x, abs(y_x))
+    axs[num_plots - 1].set_xlabel("Frequency (in Hertz)")
+    axs[num_plots - 1].set_ylabel("|X(f)|^2")
+
+    for i in range(num_plots):
+        axs[i].grid(True)
+
+    vertical_lines_frequency_ranges(axs[num_plots - 1])
+
+    if not shift:
+        axs[num_plots - 1].set_xlim(params.FREQ_RANGES[0][0] - 1000, params.FREQ_RANGES[3][1] + 1000)
+
+    plt.subplots_adjust(hspace=0.5)
+    plt.interactive(False)
+    plt.show()
+    return None
