@@ -100,18 +100,12 @@ def received_from_server():
 
     # Plot the input and output samples in Time domain and Frequency domain
     if params.plots:
-        plot_helper.two_simple_plots(input_samples, received_samples, "Input and output in Time domain", "Input",
-                                     "Output")
-        plot_helper.two_fft_plots(input_samples, received_samples, "Input and output in Frequency domain", "Input",
-                                  "Output")
+        plot_helper.samples_fft_plots(input_samples, "Sent samples")
+        plot_helper.samples_fft_plots(received_samples, "Received samples")
 
     # Read the preamble samples saved previously
     preamble_samples = read_write.read_preamble_samples()
     len_preamble_samples = len(preamble_samples)
-
-    if params.plots:
-        plot_helper.plot_complex_function(received_samples, "Received samples in time domain")
-        plot_helper.fft_plot(received_samples, "Received samples in frequency domain", shift=True)
     if params.logs:
         print("--------------------------------------------------------")
     # ------------------------------------------------------------------------------------------------------------------
@@ -125,6 +119,10 @@ def received_from_server():
 
     # Array of the form [True, True, False, True], where False means that the 3rd frequency range is removes here
     frequency_ranges_available = [True if i != removed_freq_range else False for i in range(len(params.FREQ_RANGES))]
+    indices_available = []
+    for i in range(len(frequency_ranges_available)):
+        if frequency_ranges_available[i]:
+            indices_available.append(i)
     if params.logs:
         print("Frequency ranges available boolean array: {}".format(frequency_ranges_available))
         print("--------------------------------------------------------")
@@ -148,8 +146,7 @@ def received_from_server():
 
         demodulated_samples = fourier_helper.demodulate(received_samples, fc)
         if params.plots:
-            plot_helper.plot_complex_function(demodulated_samples, "Demodulated samples in Time domain")
-            plot_helper.fft_plot(demodulated_samples, "Demodulated samples in Frequency domain", shift=True)
+            plot_helper.samples_fft_plots(demodulated_samples, "Demodulated received samples")
 
     elif params.MODULATION_TYPE == 3:
         demodulated_samples = []
@@ -158,6 +155,11 @@ def received_from_server():
                 demodulated_samples.append(fourier_helper.demodulate(received_samples, np.mean(params.FREQ_RANGES[i])))
             else:
                 demodulated_samples.append([])
+        for i in range(len(indices_available)):
+                plot_helper.samples_fft_plots(
+                    demodulated_samples[indices_available[i]],
+                    "Demodulated received samples {}".format(indices_available[i]), shift=True)
+
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
     if params.logs:
@@ -174,15 +176,15 @@ def received_from_server():
     if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
         y = np.convolve(demodulated_samples, h_matched)
         if params.plots:
-            plot_helper.plot_complex_function(y, "y in Time domain")
-            plot_helper.fft_plot(y, "y in Frequency domain", shift=True)
+            plot_helper.samples_fft_plots(y, "Low-passed samples", shift=True)
     elif params.MODULATION_TYPE == 3:
         y = []
         for i in range(len(demodulated_samples)):
             if frequency_ranges_available[i]:
                 y.append(np.convolve(demodulated_samples[i], h_matched))
-            else:
-                y.append([])
+        for i in range(len(indices_available)):
+                plot_helper.samples_fft_plots(
+                    y[i], "Low-passed samples {}".format(indices_available[i]), shift=True)
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
     if params.logs:
@@ -203,6 +205,8 @@ def received_from_server():
             if frequency_ranges_available[i]:
                 delays.append(parameter_estim.ML_theta_estimation(y[i], preamble_samples))
         delay = int(np.round(np.mean(delays)))
+        if params.plots:
+            plot_helper.delay_plots(y, delay, "Delays estimated (only real part is shown)")
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
     if params.logs:
@@ -259,12 +263,10 @@ def received_from_server():
             if frequency_ranges_available[i]:
                 data_samples.append(y[i][delay + len_preamble_samples - half_span_h + params.USF:])
         if params.plots:
-            j = 0
-            for i in range(len(y)):
-                if frequency_ranges_available[i]:
-                    plot_helper.plot_complex_function(
-                        data_samples[j], "y[{}] after removing the delay, the preamble, and adjusting".format(i))
-                    j += 1
+            for i in range(len(indices_available)):
+                plot_helper.plot_complex_function(data_samples[indices_available[i]],
+                                                  "y[{}] after removing the delay, the preamble, and adjusting".
+                                                  format(indices_available[i]))
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
     if params.logs:

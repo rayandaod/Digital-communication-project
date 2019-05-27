@@ -267,3 +267,22 @@ def samples_fft_plots(samples, title, shift=False, time=False):
     plt.interactive(False)
     plt.show()
     return None
+
+
+def delay_plots(samples, delay, title):
+    fig, axs = plt.subplots(3, 1)
+    fig.suptitle(title)
+    x_axis = np.arange(len(samples[0])) / params.Fs
+    x_label = "Time (in seconds)"
+
+    for i in range(len(samples)):
+        axs[i].plot(x_axis, np.real(samples[i]))
+        axs[i].set_ylabel("Samples {}".format(i))
+        axs[i].axvline(x=delay / params.Fs, color='black')
+        axs[i].grid(True)
+    axs[len(samples) - 1].set_xlabel(x_label)
+
+    plt.subplots_adjust(hspace=0.5)
+    plt.interactive(False)
+    plt.show()
+    return None
