@@ -309,4 +309,11 @@ def local_test():
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
-    local_test()
+    _, h = pulses.root_raised_cosine()
+    a = [1, 1]
+    samples = upfirdn(h, a, params.USF)
+    print(samples)
+    print(np.argmax(samples))
+    print(len(samples))
+    plot_helper.plot_complex_function(samples, "Test rrc")
+

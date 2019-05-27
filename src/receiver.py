@@ -10,6 +10,7 @@ import pulses
 import read_write
 
 
+# TODO: merge both methods
 def decoder(y, mapping):
     """
     Map the received symbols to the closest symbols of our mapping
@@ -89,9 +90,13 @@ def ints_to_message(ints):
 
 # TODO: Slice it in smaller methods
 def received_from_server():
+    # Prepare the data -------------------------------------------------------------------------------------------------
+    if params.logs:
+        print("Preparing the data...")
     # Load the input and output samples from their respective files
     input_samples = np.loadtxt(params.input_sample_file_path)
-    received_samples = np.loadtxt(params.output_sample_file_path)
+    # TODO: put output again
+    received_samples = np.loadtxt(params.input_sample_file_path)
 
     # Plot the input and output samples in Time domain and Frequency domain
     if params.plots:
@@ -107,99 +112,263 @@ def received_from_server():
     if params.plots:
         plot_helper.plot_complex_function(received_samples, "Received samples in time domain")
         plot_helper.fft_plot(received_samples, "Received samples in frequency domain", shift=True)
+    if params.logs:
+        print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Find the frequency range that has been removed
+    # Find the frequency range that has been removed -------------------------------------------------------------------
+    if params.logs:
+        print("Finding the frequency range that has been removed...")
     range_indices, removed_freq_range = fourier_helper.find_removed_freq_range(received_samples)
     if params.logs:
         print("Removed frequency range: {} (range {})".format(removed_freq_range, removed_freq_range + 1))
 
-    # Choose a frequency for demodulation
-    if params.MODULATION_TYPE == 1:
-        if removed_freq_range == 0:
-            fc = np.mean(params.FREQ_RANGES[1])
+    # Array of the form [True, True, False, True], where False means that the 3rd frequency range is removes here
+    frequency_ranges_available = [True if i != removed_freq_range else False for i in range(len(params.FREQ_RANGES))]
+    if params.logs:
+        print("Frequency ranges available boolean array: {}".format(frequency_ranges_available))
+        print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
+
+    # Demodulation -----------------------------------------------------------------------------------------------------
+    if params.logs:
+        print("Demodulation...")
+    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
+        if params.MODULATION_TYPE == 1:
+            fc = np.mean(params.FREQ_RANGES[frequency_ranges_available.index(True)])
+
+        # TODO: improve this in term of the frequency_ranges_available array above
         else:
-            fc = np.mean(params.FREQ_RANGES[0])
-    elif params.MODULATION_TYPE == 2:
-        if removed_freq_range == 0 or removed_freq_range == 1:
-            fc = np.mean([params.FREQ_RANGES[2][0], params.FREQ_RANGES[3][1]])
-        else:
-            fc = np.mean([params.FREQ_RANGES[0][0], params.FREQ_RANGES[2][1]])
+            if removed_freq_range == 0 or removed_freq_range == 1:
+                fc = np.mean([params.FREQ_RANGES[2][0], params.FREQ_RANGES[3][1]])
+            else:
+                fc = np.mean([params.FREQ_RANGES[0][0], params.FREQ_RANGES[2][1]])
+        if params.logs:
+            print("Chosen fc for demodulation: {}".format(fc))
+
+        demodulated_samples = fourier_helper.demodulate(received_samples, fc)
+        if params.plots:
+            plot_helper.plot_complex_function(demodulated_samples, "Demodulated samples in Time domain")
+            plot_helper.fft_plot(demodulated_samples, "Demodulated samples in Frequency domain", shift=True)
+
+    elif params.MODULATION_TYPE == 3:
+        demodulated_samples = []
+        for i in range(len(params.FREQ_RANGES)):
+            if frequency_ranges_available[i]:
+                demodulated_samples.append(fourier_helper.demodulate(received_samples, np.mean(params.FREQ_RANGES[i])))
+            else:
+                demodulated_samples.append([])
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
-
     if params.logs:
-        print("Chosen fc for demodulation: {}".format(fc))
+        print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Demodulate the received samples to base-band
-    demodulated_samples = fourier_helper.demodulate(received_samples, fc)
-    if params.plots:
-        plot_helper.plot_complex_function(demodulated_samples, "Demodulated samples in Time domain")
-        plot_helper.fft_plot(demodulated_samples, "Demodulated samples in Frequency domain", shift=True)
-
-    # Match filter (i.e Low-pass)
+    # Low pass ---------------------------------------------------------------------------------------------------------
+    if params.logs:
+        print("Low passing...")
     _, h = pulses.root_raised_cosine()
     half_span_h = int(params.SPAN / 2)
     h_matched = np.conjugate(h[::-1])
-    y = np.convolve(demodulated_samples, h_matched)
-    if params.plots:
-        plot_helper.plot_complex_function(y, "y in Time domain")
-        plot_helper.fft_plot(y, "y in Frequency domain", shift=True)
 
-    # Find the delay
-    delay = parameter_estim.ML_theta_estimation(demodulated_samples, preamble_samples=preamble_samples)
+    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
+        y = np.convolve(demodulated_samples, h_matched)
+        if params.plots:
+            plot_helper.plot_complex_function(y, "y in Time domain")
+            plot_helper.fft_plot(y, "y in Frequency domain", shift=True)
+    elif params.MODULATION_TYPE == 3:
+        y = []
+        for i in range(len(demodulated_samples)):
+            if frequency_ranges_available[i]:
+                y.append(np.convolve(demodulated_samples[i], h_matched))
+            else:
+                y.append([])
+    else:
+        raise ValueError('This modulation type does not exist yet... He he he')
+    if params.logs:
+        print("Y shape:")
+        for i in range(len(y)):
+            print(np.shape(y[i]))
+        print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
+
+    # Find the delay ---------------------------------------------------------------------------------------------------
+    if params.logs:
+        print("Finding the delay...")
+    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
+        delay = parameter_estim.ML_theta_estimation(y, preamble_samples)
+    elif params.MODULATION_TYPE == 3:
+        delays = []
+        for i in range(len(y)):
+            if frequency_ranges_available[i]:
+                delays.append(parameter_estim.ML_theta_estimation(y[i], preamble_samples))
+        delay = int(np.round(np.mean(delays)))
+    else:
+        raise ValueError('This modulation type does not exist yet... He he he')
     if params.logs:
         print("Delay: {} samples".format(delay))
         print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Extract the preamble samples
-    preamble_samples_received = y[half_span_h + delay - 1:half_span_h + delay + len_preamble_samples - 1]
-    if params.plots:
-        plot_helper.two_simple_plots(preamble_samples_received.real, preamble_samples.real,
-                                     "Comparison between preamble samples received and preamble samples sent",
-                                     "received", "expected")
+    # Extract the preamble samples -------------------------------------------------------------------------------------
     if params.logs:
-        print("Number of samples for the actual preamble: {}".format(len_preamble_samples))
-        print("Number of samples for the received preamble: {}".format(len(preamble_samples_received)))
+        print("Extracting the preamble samples...")
+    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
+        preamble_samples_received = y[delay:delay + len_preamble_samples]
+    elif params.MODULATION_TYPE == 3:
+        preamble_samples_received = []
+        for i in range(len(y)):
+            if frequency_ranges_available[i]:
+                preamble_samples_received.append(y[i][delay:delay + len_preamble_samples])
+        preamble_samples_received = np.mean(preamble_samples_received, axis=0)
+    else:
+        raise ValueError('This modulation type does not exist yet... He he he')
+    if params.plots:
+        plot_helper.two_simple_plots(np.real(preamble_samples_received), np.real(preamble_samples),
+                                     "Preamble samples received vs preamble samples sent", "received", "expected")
+    if params.logs:
+        # print("Number of samples for the actual preamble: {} samples".format(len_preamble_samples))
+        # print("Number of samples for the received preamble: {} samples".format(len(preamble_samples_received)))
+        print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Compute the phase shift
+    # Compute the phase shift and the scaling factor -------------------------------------------------------------------
+    if params.logs:
+        print("Computing the phase shift and the scaling factor...")
+    # Remove SPAN/2 samples in the end because there is still data there for the received preamble
     phase_shift_estim, scaling_factor = parameter_estim.ML_phase_scaling_estim(
         preamble_samples[:len_preamble_samples - half_span_h],
         preamble_samples_received[:len(preamble_samples_received) - half_span_h])
     if params.logs:
-        print("Frequency offset: {}".format(phase_shift_estim))
+        print("Phase shift: {}".format(phase_shift_estim))
         print("Scaling factor: {}".format(scaling_factor))
+        print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Crop the samples (remove the delay, the preamble, and the ramp-up)
-    data_samples = y[half_span_h + delay + len_preamble_samples - half_span_h + params.USF - 1 - 1:]
+    # Crop the samples (remove the delay, the preamble, and adjust to the first relevant sample of data) ---------------
+    if params.logs:
+        print("Cropping the samples (removing the delay, the preamble, "
+              "and adjusting to the first relevant sample of data)...")
+    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
+        data_samples = y[delay + len_preamble_samples - half_span_h + params.USF - 1:]
+        if params.plots:
+            plot_helper.plot_complex_function(data_samples, "y after removing the delay, the preamble, and adjusting")
+    elif params.MODULATION_TYPE == 3:
+        data_samples = []
+        for i in range(len(y)):
+            if frequency_ranges_available[i]:
+                data_samples.append(y[i][delay + len_preamble_samples - half_span_h + params.USF:])
+        if params.plots:
+            j = 0
+            for i in range(len(y)):
+                if frequency_ranges_available[i]:
+                    plot_helper.plot_complex_function(
+                        data_samples[j], "y[{}] after removing the delay, the preamble, and adjusting".format(i))
+                    j += 1
+    else:
+        raise ValueError('This modulation type does not exist yet... He he he')
+    if params.logs:
+        print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Find the second_preamble_index
-    second_preamble_index = parameter_estim.ML_theta_estimation(data_samples, preamble_samples=preamble_samples[::-1])
+    # Find the second_preamble_index -----------------------------------------------------------------------------------
+    if params.logs:
+        print("Finding the second preamble index...")
+    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
+        second_preamble_index = parameter_estim.ML_theta_estimation(data_samples,
+                                                                    preamble_samples=preamble_samples[::-1])
+    elif params.MODULATION_TYPE == 3:
+        second_preamble_index = []
+        j = 0
+        for i in range(len(data_samples)):
+            if frequency_ranges_available[i]:
+                second_preamble_index.append(parameter_estim.ML_theta_estimation(
+                    data_samples[j], preamble_samples=preamble_samples[::-1]))
+                j += 1
+        second_preamble_index = int(np.round(np.mean(second_preamble_index)))
+    else:
+        raise ValueError('This modulation type does not exist yet... He he he')
     if params.logs:
         print("Second preamble index: {} samples".format(second_preamble_index))
         print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Crop the samples (remove the garbage at the end)
-    data_samples = data_samples[:second_preamble_index + half_span_h - params.USF + 1]
-    if params.plots:
-        plot_helper.plot_complex_function(data_samples, "y after removing the delay, the preamble, and the ramp-up")
-
-    # Correct the phase shift on the data samples
-    data_samples = data_samples * np.exp(-1j * (phase_shift_estim - np.pi / 2))
-
-    # Down-sample the samples to obtain the symbols
-    data_symbols = data_samples[::params.USF]
+    # Crop the samples (remove the garbage at the end) -----------------------------------------------------------------
     if params.logs:
-        print("Number of symbols received: {}".format(len(data_symbols)))
-    if params.plots:
-        plot_helper.plot_complex_function(data_symbols, "y without preamble")
-        plot_helper.plot_complex_symbols(data_symbols, "Symbols received", annotate=False)
+        print("Cropping the samples (removing the garbage at the end)...")
+    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
+        data_samples = data_samples[:second_preamble_index + half_span_h - params.USF + 1]
+        if params.plots:
+            plot_helper.plot_complex_function(data_samples, "y (only data)")
+    elif params.MODULATION_TYPE == 3:
+        for i in range(len(data_samples)):
+            data_samples[i] = data_samples[i][:second_preamble_index + half_span_h - params.USF + 1]
+        if params.plots:
+            for i in range(len(data_samples)):
+                plot_helper.plot_complex_function(data_samples[i], "y (only data)")
+    else:
+        raise ValueError("This modulation type does not exist yet... He he he")
+    if params.logs:
+        print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Decode the symbols
-    ints = decoder(data_symbols, np.asarray(mappings.choose_mapping()))
-    message_received = ints_to_message(ints)
-    read_write.write_message_received(message_received)
+    # Correct the phase shift on the data samples ----------------------------------------------------------------------
+    if params.logs:
+        print("Correcting the phase shift and the scaling factor (not yet) on the data samples...")
+    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
+        data_samples = data_samples * np.exp(-1j * (phase_shift_estim - np.pi / 2))
+    elif params.MODULATION_TYPE == 3:
+        for i in range(len(data_samples)):
+            data_samples[i] = data_samples[i] * np.exp(-1j * (phase_shift_estim - np.pi / 2))
+    else:
+        raise ValueError("This modulation type does not exist yet... He he he")
+    if params.logs:
+        print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
+
+    # Down-sample the samples to obtain the symbols --------------------------------------------------------------------
+    if params.logs:
+        print("Down-sampling...")
+    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
+        data_symbols = data_samples[::params.USF]
+        if params.logs:
+            print("Number of symbols received: {}".format(len(data_symbols)))
+        if params.plots:
+            plot_helper.plot_complex_function(data_symbols, "y without preamble")
+            plot_helper.plot_complex_symbols(data_symbols, "Symbols received", annotate=False)
+    elif params.MODULATION_TYPE == 3:
+        data_symbols = []
+        for i in range(len(data_samples)):
+            data_symbols.append(data_samples[i][::params.USF])
+        if params.logs:
+            print("Shape of the received symbols: {}".format(np.shape(data_symbols)))
+        if params.plots:
+            for i in range(len(data_symbols)):
+                plot_helper.plot_complex_function(data_symbols[i], "y without preamble")
+                plot_helper.plot_complex_symbols(data_symbols[i], "Symbols received", annotate=False)
+    else:
+        raise ValueError("This modulation type does not exist yet... He he he")
+    if params.logs:
+        print("--------------------------------------------------------")
+    # ------------------------------------------------------------------------------------------------------------------
+
+    # Decode the symbols -----------------------------------------------------------------------------------------------
+    if params.logs:
+        print("Decoding the symbols...")
+    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
+        ints = decoder(data_symbols, np.asarray(mappings.choose_mapping()))
+        message_received = ints_to_message(ints)
+        read_write.write_message_received(message_received)
+    # elif params.MODULATION_TYPE == 3:
+        # TODO
+    else:
+        raise ValueError("This modulation type does not exist yet... He he he")
+    if params.logs:
+        print("--------------------------------------------------------")
 
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
     received_from_server()
+
+# TODO: make sure the scaling factor, delay, phase shift must be the same for 3 freq ranges

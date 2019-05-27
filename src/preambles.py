@@ -18,7 +18,7 @@ def generate_preamble_symbols(n_symbols_to_send):
     else:
         raise ValueError('This preamble type does not exist yet... Hehehe')
 
-    if params.MAPPING == "qam" and not params.NORMALIZE_MAPPING:
+    if params.MAPPING == "qam" and not params.NORMALIZE_MAPPING and params.PREAMBLE_TYPE == "barker":
         # TODO: improve that
         if params.M == 16:
             read_write.write_preamble_symbols(preamble_symbols * 3)

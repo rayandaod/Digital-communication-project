@@ -21,6 +21,7 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
     rrc = np.zeros(SPAN)
     time_indices = (np.arange(SPAN) - SPAN / 2) * Ts
     sample_numbers = np.arange(SPAN)
+    index_0 = None
 
     if beta == 0:
         for n in sample_numbers:
@@ -44,6 +45,8 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
             if abs(t) == forbidden_value_t:
                 rrc[n] = rrc_beta_forbidden_value
             elif beta == 1 or t == 0:
+                if t == 0:
+                    index_0 = n
                 rrc[n] = first_term * (np.cos((1 + beta) * pi * t / T) + second_term) / (1 - third_term * t ** 2)
             else:
                 rrc[n] = first_term * \
@@ -57,6 +60,7 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
     if params.logs:
         print("Root-raised-cosine:\nSPAN = {} samples, beta = {}, T = {} seconds, Fs = {} samples per second (Hz)"
               .format(SPAN, beta, T, Fs))
+        print("Index where t = 0: {} ({} values left and {} values right)".format(index_0, index_0, index_0 - 1))
         print("Normalized = {}".format(params.NORMALIZE_PULSE))
         print("--------------------------------------------------------")
     if params.plots:
