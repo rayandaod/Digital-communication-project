@@ -19,13 +19,11 @@ def generate_preamble_symbols(n_symbols_to_send):
         raise ValueError('This preamble type does not exist yet... Hehehe')
 
     if params.MAPPING == "qam" and not params.NORMALIZE_MAPPING:
-        # TODO: improve that
-        if params.M == 16:
-            read_write.write_preamble_symbols(preamble_symbols * 3)
-        elif params.M == 4:
-            read_write.write_preamble_symbols(preamble_symbols)
-    else:
-        raise ValueError('TODO: automate the scaling of the barker sequence')
+        number_of_points_on_side = np.sqrt(params.M)/2.0
+        test_value = np.log2(params.M)/2.0
+        if test_value != int(test_value):
+            raise ValueError('Not a valid Qam value')
+        read_write.write_preamble_symbols(preamble_symbols * (2.0*number_of_points_on_side - 1))
 
     return None
 
