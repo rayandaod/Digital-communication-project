@@ -1,10 +1,7 @@
-import numpy as np
 import time
 import sys
 
-import helper
 import params
-import read_write
 import mappings
 import receiver_helper
 
@@ -51,59 +48,24 @@ def n_tuple_former():
     # Down-sample the samples to obtain the symbols
     data_symbols = receiver_helper.down_sample(data_samples)
 
-    return data_symbols
+    return data_symbols, removed_freq_range
 
 
-def decoder(symbols, mapping):
+def decoder(symbols, removed_freq_range):
     """
     Map the received symbols to the closest symbols of our mapping
+    :param removed_freq_range: index of the range that was removed by the server
     :param symbols: the observation vector, i.e the received symbols
-    :param mapping: the chosen mapping for the communication
     :return: integers between 0 and M-1, i.e integers corresponding to the bits sent
     """
-    if params.logs:
-        print("Decoding the symbols...")
-    if params.MOD == 1 or params.MOD == 2:
-        ints = receiver_helper.symbols_to_ints(symbols, mapping)
+    # Choose the mapping according to the params file
+    mapping = mappings.choose_mapping()
 
-        if params.logs:
-            print("Equivalent integers:\n{}".format(ints))
+    # Associate the received symbols to integers (indices of our mapping)
+    ints = receiver_helper.symbols_to_ints(symbols, mapping)
 
-        # Convert the ints to BITS_PER_SYMBOL bits
-        bits = ["{0:0{bits_per_symbol}b}".format(i, bits_per_symbol=params.BITS_PER_SYMBOL) for i in ints]
-        if params.logs:
-            print("Groups of BITS_PER_SYMBOL bits representing each integer:\n{}".format(bits))
-
-        # Make a new string with it
-        bits = ''.join(bits)
-        if params.logs:
-            print("Bits grouped all together:\n{}".format(bits))
-
-        # Slice the string into substrings of 7 characters
-        bits = [bits[i:i + 7] for i in range(0, len(bits), 7)]
-        if params.logs:
-            print("Groups of 7 bits:\n{}".format(bits))
-
-        # Add a zero at the beginning of each substring (cf transmitter)
-        new_bits = []
-        for sub_string in bits:
-            new_bits.append('0' + sub_string)
-        if params.logs:
-            print("Groups of 8 bits (0 added at the beginning, cf. transmitter):\n{}".format(new_bits))
-
-        # Convert from array of bytes to string
-        message_received = ''.join(helper.bits2string(new_bits))
-
-        message_sent = read_write.read_message_sent()
-        print("Message sent:     {}".format(message_sent))
-        print("Message received: {}".format(message_received))
-        helper.compare_messages(message_sent, message_received)
-    elif params.MOD == 3:
-        return None
-    else:
-        raise ValueError("This modulation type does not exist yet... He he he")
-    if params.logs:
-        print("--------------------------------------------------------")
+    # Deduce the received message
+    message_received = receiver_helper.ints_to_message(ints, removed_freq_range)
     return message_received
 
 
@@ -113,7 +75,5 @@ if __name__ == "__main__":
         moment = time.strftime("%Y-%b-%d__%H_%M_%S", time.localtime())
         log_file = open("../logs/" + moment + ".log", "w+")
         sys.stdout = log_file
-
-    symbols = n_tuple_former()
-    message = decoder(symbols, mappings.choose_mapping())
-    read_write.write_message_received(message)
+    data_symbols, removed_freq_range = n_tuple_former()
+    decoder(data_symbols, removed_freq_range)

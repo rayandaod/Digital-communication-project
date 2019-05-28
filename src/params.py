@@ -14,7 +14,7 @@ def choose_symbol_period():
 
 # General variables
 logs = True
-plots = True
+plots = False
 input_message_file_path = "../data/input_text.txt"
 output_message_file_path = "../data/output_text.txt"
 
@@ -45,7 +45,7 @@ NORMALIZE_MAPPING = False  # rather we normalize the mapping or not
 M = 4  # length of the mapping (must be of the form 2^2k if QAM is chosen)
 BITS_PER_SYMBOL = int(np.log2(M))  # number of bits we transmit per symbol
 
-MOD = 1
+MOD = 3
 # 1 = naive approach (duplicate 4 times)
 # 2 = less naive approach (duplicate 2 times, (care about covering 4000Hz with the rrc --> choose T accordingly))
 # 3 = parity check approach (only works for M=4 here)

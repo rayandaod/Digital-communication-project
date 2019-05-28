@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.signal import upfirdn
+import subprocess
 
 import params
 import read_write
@@ -193,7 +194,6 @@ def modulate_samples(p_data_p_samples):
     else:
         raise ValueError("This mapping type does not exist yet... He he he")
 
-    # Modulate the samples to fit in the required bands
     if np.any(np.iscomplex(p_data_p_samples)):
         if params.MOD == 1 or params.MOD == 2:
             p_data_p_modulated_samples = fourier_helper.modulate_complex_samples(p_data_p_samples,
@@ -230,3 +230,20 @@ def scale_samples(p_data_p_modulated_samples):
         print("Maximum sample after scaling: {}".format(max(samples_to_send)))
         print("--------------------------------------------------------")
     return samples_to_send
+
+
+def send_samples():
+    """
+    Launch the client.py file with the correct arguments according to the parameters in the param file
+    :return: None
+    """
+    subprocess.call(["python3 client.py" +
+                     " --input_file=" + params.input_sample_file_path +
+                     " --output_file=" + params.output_sample_file_path +
+                     " --srv_hostname=" + params.server_hostname +
+                     " --srv_port=" + str(params.server_port)],
+                    shell=True)
+    if params.logs:
+        print("Samples sent!")
+        print("--------------------------------------------------------")
+    return None

@@ -3,7 +3,6 @@ import time
 
 import params
 import pulses
-import read_write
 import receiver
 import transmitter
 
@@ -18,11 +17,9 @@ if __name__ == "__main__":
         params.params_log()
 
     # Transmitter
-    symbols = transmitter.encoder()
     _, h = pulses.root_raised_cosine()
-    samples_to_send = transmitter.waveform_former(h, symbols)
-    read_write.write_samples(samples_to_send)
+    samples_to_send = transmitter.waveform_former(h, transmitter.encoder())
     transmitter.send_samples()
 
     # Receiver
-    received_symbols = receiver.n_tuple_former()
+    receiver.decoder(receiver.n_tuple_former())

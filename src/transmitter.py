@@ -1,4 +1,3 @@
-import subprocess
 import time
 import sys
 import numpy as np
@@ -49,21 +48,14 @@ def waveform_former(h, data_symbols, USF=params.USF):
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
     samples_to_send = transmitter_helper.scale_samples(p_data_p_modulated_samples)
 
+    # Write the samples to send in the appropriate file
+    read_write.write_samples(samples_to_send)
+
     return samples_to_send
 
 
 def send_samples():
-    """
-    Launch the client.py file with the correct arguments according to the parameters in the param file
-    :return: None
-    """
-    subprocess.call(["python3 client.py" +
-                     " --input_file=" + params.input_sample_file_path +
-                     " --output_file=" + params.output_sample_file_path +
-                     " --srv_hostname=" + params.server_hostname +
-                     " --srv_port=" + str(params.server_port)],
-                    shell=True)
-    return None
+    transmitter_helper.send_samples()
 
 
 # Intended for testing (to run the program, run main.py)
@@ -81,11 +73,8 @@ if __name__ == '__main__':
     _, h_pulse = pulses.root_raised_cosine()
 
     # Construct the samples to send
-    samples = waveform_former(h_pulse, symbols)
-
-    # Write the samples in the input file
-    read_write.write_samples(samples)
+    waveform_former(h_pulse, symbols)
 
     # Send the samples to the server
-    send_samples()
+    transmitter_helper.send_samples()
 

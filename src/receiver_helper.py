@@ -1,11 +1,12 @@
 import numpy as np
 
+import fourier_helper
+import helper
+import parameter_estim
 import params
 import plot_helper
-import read_write
-import fourier_helper
 import pulses
-import parameter_estim
+import read_write
 
 
 def prepare_data():
@@ -14,7 +15,7 @@ def prepare_data():
     # Load the input and output samples from their respective files
     input_samples = np.loadtxt(params.input_sample_file_path)
     # TODO: put output again
-    samples_received = np.loadtxt(params.output_sample_file_path)
+    samples_received = np.loadtxt(params.input_sample_file_path)
 
     # Plot the input and output samples in Time domain and Frequency domain
     if params.plots:
@@ -105,9 +106,10 @@ def low_pass(demodulated_samples, indices_available):
         y = []
         for i in range(len(demodulated_samples)):
             y.append(np.convolve(demodulated_samples[i], h_matched))
-        for i in range(len(y)):
-                plot_helper.samples_fft_plots(
-                    y[i], "Low-passed samples {}".format(indices_available[i]), shift=True)
+        if params.plots:
+            for i in range(len(y)):
+                    plot_helper.samples_fft_plots(
+                        y[i], "Low-passed samples {}".format(indices_available[i]), shift=True)
         if params.logs:
             print("Y shape:")
             for i in range(len(y)):
@@ -315,7 +317,22 @@ def down_sample(data_samples):
 
 def symbols_to_ints(symbols, mapping):
     if params.logs:
-        print("Associating symbols to integers (indices of our mapping)...")
+        print("Associating symbols to integers...")
+    if params.MOD == 1 or params.MOD == 2:
+        ints = symbols_to_ints_helper(symbols, mapping)
+    elif params.MOD == 3:
+        ints = []
+        for i in range(len(symbols)):
+            ints.append(symbols_to_ints_helper(symbols[i], mapping))
+    else:
+        raise ValueError("This modulation type does not exist yet... He he he")
+    if params.logs:
+        print("Integers:\n{}".format(ints))
+        print("--------------------------------------------------------")
+    return ints
+
+
+def symbols_to_ints_helper(symbols, mapping):
     # Make sure symbols and mapping have less or equal than 2 dimensions
     if len(np.shape(symbols)) > 2 or len(np.shape(mapping)) > 2:
         raise AttributeError("One of the vectors symbols and mapping has more than 2 dimensions!")
@@ -339,8 +356,141 @@ def symbols_to_ints(symbols, mapping):
     S = len(symbols)
 
     distances = np.transpose(abs(np.tile(symbols, (M, 1)) - np.tile(mapping, (1, S))))
+    ints = np.argmin(distances, 1)
+    return ints
+
+
+def ints_to_message(ints, removed_freq_range):
+    if params.MOD == 1 or params.MOD == 2:
+        # Convert the ints to BITS_PER_SYMBOL bits
+        bits = ["{0:0{bits_per_symbol}b}".format(i, bits_per_symbol=params.BITS_PER_SYMBOL) for i in ints]
+        if params.logs:
+            print("Groups of BITS_PER_SYMBOL bits representing each integer:\n{}".format(bits))
+
+        # Make a new string with it
+        bits = ''.join(bits)
+        if params.logs:
+            print("Bits grouped all together:\n{}".format(bits))
+
+        # Slice the string into substrings of 7 characters
+        bits = [bits[i:i + 7] for i in range(0, len(bits), 7)]
+        if params.logs:
+            print("Groups of 7 bits:\n{}".format(bits))
+
+        # Add a zero at the beginning of each substring (cf transmitter)
+        new_bits = []
+        for sub_string in bits:
+            new_bits.append('0' + sub_string)
+        if params.logs:
+            print("Groups of 8 bits (0 added at the beginning, cf. transmitter):\n{}".format(new_bits))
+    elif params.MOD == 3:
+        print("Removed frequency range: {}".format(removed_freq_range))
+        bits_grouped_by_bits_per_symbol = []
+        for j in range(len(ints)):
+            bits_grouped_by_bits_per_symbol.append(
+                ["{0:0{bits_per_symbol}b}".format(i, bits_per_symbol=params.BITS_PER_SYMBOL) for i in ints[j]])
+        print(bits_grouped_by_bits_per_symbol)
+        print(np.shape(bits_grouped_by_bits_per_symbol))
+        print()
+
+        bits_grouped = []
+        for j in range(len(bits_grouped_by_bits_per_symbol)):
+            # Make a new string with it
+            bits_grouped.append(''.join(bits_grouped_by_bits_per_symbol[j]))
+
+        print(bits_grouped)
+        print(np.shape(bits_grouped))
+        print()
+
+        bits = []
+        for i in range(len(bits_grouped)):
+            bits_alone = []
+            for j in range(len(bits_grouped[i])):
+                bits_alone.append(int(bits_grouped[i][j]))
+            bits.append(bits_alone)
+
+        print(bits)
+        print(np.shape(bits))
+        print()
+
+        if removed_freq_range != 3:
+            sum = np.sum(bits, axis=0)
+
+            print(sum)
+            print(np.shape(sum))
+            print()
+
+            reconstructed_bit_stream = []
+            for j in range(len(sum)):
+                reconstructed_bit_stream.append(0 if sum[j] % 2 == 0 else 1)
+
+            print(reconstructed_bit_stream)
+            print(np.shape(reconstructed_bit_stream))
+            print()
+
+            bit_streams = np.zeros((len(params.FREQ_RANGES) - 1, len(reconstructed_bit_stream)))
+
+            booleans = []
+            for i in range(len(params.FREQ_RANGES)):
+                booleans.append(True if i != removed_freq_range else False)
+
+            for i in range(len(bit_streams)):
+                if booleans[i]:
+                    bit_streams[i] = bits[i]
+                else:
+                    bit_streams[i] = reconstructed_bit_stream
+        else:
+            bit_streams = bits
+
+        print(bit_streams)
+        print(np.shape(bit_streams))
+        print()
+
+        bits = []
+        for i in range(len(bit_streams[0])):
+            for j in range(len(bit_streams)):
+                bits.append(int(bit_streams[j][i]))
+
+        print("Bits:")
+        print(bits)
+        print(np.shape(bits))
+        print()
+
+        # Slice the string into substrings of 7 characters
+        bits = [bits[i:i + 7] for i in range(0, len(bits), 7)]
+
+        print("Bits in groups of 7")
+        print(bits)
+        print(np.shape(bits))
+        print()
+
+        if len(bits[len(bits) - 1]) != 7:
+            bits = bits[:len(bits) - 1]
+
+        strings = []
+        for i in range(len(bits)):
+            strings.append(''.join(str(x) for x in bits[i]))
+
+        new_bits = []
+        for sub_string in strings:
+            new_bits.append('0' + str(sub_string))
+
+        print(new_bits)
+        print(np.shape(new_bits))
+        print()
+    else:
+        raise ValueError("This modulation type does not exist yet... He he he")
+
+    # Convert from array of bytes to string
+    message_received = ''.join(helper.bits2string(new_bits))
+
+    message_sent = read_write.read_message_sent()
+    if params.logs:
+        print("Message sent:     {}".format(message_sent))
+    print("Message received: {}".format(message_received))
+    if params.logs:
+        helper.compare_messages(message_sent, message_received)
+    read_write.write_message_received(message_received)
     if params.logs:
         print("--------------------------------------------------------")
-    return np.argmin(distances, 1)
-
-
+    return message_received
