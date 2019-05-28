@@ -2,16 +2,14 @@ import subprocess
 import time
 import sys
 import numpy as np
-from scipy.signal import upfirdn
 
-import fourier_helper
 import helper
 import mappings
 import params
 import plot_helper
-import preambles
 import pulses
 import read_write
+import transmitter_helper
 
 
 def encoder(mapping):
@@ -117,95 +115,32 @@ def encoder(mapping):
 def waveform_former(h, data_symbols, USF=params.USF):
     """
     :param h: the sampled pulse
-    :param data_symbols: the symbols modulating the pulse
-    :param USF: the up-sampling factor (number of samples per symbols)
+    :param data_symbols: the data symbols modulating the pulse
+    :param USF: the up-sampling factor, i.e the number of samples per symbols, also called SPS
     :return: the samples of a modulated pulse train to send to the server
     """
-    # Generate the preamble_symbols and write them in the appropriate file
-    preambles.generate_preamble_symbols(len(data_symbols))
-    preamble_symbols = read_write.read_preamble_symbols()
-    if params.logs:
-        print("Preamble symbols:\n{}".format(preamble_symbols))
-        print("--------------------------------------------------------")
-    if params.plots:
-        plot_helper.plot_complex_symbols(preamble_symbols, "Preamble symbols")
+    # Generate the preamble_symbols and write them in the appropriate file ---------------------------------------------
+    preamble_symbols = transmitter_helper.generate_preamble_to_transmit(len(data_symbols))
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Concatenate the data symbols with the preamble symbols at the beginning and at the end
-    p_data_p_symbols = []
-    for i in range(len(data_symbols)):
-        p_data_p_symbols.append(np.concatenate((preamble_symbols, data_symbols[i], preamble_symbols[::-1])))
-    print("Total symbols: {}".format(p_data_p_symbols))
-    print("Shape of total symbols: {}".format(np.shape(p_data_p_symbols)))
+    # Shape the preamble symbols and write the preamble samples in the preamble_samples file ---------------------------
+    transmitter_helper.shape_preamble_samples(h, preamble_symbols, USF)
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Shape each of the symbols array
-    p_data_p_samples = []
-    for i in range(len(p_data_p_symbols)):
-        p_data_p_samples.append(upfirdn(h, p_data_p_symbols[i], USF))
+    # Concatenate the data symbols with the preamble symbols at the beginning and at the end ---------------------------
+    p_data_p_symbols = transmitter_helper.concatenate_symbols(preamble_symbols, data_symbols)
+    # ------------------------------------------------------------------------------------------------------------------
 
-    if params.logs:
-        print("Shaping the preamble and the data...")
-        print("Samples: {}".format(p_data_p_samples))
-        print("Up-sampling factor: {}".format(params.USF))
-        print("Shape of the total samples: {}".format(np.shape(p_data_p_samples)))
-        print("--------------------------------------------------------")
-    if params.plots:
-        for i in range(len(p_data_p_samples)):
-            plot_helper.samples_fft_plots(p_data_p_samples[i], "Samples {}".format(i), shift=True)
+    # Shape each of the symbols array ----------------------------------------------------------------------------------
+    p_data_p_samples = transmitter_helper.shape_symbols(h, p_data_p_symbols, USF)
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # Write the preamble samples in the preamble_samples file
-    preamble_samples = upfirdn(h, preamble_symbols, USF)
-    read_write.write_preamble_samples(preamble_samples)
-
-    if params.logs:
-        print("Shaping the preamble...")
-        print("Number of samples for the preamble: {}".format(len(preamble_samples)))
-        print("--------------------------------------------------------")
-    if params.plots:
-        plot_helper.samples_fft_plots(preamble_samples, "Preamble samples", shift=True)
-
-    # Choose the modulation frequencies
-    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 3:
-        modulating_frequencies = params.np.mean(params.FREQ_RANGES, axis=1)
-    elif params.MODULATION_TYPE == 2:
-        modulating_frequencies = [params.FREQ_RANGES[0][1], params.FREQ_RANGES[2][1]]
-    else:
-        raise ValueError("This mapping type does not exist yet... He he he")
-
-    # Modulate the samples to fit in the required bands
-    if np.any(np.iscomplex(p_data_p_samples)):
-        if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
-            p_data_p_samples = [item for sublist in p_data_p_samples for item in sublist]
-            p_data_p_modulated_samples = fourier_helper.modulate_complex_samples(p_data_p_samples,
-                                                                                 modulating_frequencies)
-        elif params.MODULATION_TYPE == 3:
-            modulated_samples = []
-            for i in range(len(p_data_p_samples)):
-                modulated_samples.append(fourier_helper.modulate_complex_samples(p_data_p_samples[i],
-                                                                                 [modulating_frequencies[i]]))
-            p_data_p_modulated_samples = np.sum(modulated_samples, axis=0).flatten()
-        else:
-            raise ValueError("This mapping type does not exist yet... He he he")
-
-        if params.logs:
-            print("Modulation of the signal...")
-            print("Minimum sample after modulation: {}".format(min(p_data_p_samples)))
-            print("Maximum sample after modulation: {}".format(max(p_data_p_samples)))
-            print("--------------------------------------------------------")
-        if params.plots:
-            plot_helper.samples_fft_plots(p_data_p_samples, "Samples to send", time=True, complex=True, shift=True)
-    else:
-        raise ValueError("TODO: handle real samples (e.g SSB)")
+    # Choose the modulation frequencies and modulate the samples -----------------------------------------------------
+    p_data_p_modulated_samples = transmitter_helper.modulate_samples(p_data_p_samples)
+    # ------------------------------------------------------------------------------------------------------------------
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    samples_to_send = p_data_p_modulated_samples / (np.max(np.abs(p_data_p_modulated_samples))) * params.\
-        ABS_SAMPLE_RANGE
-
-    if params.logs:
-        print("Scaling the signal...")
-        print("Number of samples: {}".format(len(samples_to_send)))
-        print("Minimum sample after scaling: {}".format(min(samples_to_send)))
-        print("Maximum sample after scaling: {}".format(max(samples_to_send)))
-        print("--------------------------------------------------------")
+    samples_to_send = transmitter_helper.scale_samples(p_data_p_modulated_samples)
 
     return samples_to_send
 
