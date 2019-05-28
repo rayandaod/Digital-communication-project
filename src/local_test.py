@@ -143,9 +143,7 @@ def local_test():
     Test the design locally with modulation and demodulation
     :return: None
     """
-    mapping = mappings.choose_mapping()
-    ints = transmitter.message_to_ints()
-    symbols = transmitter.encoder(ints, mapping)
+    symbols = transmitter.encoder(mappings.choose_mapping())
 
     # Generate the pulse h
     _, h = pulses.root_raised_cosine()
@@ -160,7 +158,7 @@ def local_test():
     len_preamble_samples = len(preamble_samples)
 
     # Concatenate the preamble symbols with the data symbols
-    total_symbols = np.concatenate((preamble_symbols, symbols, preamble_symbols[::-1]))
+    total_symbols = np.concatenate((preamble_symbols, symbols[0], preamble_symbols[::-1]))
 
     # Shape the signal with the pulse h
     total_samples = upfirdn(h, total_symbols, params.USF)
@@ -208,7 +206,7 @@ def local_test():
     # ----------------------------------------------------------------------------------------------------------------
     # Channel simulation ---------------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
-    samples = server_simulation(samples, filter_freq=False)
+    # samples = server_simulation(samples, filter_freq=False)
     # ----------------------------------------------------------------------------------------------------------------
     # Channel simulation's end ---------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
@@ -246,12 +244,12 @@ def local_test():
     plot_helper.fft_plot(y, "y in Frequency domain", shift=True)
 
     # Find the delay
-    delay = parameter_estim.ML_theta_estimation(demodulated_samples, preamble_samples=preamble_samples)
+    delay = parameter_estim.ML_theta_estimation(y, preamble_samples=preamble_samples)
     print("Delay: {} samples".format(delay))
     print("--------------------------------------------------------")
 
     # Extract the preamble samples
-    preamble_samples_received = y[half_span_h + delay - 1:half_span_h + delay + len_preamble_samples - 1]
+    preamble_samples_received = y[delay:delay + len_preamble_samples]
     plot_helper.two_simple_plots(preamble_samples_received.real, preamble_samples.real,
                                  "Comparison between preamble samples received and preamble samples sent",
                                  "received", "expected")
@@ -277,7 +275,7 @@ def local_test():
     print("Scaling factor: {}".format(scaling_factor))
 
     # Crop the samples (remove the delay, the preamble, and the ramp-up)
-    data_samples = y[half_span_h + delay + len_preamble_samples - half_span_h + params.USF - 1 - 1:]
+    data_samples = y[delay + len_preamble_samples - half_span_h + params.USF:]
 
     # Find the second_preamble_index
     second_preamble_index = parameter_estim.ML_theta_estimation(data_samples, preamble_samples=preamble_samples[::-1])
@@ -299,7 +297,7 @@ def local_test():
     plot_helper.plot_complex_symbols(data_symbols, "Symbols received", annotate=False)
 
     # Decode the symbols
-    ints = receiver.decoder(data_symbols, mapping)
+    ints = receiver.decoder(data_symbols, mappings.choose_mapping())
     message_received = receiver.ints_to_message(ints)
 
     message_file = open(params.input_message_file_path)
@@ -309,11 +307,4 @@ def local_test():
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == "__main__":
-    _, h = pulses.root_raised_cosine()
-    a = [1, 1]
-    samples = upfirdn(h, a, params.USF)
-    print(samples)
-    print(np.argmax(samples))
-    print(len(samples))
-    plot_helper.plot_complex_function(samples, "Test rrc")
-
+    local_test()
