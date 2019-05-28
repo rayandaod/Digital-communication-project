@@ -42,7 +42,18 @@ def encoder(mapping):
     new_bits = ''.join(new_bits)
 
     # TODO: refactor and make modular (PAM not handled yet)
-    if params.MODULATION_TYPE == 3:
+    if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
+        # New structure with bits_per_symbol bits by row
+        new_bits = [new_bits[i:i + params.BITS_PER_SYMBOL] for i in range(0, len(new_bits), params.BITS_PER_SYMBOL)]
+
+        # Convert this new bits sequence to an integer sequence
+        ints = [[int(b, 2) for b in new_bits]]
+
+        if params.logs:
+            print("Cropped and re-structured bits:\n{}".format(new_bits))
+            print("Equivalent integers (indices for our mapping):\n{}".format(ints))
+            print("--------------------------------------------------------")
+    elif params.MODULATION_TYPE == 3:
         # Choose the number of bit streams (depends on the number of frequency ranges)
         n_bit_streams = len(params.FREQ_RANGES)
 
@@ -82,29 +93,10 @@ def encoder(mapping):
         if params.logs:
             print("Ints bits stream {}\n: {}".format(ints.shape, ints))
             print("--------------------------------------------------------")
-
-    elif params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
-        # New structure with bits_per_symbol bits by row
-        new_bits = [new_bits[i:i + params.BITS_PER_SYMBOL] for i in range(0, len(new_bits), params.BITS_PER_SYMBOL)]
-
-        # Convert this new bits sequence to an integer sequence
-        ints = [[int(b, 2) for b in new_bits]]
-
-        if params.logs:
-            print("Cropped and re-structured bits:\n{}".format(new_bits))
-            print("Equivalent integers (indices for our mapping):\n{}".format(ints))
-            print("--------------------------------------------------------")
-
     else:
         raise ValueError("This modulation type does not exist yet... He he he")
 
-    if params.MAPPING == "qam" or params.MAPPING == "psk":
-        corresponding_symbols = np.zeros(np.shape(ints), dtype=complex)
-    elif params.MAPPING == "pam":
-        corresponding_symbols = np.zeros(np.shape(ints), dtype=int)
-    else:
-        raise ValueError("This mapping type does not exist yet... He he he")
-
+    corresponding_symbols = np.zeros(np.shape(ints), dtype=complex)
     for i in range(len(ints)):
         print(np.shape(ints))
         corresponding_symbols[i] = [mapping[int(j)] for j in ints[i]]
@@ -128,7 +120,6 @@ def waveform_former(h, data_symbols, USF=params.USF):
     :param USF: the up-sampling factor (number of samples per symbols)
     :return: the samples of a modulated pulse train to send to the server
     """
-
     # Generate the preamble_symbols and write them in the appropriate file
     preambles.generate_preamble_symbols(len(data_symbols))
     preamble_symbols = read_write.read_preamble_symbols()
@@ -170,8 +161,6 @@ def waveform_former(h, data_symbols, USF=params.USF):
 
     # Write the preamble samples (base-band, so might be complex) cropped in the preamble_samples file
     preamble_samples = upfirdn(h, preamble_symbols, USF)
-    # # TODO: why +3 and - 2? Might be wrong
-    # preamble_samples = preamble_samples[int(params.SPAN/2) + 3:len(preamble_samples) - int(params.SPAN/2) + 2]
     read_write.write_preamble_samples(preamble_samples)
 
     if params.logs:
@@ -238,10 +227,11 @@ def send_samples():
 
 # Intended for testing (to run the program, run main.py)
 if __name__ == '__main__':
-    moment = time.strftime("%Y-%b-%d__%H_%M_%S", time.localtime())
-    log_file = open("../logs/" + moment + ".log", "w+")
     if params.logs:
+        moment = time.strftime("%Y-%b-%d__%H_%M_%S", time.localtime())
+        log_file = open("../logs/" + moment + ".log", "w+")
         sys.stdout = log_file
+        params.params_log()
 
     # Encode the message
     symbols = encoder(mappings.choose_mapping())
@@ -256,5 +246,5 @@ if __name__ == '__main__':
     read_write.write_samples(input_samples)
 
     # Send the samples to the server
-    # send_samples()
+    send_samples()
 

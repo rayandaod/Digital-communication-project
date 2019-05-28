@@ -143,14 +143,14 @@ def local_test():
     Test the design locally with modulation and demodulation
     :return: None
     """
-    symbols = transmitter.encoder(mappings.choose_mapping())
+    data_symbols = transmitter.encoder(mappings.choose_mapping())
 
     # Generate the pulse h
     _, h = pulses.root_raised_cosine()
     half_span_h = int(params.SPAN / 2)
 
     # Generate the preamble symbols and read it from the corresponding file
-    preambles.generate_preamble_symbols(len(symbols))
+    preambles.generate_preamble_symbols(len(data_symbols))
     preamble_symbols = read_write.read_preamble_symbols()
 
     # Generate the preamble samples
@@ -158,7 +158,7 @@ def local_test():
     len_preamble_samples = len(preamble_samples)
 
     # Concatenate the preamble symbols with the data symbols
-    total_symbols = np.concatenate((preamble_symbols, symbols[0], preamble_symbols[::-1]))
+    total_symbols = np.concatenate((preamble_symbols, data_symbols[0], preamble_symbols[::-1]))
 
     # Shape the signal with the pulse h
     total_samples = upfirdn(h, total_symbols, params.USF)
@@ -203,10 +203,13 @@ def local_test():
     print("Maximum sample after scaling: {}".format(max(samples)))
     print("--------------------------------------------------------")
 
+    # read_write.write_samples(samples)
+
     # ----------------------------------------------------------------------------------------------------------------
     # Channel simulation ---------------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
     # samples = server_simulation(samples, filter_freq=False)
+    samples = np.loadtxt(params.input_sample_file_path)
     # ----------------------------------------------------------------------------------------------------------------
     # Channel simulation's end ---------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
