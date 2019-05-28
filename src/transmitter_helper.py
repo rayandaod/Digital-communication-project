@@ -28,7 +28,7 @@ def concatenate_symbols(preamble_symbols, data_symbols):
         print("Concatenating everything together (preamble-data-flipped preamble)...")
 
     if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
-        p_data_p_symbols = np.concatenate((preamble_symbols, data_symbols, preamble_symbols[::-1]))
+        p_data_p_symbols = np.concatenate((preamble_symbols, data_symbols[0], preamble_symbols[::-1]))
         if params.logs:
             print("Total symbols: {}".format(p_data_p_symbols))
             print("Number of total symbols: {}".format(np.shape(p_data_p_symbols)))
@@ -104,7 +104,6 @@ def modulate_samples(p_data_p_samples):
     # Modulate the samples to fit in the required bands
     if np.any(np.iscomplex(p_data_p_samples)):
         if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
-            p_data_p_samples = [item for sublist in p_data_p_samples for item in sublist]
             p_data_p_modulated_samples = fourier_helper.modulate_complex_samples(p_data_p_samples,
                                                                                  modulating_frequencies)
             if params.logs:
