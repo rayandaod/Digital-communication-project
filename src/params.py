@@ -2,12 +2,12 @@ import numpy as np
 
 
 def choose_symbol_period():
-    if MODULATION_TYPE == 1:
-        return np.floor(((1 + BETA) / MODULATION_TYPE_1_BANDWIDTH) * Fs) / Fs
-    elif MODULATION_TYPE == 2:
-        return np.floor(((1 + BETA) / MODULATION_TYPE_2_BANDWIDTH) * Fs) / Fs
-    elif MODULATION_TYPE == 3:
-        return np.floor(((1 + BETA) / MODULATION_TYPE_3_BANDWIDTH) * Fs) / Fs
+    if MOD == 1:
+        return np.floor(((1 + BETA) / MOD_1_BANDWIDTH) * Fs) / Fs
+    elif MOD == 2:
+        return np.floor(((1 + BETA) / MOD_2_BANDWIDTH) * Fs) / Fs
+    elif MOD == 3:
+        return np.floor(((1 + BETA) / MOD_3_BANDWIDTH) * Fs) / Fs
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
 
@@ -45,13 +45,13 @@ NORMALIZE_MAPPING = False  # rather we normalize the mapping or not
 M = 4  # length of the mapping (must be of the form 2^2k if QAM is chosen)
 BITS_PER_SYMBOL = int(np.log2(M))  # number of bits we transmit per symbol
 
-MODULATION_TYPE = 3
+MOD = 1
 # 1 = naive approach (duplicate 4 times)
 # 2 = less naive approach (duplicate 2 times, (care about covering 4000Hz with the rrc --> choose T accordingly))
 # 3 = parity check approach (only works for M=4 here)
-MODULATION_TYPE_1_BANDWIDTH = 1900
-MODULATION_TYPE_2_BANDWIDTH = 4000
-MODULATION_TYPE_3_BANDWIDTH = 1900
+MOD_1_BANDWIDTH = 2000
+MOD_2_BANDWIDTH = 4000
+MOD_3_BANDWIDTH = 2000
 
 BETA = 0.2  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
 T = choose_symbol_period()  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying
@@ -77,13 +77,13 @@ def params_log():
     print("M = {}".format(M))
     print("Normalized mapping: {}\n".format(NORMALIZE_MAPPING))
 
-    print("Modulation type: {}".format(MODULATION_TYPE))
-    if MODULATION_TYPE == 1:
-        bandwidth = MODULATION_TYPE_1_BANDWIDTH
-    elif MODULATION_TYPE == 2:
-        bandwidth = MODULATION_TYPE_2_BANDWIDTH
-    elif MODULATION_TYPE == 3:
-        bandwidth = MODULATION_TYPE_3_BANDWIDTH
+    print("Modulation type: {}".format(MOD))
+    if MOD == 1:
+        bandwidth = MOD_1_BANDWIDTH
+    elif MOD == 2:
+        bandwidth = MOD_2_BANDWIDTH
+    elif MOD == 3:
+        bandwidth = MOD_3_BANDWIDTH
     else:
         bandwidth = "?"
     print("Bandwidth of the pulse: {} Hz\n".format(bandwidth))

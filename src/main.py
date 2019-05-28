@@ -1,7 +1,6 @@
 import sys
 import time
 
-import mappings
 import params
 import pulses
 import read_write
@@ -19,11 +18,11 @@ if __name__ == "__main__":
         params.params_log()
 
     # Transmitter
-    symbols = transmitter.encoder(mappings.choose_mapping())
+    symbols = transmitter.encoder()
     _, h = pulses.root_raised_cosine()
     samples_to_send = transmitter.waveform_former(h, symbols)
     read_write.write_samples(samples_to_send)
     transmitter.send_samples()
 
     # Receiver
-    receiver.received_from_server()
+    received_symbols = receiver.n_tuple_former()

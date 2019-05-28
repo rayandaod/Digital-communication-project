@@ -180,9 +180,9 @@ def local_test():
     plot_helper.fft_plot(total_samples, "Total samples in Frequency domain", shift=True)
 
     # Modulate the total_samples
-    if params.MODULATION_TYPE == 1:
+    if params.MOD == 1:
         samples = fourier_helper.modulate_complex_samples(total_samples, params.np.mean(params.FREQ_RANGES, axis=1))
-    elif params.MODULATION_TYPE == 2:
+    elif params.MOD == 2:
         samples = fourier_helper.modulate_complex_samples(total_samples,
                                                           [params.FREQ_RANGES[0][1], params.FREQ_RANGES[2][1]])
     else:
@@ -223,12 +223,12 @@ def local_test():
     print("Removed frequency range: {} (range {})".format(removed_freq_range, removed_freq_range + 1))
 
     # Choose a frequency for demodulation
-    if params.MODULATION_TYPE == 1:
+    if params.MOD == 1:
         if removed_freq_range == 0:
             fc = np.mean(params.FREQ_RANGES[1])
         else:
             fc = np.mean(params.FREQ_RANGES[0])
-    elif params.MODULATION_TYPE == 2:
+    elif params.MOD == 2:
         if removed_freq_range == 0 or removed_freq_range == 1:
             fc = 7000
         else:
