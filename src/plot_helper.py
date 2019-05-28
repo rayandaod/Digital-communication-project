@@ -227,8 +227,8 @@ def simple_and_fft_plots(time_indices, samples, title, shift=False):
     return None
 
 
-def samples_fft_plots(samples, title, shift=False, time=False):
-    num_plots = 3 if any(np.iscomplex(samples)) else 2
+def samples_fft_plots(samples, title, shift=False, time=False, complex=True):
+    num_plots = 2 if not complex else 3
 
     fig, axs = plt.subplots(num_plots, 1)
     fig.suptitle(title)

@@ -96,6 +96,7 @@ def encoder(mapping):
     else:
         raise ValueError("This modulation type does not exist yet... He he he")
 
+    # TODO: make it work for PAM
     corresponding_symbols = np.zeros(np.shape(ints), dtype=complex)
     for i in range(len(ints)):
         print(np.shape(ints))
@@ -130,36 +131,28 @@ def waveform_former(h, data_symbols, USF=params.USF):
         plot_helper.plot_complex_symbols(preamble_symbols, "Preamble symbols")
 
     # Concatenate the data symbols with the preamble symbols at the beginning and at the end
-    total_symbols = np.zeros((data_symbols.shape[0], data_symbols.shape[1] + 2 * len(preamble_symbols)), dtype=complex)
-    for i in range(len(total_symbols)):
-        total_symbols[i] = np.concatenate((preamble_symbols, data_symbols[i], preamble_symbols[::-1]))
-
-    print("Total symbols: {}".format(total_symbols))
-    print("Shape of the total symbols: {}".format(np.shape(total_symbols)))
+    p_data_p_symbols = []
+    for i in range(len(data_symbols)):
+        p_data_p_symbols.append(np.concatenate((preamble_symbols, data_symbols[i], preamble_symbols[::-1])))
+    print("Total symbols: {}".format(p_data_p_symbols))
+    print("Shape of total symbols: {}".format(np.shape(p_data_p_symbols)))
 
     # Shape each of the symbols array
-    samples = []
-    for i in range(len(total_symbols)):
-        samples.append(upfirdn(h, total_symbols[i], USF))
-
-    # # Remove the ramp-up and ramp-down of the samples
-    # cropped_samples = []
-    # for i in range(len(samples)):
-    #     # TODO: why + and - 3? Might be wrong
-    #     cropped_samples.append(samples[i][int(params.SPAN/2) + 3:len(samples[i]) - int(params.SPAN/2) - 3])
-    # samples = cropped_samples
+    p_data_p_samples = []
+    for i in range(len(p_data_p_symbols)):
+        p_data_p_samples.append(upfirdn(h, p_data_p_symbols[i], USF))
 
     if params.logs:
         print("Shaping the preamble and the data...")
-        print("Samples: {}".format(samples))
+        print("Samples: {}".format(p_data_p_samples))
         print("Up-sampling factor: {}".format(params.USF))
-        print("Shape of the total samples: {}".format(np.shape(samples)))
+        print("Shape of the total samples: {}".format(np.shape(p_data_p_samples)))
         print("--------------------------------------------------------")
     if params.plots:
-        for i in range(len(samples)):
-            plot_helper.samples_fft_plots(samples[i], "Samples {}".format(i), shift=True)
+        for i in range(len(p_data_p_samples)):
+            plot_helper.samples_fft_plots(p_data_p_samples[i], "Samples {}".format(i), shift=True)
 
-    # Write the preamble samples (base-band, so might be complex) cropped in the preamble_samples file
+    # Write the preamble samples in the preamble_samples file
     preamble_samples = upfirdn(h, preamble_symbols, USF)
     read_write.write_preamble_samples(preamble_samples)
 
@@ -179,36 +172,42 @@ def waveform_former(h, data_symbols, USF=params.USF):
         raise ValueError("This mapping type does not exist yet... He he he")
 
     # Modulate the samples to fit in the required bands
-    if np.any(np.iscomplex(samples)):
+    if np.any(np.iscomplex(p_data_p_samples)):
         if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
-            samples = fourier_helper.modulate_complex_samples(samples[0], modulating_frequencies)
+            p_data_p_samples = [item for sublist in p_data_p_samples for item in sublist]
+            p_data_p_modulated_samples = fourier_helper.modulate_complex_samples(p_data_p_samples,
+                                                                                 modulating_frequencies)
         elif params.MODULATION_TYPE == 3:
             modulated_samples = []
-            for i in range(len(samples)):
-                modulated_samples.append(fourier_helper.modulate_complex_samples(samples[i], [modulating_frequencies[i]]))
-            samples = np.sum(modulated_samples, axis=0).flatten()
+            for i in range(len(p_data_p_samples)):
+                modulated_samples.append(fourier_helper.modulate_complex_samples(p_data_p_samples[i],
+                                                                                 [modulating_frequencies[i]]))
+            p_data_p_modulated_samples = np.sum(modulated_samples, axis=0).flatten()
+        else:
+            raise ValueError("This mapping type does not exist yet... He he he")
 
         if params.logs:
             print("Modulation of the signal...")
-            print("Minimum sample after modulation: {}".format(min(samples)))
-            print("Maximum sample after modulation: {}".format(max(samples)))
+            print("Minimum sample after modulation: {}".format(min(p_data_p_samples)))
+            print("Maximum sample after modulation: {}".format(max(p_data_p_samples)))
             print("--------------------------------------------------------")
         if params.plots:
-            plot_helper.samples_fft_plots(samples, "Samples to send", time=True)
+            plot_helper.samples_fft_plots(p_data_p_samples, "Samples to send", time=True, complex=True, shift=True)
     else:
         raise ValueError("TODO: handle real samples (e.g SSB)")
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    samples = samples / (np.max(np.abs(samples))) * params.ABS_SAMPLE_RANGE
+    samples_to_send = p_data_p_modulated_samples / (np.max(np.abs(p_data_p_modulated_samples))) * params.\
+        ABS_SAMPLE_RANGE
 
     if params.logs:
         print("Scaling the signal...")
-        print("Number of samples: {}".format(len(samples)))
-        print("Minimum sample after scaling: {}".format(min(samples)))
-        print("Maximum sample after scaling: {}".format(max(samples)))
+        print("Number of samples: {}".format(len(samples_to_send)))
+        print("Minimum sample after scaling: {}".format(min(samples_to_send)))
+        print("Maximum sample after scaling: {}".format(max(samples_to_send)))
         print("--------------------------------------------------------")
 
-    return samples
+    return samples_to_send
 
 
 def send_samples():
@@ -240,10 +239,10 @@ if __name__ == '__main__':
     _, h_pulse = pulses.root_raised_cosine()
 
     # Construct the samples to send
-    input_samples = waveform_former(h_pulse, symbols)
+    samples = waveform_former(h_pulse, symbols)
 
     # Write the samples in the input file
-    read_write.write_samples(input_samples)
+    read_write.write_samples(samples)
 
     # Send the samples to the server
     send_samples()

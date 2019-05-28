@@ -80,12 +80,12 @@ def received_from_server():
     # Load the input and output samples from their respective files
     input_samples = np.loadtxt(params.input_sample_file_path)
     # TODO: put output again
-    received_samples = np.loadtxt(params.input_sample_file_path)
+    received_samples = np.loadtxt(params.output_sample_file_path)
 
     # Plot the input and output samples in Time domain and Frequency domain
     if params.plots:
-        plot_helper.samples_fft_plots(input_samples, "Sent samples")
-        plot_helper.samples_fft_plots(received_samples, "Received samples")
+        plot_helper.samples_fft_plots(input_samples, "Sent samples", complex=False)
+        plot_helper.samples_fft_plots(received_samples, "Received samples", complex=False)
 
     # Read the preamble samples saved previously
     preamble_samples = read_write.read_preamble_samples()
