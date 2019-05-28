@@ -12,6 +12,8 @@ import read_write
 import transmitter_helper
 
 
+# TODO: refactor and make modular (PAM not handled yet)
+# TODO: make it simple with transmitter helper
 def encoder(mapping):
     """
     Encode a message into a sequence of symbols according to the given mapping
@@ -39,7 +41,6 @@ def encoder(mapping):
     # Make a new string with these cropped bytes
     new_bits = ''.join(new_bits)
 
-    # TODO: refactor and make modular (PAM not handled yet)
     if params.MODULATION_TYPE == 1 or params.MODULATION_TYPE == 2:
         # New structure with bits_per_symbol bits by row
         new_bits = [new_bits[i:i + params.BITS_PER_SYMBOL] for i in range(0, len(new_bits), params.BITS_PER_SYMBOL)]
@@ -94,7 +95,6 @@ def encoder(mapping):
     else:
         raise ValueError("This modulation type does not exist yet... He he he")
 
-    # TODO: make it work for PAM
     corresponding_symbols = np.zeros(np.shape(ints), dtype=complex)
     for i in range(len(ints)):
         print(np.shape(ints))

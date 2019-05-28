@@ -80,7 +80,7 @@ def received_from_server():
     # Load the input and output samples from their respective files
     input_samples = np.loadtxt(params.input_sample_file_path)
     # TODO: put output again
-    received_samples = np.loadtxt(params.output_sample_file_path)
+    received_samples = np.loadtxt(params.input_sample_file_path)
 
     # Plot the input and output samples in Time domain and Frequency domain
     if params.plots:
