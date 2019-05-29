@@ -29,7 +29,7 @@ def compare_messages(message_sent, message):
             comparison += " "
         else:
             n_errors += 1
-            comparison += '-'
+            comparison += '!'
 
     print("Errors:           {}".format(comparison))
     if not same_length:

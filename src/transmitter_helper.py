@@ -58,7 +58,7 @@ def message_bytes_to_int(new_bits):
 
         # Fill the bit streams arrays
         for i in range(len(new_bits)):
-            bit_streams[i % (n_bit_streams - 1)][int(np.ceil(i / (n_bit_streams - 1)))] = new_bits[i]
+            bit_streams[i % (n_bit_streams - 1)][int(np.floor(i / (n_bit_streams - 1)))] = new_bits[i]
 
         # Construct the parity check bit stream and insert it in the bit streams array
         pc_bit_stream = np.sum(bit_streams[:n_bit_streams - 1], axis=0)
@@ -67,15 +67,17 @@ def message_bytes_to_int(new_bits):
         bit_streams[n_bit_streams - 1] = pc_bit_stream
 
         if params.logs:
-            print(" ")
-            print("Bit stream {}:\n{}".format(bit_streams.shape, bit_streams))
+            print("Bit streams: {}".format(np.shape(bit_streams)))
+            for i in range(len(bit_streams)):
+                print("{}".format(bit_streams[i]))
             print("--------------------------------------------------------")
 
         # Group them by groups of BITS_PER_SYMBOL bits
         ints = np.zeros((n_bit_streams, int(len_bit_streams / 2)), dtype=str)
         for i in range(n_bit_streams):
             for j in range(int(len_bit_streams / params.BITS_PER_SYMBOL)):
-                grouped_bits = str(bit_streams[i][j]) + str(bit_streams[i][j + params.BITS_PER_SYMBOL - 1])
+                index = j*params.BITS_PER_SYMBOL
+                grouped_bits = ''.join(map(str, bit_streams[i][index:index + params.BITS_PER_SYMBOL]))
                 mapping_index = int(grouped_bits, base=2)
                 ints[i][j] = mapping_index
 

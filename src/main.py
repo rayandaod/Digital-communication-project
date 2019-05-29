@@ -22,4 +22,5 @@ if __name__ == "__main__":
     transmitter.send_samples()
 
     # Receiver
-    receiver.decoder(receiver.n_tuple_former())
+    data_symbols, removed_freq_range = receiver.n_tuple_former()
+    receiver.decoder(data_symbols, removed_freq_range)

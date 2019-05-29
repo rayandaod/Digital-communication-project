@@ -14,8 +14,7 @@ def prepare_data():
         print("Preparing the data...")
     # Load the input and output samples from their respective files
     input_samples = np.loadtxt(params.input_sample_file_path)
-    # TODO: put output again
-    samples_received = np.loadtxt(params.input_sample_file_path)
+    samples_received = np.loadtxt(params.output_sample_file_path)
 
     # Plot the input and output samples in Time domain and Frequency domain
     if params.plots:
@@ -363,113 +362,106 @@ def symbols_to_ints_helper(symbols, mapping):
 def ints_to_message(ints, removed_freq_range):
     if params.MOD == 1 or params.MOD == 2:
         # Convert the ints to BITS_PER_SYMBOL bits
-        bits = ["{0:0{bits_per_symbol}b}".format(i, bits_per_symbol=params.BITS_PER_SYMBOL) for i in ints]
+        bits_separated = ["{0:0{bits_per_symbol}b}".format(i, bits_per_symbol=params.BITS_PER_SYMBOL) for i in ints]
         if params.logs:
-            print("Groups of BITS_PER_SYMBOL bits representing each integer:\n{}".format(bits))
+            print("Groups of BITS_PER_SYMBOL bits representing each integer:\n{}".format(bits_separated))
 
         # Make a new string with it
-        bits = ''.join(bits)
+        bits_separated = ''.join(bits_separated)
         if params.logs:
-            print("Bits grouped all together:\n{}".format(bits))
+            print("Bits grouped all together:\n{}".format(bits_separated))
 
         # Slice the string into substrings of 7 characters
-        bits = [bits[i:i + 7] for i in range(0, len(bits), 7)]
+        bits_separated = [bits_separated[i:i + 7] for i in range(0, len(bits_separated), 7)]
         if params.logs:
-            print("Groups of 7 bits:\n{}".format(bits))
+            print("Groups of 7 bits:\n{}".format(bits_separated))
 
         # Add a zero at the beginning of each substring (cf transmitter)
         new_bits = []
-        for sub_string in bits:
+        for sub_string in bits_separated:
             new_bits.append('0' + sub_string)
         if params.logs:
             print("Groups of 8 bits (0 added at the beginning, cf. transmitter):\n{}".format(new_bits))
+
     elif params.MOD == 3:
-        print("Removed frequency range: {}".format(removed_freq_range))
         bits_grouped_by_bits_per_symbol = []
         for j in range(len(ints)):
             bits_grouped_by_bits_per_symbol.append(
                 ["{0:0{bits_per_symbol}b}".format(i, bits_per_symbol=params.BITS_PER_SYMBOL) for i in ints[j]])
-        print(bits_grouped_by_bits_per_symbol)
-        print(np.shape(bits_grouped_by_bits_per_symbol))
-        print()
+        print("Bits grouped by groups of BITS_PER_SYMBOL bits: ({})\n{}\n".format
+              (np.shape(bits_grouped_by_bits_per_symbol), bits_grouped_by_bits_per_symbol))
 
+        # Make an array of strings with it
         bits_grouped = []
         for j in range(len(bits_grouped_by_bits_per_symbol)):
-            # Make a new string with it
             bits_grouped.append(''.join(bits_grouped_by_bits_per_symbol[j]))
 
-        print(bits_grouped)
-        print(np.shape(bits_grouped))
+        print("Bits grouped: ({})".format(np.shape(bits_grouped)))
+        for i in range(len(bits_grouped)):
+            print(bits_grouped[i])
         print()
 
-        bits = []
+        # Separate bits
+        bits_separated = []
         for i in range(len(bits_grouped)):
             bits_alone = []
             for j in range(len(bits_grouped[i])):
                 bits_alone.append(int(bits_grouped[i][j]))
-            bits.append(bits_alone)
+            bits_separated.append(bits_alone)
 
-        print(bits)
-        print(np.shape(bits))
+        print("Bits separated: ({})".format(np.shape(bits_separated)))
+        for i in range(len(bits_separated)):
+            print(bits_separated[i])
         print()
 
+        print("Removed frequency range: {}".format(removed_freq_range))
         if removed_freq_range != 3:
-            sum = np.sum(bits, axis=0)
-
-            print(sum)
-            print(np.shape(sum))
-            print()
+            print("--> We have to reconstruct the missing bit stream")
+            parity_check = np.sum(bits_separated, axis=0)
 
             reconstructed_bit_stream = []
-            for j in range(len(sum)):
-                reconstructed_bit_stream.append(0 if sum[j] % 2 == 0 else 1)
+            for j in range(len(parity_check)):
+                reconstructed_bit_stream.append(0 if parity_check[j] % 2 == 0 else 1)
 
+            print("Missing bit stream: ({})".format(np.shape(reconstructed_bit_stream)))
             print(reconstructed_bit_stream)
-            print(np.shape(reconstructed_bit_stream))
             print()
 
-            bit_streams = np.zeros((len(params.FREQ_RANGES) - 1, len(reconstructed_bit_stream)))
-
-            booleans = []
-            for i in range(len(params.FREQ_RANGES)):
-                booleans.append(True if i != removed_freq_range else False)
-
-            for i in range(len(bit_streams)):
-                if booleans[i]:
-                    bit_streams[i] = bits[i]
-                else:
-                    bit_streams[i] = reconstructed_bit_stream
+            bit_streams_to_use = bits_separated[:len(bits_separated) - 1]
+            bit_streams_to_use.insert(removed_freq_range, reconstructed_bit_stream)
         else:
-            bit_streams = bits
+            print("--> We can use the received bit streams")
+            bit_streams_to_use = bits_separated
 
-        print(bit_streams)
-        print(np.shape(bit_streams))
+        print("Bit streams to use: ({})".format(np.shape(bits_separated)))
+        for i in range(len(bit_streams_to_use)):
+            print(bit_streams_to_use[i])
         print()
 
-        bits = []
-        for i in range(len(bit_streams[0])):
-            for j in range(len(bit_streams)):
-                bits.append(int(bit_streams[j][i]))
+        bits_separated = []
+        for i in range(len(bit_streams_to_use[0])):
+            for j in range(len(bit_streams_to_use)):
+                bits_separated.append(int(bit_streams_to_use[j][i]))
 
         print("Bits:")
-        print(bits)
-        print(np.shape(bits))
+        print(bits_separated)
+        print(np.shape(bits_separated))
         print()
 
         # Slice the string into substrings of 7 characters
-        bits = [bits[i:i + 7] for i in range(0, len(bits), 7)]
+        bits_separated = [bits_separated[i:i + 7] for i in range(0, len(bits_separated), 7)]
 
         print("Bits in groups of 7")
-        print(bits)
-        print(np.shape(bits))
+        print(bits_separated)
+        print(np.shape(bits_separated))
         print()
 
-        if len(bits[len(bits) - 1]) != 7:
-            bits = bits[:len(bits) - 1]
+        if len(bits_separated[len(bits_separated) - 1]) != 7:
+            bits_separated = bits_separated[:len(bits_separated) - 1]
 
         strings = []
-        for i in range(len(bits)):
-            strings.append(''.join(str(x) for x in bits[i]))
+        for i in range(len(bits_separated)):
+            strings.append(''.join(str(x) for x in bits_separated[i]))
 
         new_bits = []
         for sub_string in strings:
