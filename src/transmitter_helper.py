@@ -50,8 +50,8 @@ def message_bytes_to_int(new_bits):
         len_bit_streams = int(np.ceil(len(new_bits) / (n_bit_streams - 1)))
 
         # Make it even
-        if len_bit_streams % 2 != 0:
-            len_bit_streams = len_bit_streams + 1
+        while len_bit_streams % params.BITS_PER_SYMBOL != 0:
+            len_bit_streams += 1
 
         # Construct the bit streams array with zeros
         bit_streams = np.zeros((n_bit_streams, len_bit_streams), dtype=int)
@@ -73,7 +73,7 @@ def message_bytes_to_int(new_bits):
             print("--------------------------------------------------------")
 
         # Group them by groups of BITS_PER_SYMBOL bits
-        ints = np.zeros((n_bit_streams, int(len_bit_streams / 2)), dtype=str)
+        ints = np.zeros((n_bit_streams, int(len_bit_streams / params.BITS_PER_SYMBOL)), dtype=str)
         for i in range(n_bit_streams):
             for j in range(int(len_bit_streams / params.BITS_PER_SYMBOL)):
                 index = j*params.BITS_PER_SYMBOL

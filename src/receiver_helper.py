@@ -395,11 +395,11 @@ def ints_to_message(ints, removed_freq_range):
         bits_grouped = []
         for j in range(len(bits_grouped_by_bits_per_symbol)):
             bits_grouped.append(''.join(bits_grouped_by_bits_per_symbol[j]))
-
-        print("Bits grouped: ({})".format(np.shape(bits_grouped)))
-        for i in range(len(bits_grouped)):
-            print(bits_grouped[i])
-        print()
+        if params.logs:
+            print("Bits grouped: ({})".format(np.shape(bits_grouped)))
+            for i in range(len(bits_grouped)):
+                print(bits_grouped[i])
+            print()
 
         # Separate bits
         bits_separated = []
@@ -408,68 +408,64 @@ def ints_to_message(ints, removed_freq_range):
             for j in range(len(bits_grouped[i])):
                 bits_alone.append(int(bits_grouped[i][j]))
             bits_separated.append(bits_alone)
+        if params.logs:
+            print("Bits separated: {}".format(np.shape(bits_separated)))
+            for i in range(len(bits_separated)):
+                print(bits_separated[i])
+            print()
 
-        print("Bits separated: ({})".format(np.shape(bits_separated)))
-        for i in range(len(bits_separated)):
-            print(bits_separated[i])
-        print()
-
-        print("Removed frequency range: {}".format(removed_freq_range))
+        if params.logs:
+            print("Removed frequency range: {}".format(removed_freq_range))
         if removed_freq_range != 3:
-            print("--> We have to reconstruct the missing bit stream")
+            if params.logs:
+                print("--> We have to reconstruct the missing bit stream")
             parity_check = np.sum(bits_separated, axis=0)
 
             reconstructed_bit_stream = []
             for j in range(len(parity_check)):
                 reconstructed_bit_stream.append(0 if parity_check[j] % 2 == 0 else 1)
-
-            print("Missing bit stream: ({})".format(np.shape(reconstructed_bit_stream)))
-            print(reconstructed_bit_stream)
-            print()
+            if params.logs:
+                print("Missing bit stream: {}\n{}\n".format(np.shape(reconstructed_bit_stream), reconstructed_bit_stream))
 
             bit_streams_to_use = bits_separated[:len(bits_separated) - 1]
             bit_streams_to_use.insert(removed_freq_range, reconstructed_bit_stream)
         else:
-            print("--> We can use the received bit streams")
+            if params.logs:
+                print("--> We can use the received bit streams")
             bit_streams_to_use = bits_separated
 
-        print("Bit streams to use: ({})".format(np.shape(bits_separated)))
-        for i in range(len(bit_streams_to_use)):
-            print(bit_streams_to_use[i])
-        print()
+        if params.logs:
+            print("Bit streams to use: {}".format(np.shape(bits_separated)))
+            for i in range(len(bit_streams_to_use)):
+                print(bit_streams_to_use[i])
+            print()
 
+        # Isolate the bits
         bits_separated = []
         for i in range(len(bit_streams_to_use[0])):
             for j in range(len(bit_streams_to_use)):
                 bits_separated.append(int(bit_streams_to_use[j][i]))
-
-        print("Bits:")
-        print(bits_separated)
-        print(np.shape(bits_separated))
-        print()
+        if params.logs:
+            print("Bits in order: {}\n{}\n".format(np.shape(np.shape(bits_separated)), bits_separated))
 
         # Slice the string into substrings of 7 characters
         bits_separated = [bits_separated[i:i + 7] for i in range(0, len(bits_separated), 7)]
+        if params.logs:
+            print("Bits in groups of 7: {}\n{}\n".format(np.shape(bits_separated), bits_separated))
 
-        print("Bits in groups of 7")
-        print(bits_separated)
-        print(np.shape(bits_separated))
-        print()
-
+        # Remove the last element if it is not composed of 7 bits (comes from the rounding)
         if len(bits_separated[len(bits_separated) - 1]) != 7:
             bits_separated = bits_separated[:len(bits_separated) - 1]
 
+        # Re-put the zero at the beginning (c.f transmitter)
         strings = []
         for i in range(len(bits_separated)):
             strings.append(''.join(str(x) for x in bits_separated[i]))
-
         new_bits = []
         for sub_string in strings:
             new_bits.append('0' + str(sub_string))
-
-        print(new_bits)
-        print(np.shape(new_bits))
-        print()
+        if params.logs:
+            print("Final bytes: {}\n{}\n".format(np.shape(new_bits), new_bits))
     else:
         raise ValueError("This modulation type does not exist yet... He he he")
 

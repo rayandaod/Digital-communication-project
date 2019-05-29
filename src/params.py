@@ -14,7 +14,7 @@ def choose_symbol_period():
 
 # General variables
 logs = True
-plots = False
+plots = True
 input_message_file_path = "../data/input_text.txt"
 output_message_file_path = "../data/output_text.txt"
 
