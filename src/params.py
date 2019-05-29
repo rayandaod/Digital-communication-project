@@ -53,7 +53,7 @@ MOD_1_BANDWIDTH = 2000
 MOD_2_BANDWIDTH = 4000
 MOD_3_BANDWIDTH = 2000
 
-BETA = 0.2  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
+BETA = 0.05  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
 T = choose_symbol_period()  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying
 # Nyquist crit.
 NORMALIZE_PULSE = True  # rather we normalize the pulse or not

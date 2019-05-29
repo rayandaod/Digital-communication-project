@@ -60,7 +60,7 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
     if params.logs:
         print("Root-raised-cosine:\nSPAN = {} samples, beta = {}, T = {} seconds, Fs = {} samples per second (Hz)"
               .format(SPAN, beta, T, Fs))
-        print("Index where t = 0: {} ({} values left and {} values right)".format(index_0, index_0, index_0 - 1))
+        # print("Index where t = 0: {} ({} values left and {} values right)".format(index_0, index_0, index_0 - 1))
         print("Normalized = {}".format(params.NORMALIZE_PULSE))
         print("--------------------------------------------------------")
     if params.plots:
