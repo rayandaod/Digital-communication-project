@@ -14,33 +14,32 @@ def encoder():
     Encode a message into a sequence of symbols according to the given mapping
     :return: the corresponding symbols for the message
     """
-    # Retrieve the message from file
+    # Retrieve the message from the file as bytes
     message_bytes = transmitter_helper.retrieve_message_as_bytes()
 
     # Associate the message bytes to the corresponding symbols
-    corresponding_symbols = transmitter_helper.message_bytes_to_int(message_bytes)
+    corresponding_symbols = transmitter_helper.grouped_bytes_to_symbols(message_bytes)
 
     return np.asarray(corresponding_symbols)
 
 
-def waveform_former(h, data_symbols, USF=params.USF):
+def waveform_former(h, data_symbols):
     """
     :param h: the sampled pulse
     :param data_symbols: the data symbols modulating the pulse
-    :param USF: the up-sampling factor, i.e the number of samples per symbols, also called SPS
     :return: the samples of a modulated pulse train to send to the server
     """
     # Generate the preamble_symbols and write them in the appropriate file
     preamble_symbols = transmitter_helper.generate_preamble_to_transmit(len(data_symbols))
 
     # Shape the preamble symbols and write the preamble samples in the preamble_samples file
-    transmitter_helper.shape_preamble_samples(h, preamble_symbols, USF)
+    transmitter_helper.shape_preamble_samples(h, preamble_symbols)
 
     # Concatenate the data symbols with the preamble symbols at the beginning and at the end
     p_data_p_symbols = transmitter_helper.concatenate_symbols(preamble_symbols, data_symbols)
 
     # Shape each of the symbols array
-    p_data_p_samples = transmitter_helper.shape_symbols(h, p_data_p_symbols, USF)
+    p_data_p_samples = transmitter_helper.shape_symbols(h, p_data_p_symbols)
 
     # Choose the modulation frequencies and modulate the samples
     p_data_p_modulated_samples = transmitter_helper.modulate_samples(p_data_p_samples)

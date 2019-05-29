@@ -42,8 +42,8 @@ def find_removed_frequency(samples_received):
         if frequency_ranges_available[i]:
             indices_available.append(i)
     if params.logs:
-        print("Frequency ranges available boolean array: {}".format(frequency_ranges_available))
-        print("Available indices array: {}".format(indices_available))
+        # print("Frequency ranges available boolean array: {}".format(frequency_ranges_available))
+        # print("Available indices array: {}".format(indices_available))
         print("--------------------------------------------------------")
     return removed_freq_range, frequency_ranges_available, indices_available
 
@@ -287,7 +287,7 @@ def correct_params(data_samples, phase_shift_estim):
     return data_samples
 
 
-def down_sample(data_samples):
+def downsample(data_samples):
     if params.logs:
         print("Down-sampling...")
     if params.MOD == 1 or params.MOD == 2:
@@ -316,7 +316,7 @@ def down_sample(data_samples):
 
 def symbols_to_ints(symbols, mapping):
     if params.logs:
-        print("Associating symbols to integers...")
+        print("Mapping symbols to integers...")
     if params.MOD == 1 or params.MOD == 2:
         ints = symbols_to_ints_helper(symbols, mapping)
     elif params.MOD == 3:
@@ -431,7 +431,7 @@ def ints_to_message(ints, removed_freq_range):
             bit_streams_to_use.insert(removed_freq_range, reconstructed_bit_stream)
         else:
             if params.logs:
-                print("--> We can use the received bit streams")
+                print("--> We can use the received bit streams\n")
             bit_streams_to_use = bits_separated
 
         if params.logs:

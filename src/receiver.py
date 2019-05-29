@@ -46,7 +46,7 @@ def n_tuple_former():
     data_samples = receiver_helper.correct_params(data_samples, phase_shift_estim)
 
     # Down-sample the samples to obtain the symbols
-    data_symbols = receiver_helper.down_sample(data_samples)
+    data_symbols = receiver_helper.downsample(data_samples)
 
     return data_symbols, removed_freq_range
 
