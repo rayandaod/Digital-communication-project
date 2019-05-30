@@ -28,9 +28,9 @@ def retrieve_message_as_bytes():
     new_bytes = [b[1:] for b in message_bytes]
     new_message_bytes_grouped = ''.join(new_bytes)
 
-    print("Sent message ({} characters):\n{}".format(len(message), message))
+    print("Sent message ({} characters):\n{}\n".format(len(message), message))
     if params.logs:
-        print("Corresponding bytes:\n{}".format(message_bytes))
+        print("Corresponding bytes:\n{}\n".format(message_bytes))
         print("New bytes:\n{}".format(new_bytes))
         print("--------------------------------------------------------")
     return new_message_bytes_grouped
@@ -96,11 +96,13 @@ def grouped_bytes_to_symbols(grouped_bytes):
                 ints[i][j] = mapping_index
 
         if params.logs:
-            print("Ints bits stream {}:\n{}\n".format(ints.shape, ints))
+            print("Ints bits stream {}:\n{}".format(ints.shape, ints))
     else:
         raise ValueError("This modulation type does not exist yet... He he he")
 
     corresponding_symbols = np.zeros(np.shape(ints), dtype=complex)
+    if params.logs:
+        print("--------------------------------------------------------")
     mapping = mappings.choose_mapping()
     for i in range(len(ints)):
         corresponding_symbols[i] = [mapping[int(j)] for j in ints[i]]
@@ -152,18 +154,21 @@ def concatenate_symbols(preamble_symbols, data_symbols):
         p_data_p_symbols = np.concatenate((preamble_symbols, data_symbols[0], preamble_symbols[::-1]))
         if params.logs:
             print("Total symbols: {}".format(p_data_p_symbols))
-            print("Number of total symbols: {}".format(np.shape(p_data_p_symbols)))
+            print("Number of symbols in total: {}".format(np.shape(p_data_p_symbols)))
     elif params.MOD == 3:
         p_data_p_symbols = []
         for i in range(len(data_symbols)):
             p_data_p_symbols.append(np.concatenate((preamble_symbols, data_symbols[i], preamble_symbols[::-1])))
         if params.logs:
+            print("Shape of the total symbols: {}".format(np.shape(p_data_p_symbols)))
+        if params.plots:
             for i in range(len(p_data_p_symbols)):
-                print("Total symbols {}: {}\n{}".format(i, np.shape(p_data_p_symbols[i]), p_data_p_symbols[i]))
-                if params.plots:
-                    plot_helper.plot_complex_symbols(p_data_p_symbols[i], "Symbols {}".format(i))
+                plot_helper.plot_complex_symbols(p_data_p_symbols[i], "Symbols {}".format(i))
     else:
         raise ValueError("This mapping type does not exist yet... He he he")
+
+    if params.logs:
+        print("--------------------------------------------------------")
     return p_data_p_symbols
 
 

@@ -13,7 +13,7 @@ def choose_symbol_period():
 
 
 # General variables
-logs = False
+logs = True
 plots = False
 input_message_file_path = "../data/input_text.txt"
 output_message_file_path = "../data/output_text.txt"
@@ -109,5 +109,4 @@ def params_log():
     print("--------------------------------------------------------")
     print("--------------------------------------------------------")
     print("--------------------------------------------------------")
-    print()
     return None

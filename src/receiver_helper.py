@@ -261,7 +261,7 @@ def estimate_parameters(preamble_samples_sent, preamble_samples_received, indice
         if params.logs:
             for i in range(len(phase_shift_estim)):
                 print("Phase shift {}: {}".format(indices_available[i], phase_shift_estim[i]))
-                print("Scaling factor {}: {}".format(indices_available[i], scaling_factor_estim[i]))
+                print("Scaling factor {}: {}\n".format(indices_available[i], scaling_factor_estim[i]))
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
     if params.logs:
@@ -428,7 +428,7 @@ def symbols_to_ints(symbols, mapping):
     :return:        The corresponding indices to the received symbols
     """
     if params.logs:
-        print("Mapping symbols to integers...")
+        print("Mapping symbols to to the mapping indices...")
     if params.MOD == 1 or params.MOD == 2:
         ints = symbols_to_ints_helper(symbols, mapping)
     elif params.MOD == 3:
@@ -438,7 +438,6 @@ def symbols_to_ints(symbols, mapping):
     else:
         raise ValueError("This modulation type does not exist yet... He he he")
     if params.logs:
-        print("Integers:\n{}".format(ints))
         print("--------------------------------------------------------")
     return ints
 
@@ -516,15 +515,18 @@ def ints_to_message(ints, removed_freq_range):
             bits_grouped_by_bits_per_symbol.append(
                 ["{0:0{bits_per_symbol}b}".format(i, bits_per_symbol=params.BITS_PER_SYMBOL) for i in ints[j]])
         if params.logs:
-            print("Bits grouped by groups of BITS_PER_SYMBOL bits: ({})\n{}\n".format
-                  (np.shape(bits_grouped_by_bits_per_symbol), bits_grouped_by_bits_per_symbol))
+            print("Bits grouped by groups of BITS_PER_SYMBOL bits: {}".format(
+                np.shape(bits_grouped_by_bits_per_symbol)))
+            for i in range(len(bits_grouped_by_bits_per_symbol)):
+                print(bits_grouped_by_bits_per_symbol[i])
+            print()
 
         # Make an array of strings with it
         bits_grouped = []
         for j in range(len(bits_grouped_by_bits_per_symbol)):
             bits_grouped.append(''.join(bits_grouped_by_bits_per_symbol[j]))
         if params.logs:
-            print("Bits grouped: ({})".format(np.shape(bits_grouped)))
+            print("Bits grouped: {}".format(np.shape(bits_grouped)))
             for i in range(len(bits_grouped)):
                 print(bits_grouped[i])
             print()
