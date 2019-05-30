@@ -15,6 +15,7 @@ def retrieve_message_as_bytes():
     """
     Retrieve the string message in the appropriate file given by the params file, and return the bits corresponding to
     the message as an array of 0 and 1
+
     :return: The bits corresponding to the message as an array of 0 and 1
     """
     if params.logs:
@@ -27,8 +28,7 @@ def retrieve_message_as_bytes():
     new_message_bytes_grouped = ''.join(new_bytes)
 
     if params.logs:
-        print("Sent message:\n{}".format(message))
-        print("Length: {} characters".format(len(message)))
+        print("Sent message ({} characters):\n{}".format(len(message), message))
         print("Corresponding bytes:\n{}".format(message_bytes))
         print("New bytes:\n{}".format(new_bytes))
         print("--------------------------------------------------------")
@@ -38,14 +38,16 @@ def retrieve_message_as_bytes():
 def grouped_bytes_to_symbols(grouped_bytes):
     """
     Associate the message bits to an array of corresponding symbols that depend on the chosen mapping
-    :param grouped_bytes: The bits corresponding to the message as an array of 0 and 1
-    :return: The corresponding symbols to the given message as an array
+
+    :param grouped_bytes:   The bits corresponding to the message as an array of 0 and 1
+    :return:                The corresponding symbols to the given message as an array
     """
     if params.logs:
         print("Mapping message bytes to the symbols from our mapping...")
     if params.MOD == 1 or params.MOD == 2:
         # New structure with bits_per_symbol bits by row
-        grouped_bytes = [grouped_bytes[i:i + params.BITS_PER_SYMBOL] for i in range(0, len(grouped_bytes), params.BITS_PER_SYMBOL)]
+        grouped_bytes = [grouped_bytes[i:i + params.BITS_PER_SYMBOL] for i in range(0, len(grouped_bytes),
+                                                                                    params.BITS_PER_SYMBOL)]
 
         # Convert this new bits sequence to an integer sequence
         ints = [[int(b, 2) for b in grouped_bytes]]
@@ -81,6 +83,7 @@ def grouped_bytes_to_symbols(grouped_bytes):
             print("Bit streams: {}".format(np.shape(bit_streams)))
             for i in range(len(bit_streams)):
                 print("{}".format(bit_streams[i]))
+            print()
 
         # Group them by groups of BITS_PER_SYMBOL bits
         ints = np.zeros((n_bit_streams, int(len_bit_streams / params.BITS_PER_SYMBOL)), dtype=str)
@@ -92,7 +95,7 @@ def grouped_bytes_to_symbols(grouped_bytes):
                 ints[i][j] = mapping_index
 
         if params.logs:
-            print("Ints bits stream {}:\n{}".format(ints.shape, ints))
+            print("Ints bits stream {}:\n{}\n".format(ints.shape, ints))
     else:
         raise ValueError("This modulation type does not exist yet... He he he")
 
@@ -102,8 +105,7 @@ def grouped_bytes_to_symbols(grouped_bytes):
         corresponding_symbols[i] = [mapping[int(j)] for j in ints[i]]
 
     if params.logs:
-        print("Symbols/n-tuples to be sent:\n{}".format(corresponding_symbols))
-        print("Shape of the symbols: {}".format(np.shape(corresponding_symbols)))
+        print("Symbols/n-tuples to be sent: {}\n{}".format(np.shape(corresponding_symbols), corresponding_symbols))
     if params.plots:
         plot_helper.plot_complex_symbols(corresponding_symbols, "{} data symbols to send"
                                          .format(np.shape(corresponding_symbols)), "blue")
@@ -115,8 +117,9 @@ def grouped_bytes_to_symbols(grouped_bytes):
 def generate_preamble_to_transmit(len_data_symbols):
     """
     Generate preamble symbols that will be used to synchronize our signal at the receiver
-    :param len_data_symbols: The number of symbols to transmit (useful in case of a random preamble)
-    :return: The preamble symbols that were generated
+
+    :param len_data_symbols:    The number of symbols to transmit (useful in case of a random preamble)
+    :return:                    The preamble symbols that were generated
     """
     if params.logs:
         print("Generating the preamble...")
@@ -135,10 +138,11 @@ def generate_preamble_to_transmit(len_data_symbols):
 def concatenate_symbols(preamble_symbols, data_symbols):
     """
     Construct the symbols to send by concatenating the data symbols with the preamble symbols at the beginning and at
-    th end
-    :param preamble_symbols: The preamble symbols to stick to the data symbols
-    :param data_symbols: The symbols that carry the data to send
-    :return: The symbols that result from the concatenation
+    the end
+
+    :param preamble_symbols:    The preamble symbols to stick to the data symbols
+    :param data_symbols:        The symbols that carry the data to send
+    :return:                    The symbols that result from the concatenation
     """
     if params.logs:
         print("Concatenating everything together (preamble-data-flipped preamble)...")
@@ -154,8 +158,7 @@ def concatenate_symbols(preamble_symbols, data_symbols):
             p_data_p_symbols.append(np.concatenate((preamble_symbols, data_symbols[i], preamble_symbols[::-1])))
         if params.logs:
             for i in range(len(p_data_p_symbols)):
-                print("Total symbols {}: {}".format(i, p_data_p_symbols[i]))
-                print("Number of total symbols {}: {}".format(i, np.shape(p_data_p_symbols[i])))
+                print("Total symbols {}: {}\n{}".format(i, np.shape(p_data_p_symbols[i]), p_data_p_symbols[i]))
                 if params.plots:
                     plot_helper.plot_complex_symbols(p_data_p_symbols[i], "Symbols {}".format(i))
     else:
@@ -166,9 +169,10 @@ def concatenate_symbols(preamble_symbols, data_symbols):
 def shape_symbols(h, p_data_p_symbols):
     """
     Use the pulse h to shape the p_data_p_symbols given, and up-sample by USF before
-    :param h: The pulse to use to do the pulse shaping
-    :param p_data_p_symbols: The preamble-data-preamble symbols to shape
-    :return: The preamble-data-preamble sample resulting from the pulse shaping
+
+    :param h:                   The pulse to use to do the pulse shaping
+    :param p_data_p_symbols:    The preamble-data-preamble symbols to shape
+    :return:                    The preamble-data-preamble sample resulting from the pulse shaping
     """
     if params.logs:
         print("Pulse shaping the symbols...")
@@ -176,9 +180,8 @@ def shape_symbols(h, p_data_p_symbols):
     if params.MOD == 1 or params.MOD == 2:
         p_data_p_samples = upfirdn(h, p_data_p_symbols, params.USF)
         if params.logs:
-            print("Samples: {}".format(p_data_p_samples))
+            print("Samples: {}\n{}".format(np.shape(p_data_p_samples), p_data_p_samples))
             print("Up-sampling factor: {}".format(params.USF))
-            print("Number of samples: {}".format(len(p_data_p_samples)))
         if params.plots:
             plot_helper.samples_fft_plots(p_data_p_samples, "Samples after the pulse shaping", shift=True)
     elif params.MOD == 3:
@@ -200,9 +203,10 @@ def shape_symbols(h, p_data_p_symbols):
 def shape_preamble_samples(h, preamble_symbols):
     """
     Use the pulse h to shape the preamble_symbols given, and up-sample by USF before
-    :param h: The pulse to use to do the pulse shaping
-    :param preamble_symbols: The preamble symbols to shape
-    :return: The preamble sample resulting from the pulse shaping
+
+    :param h:                   The pulse to use to do the pulse shaping
+    :param preamble_symbols:    The preamble symbols to shape
+    :return:                    The preamble sample resulting from the pulse shaping
     """
     if params.logs:
         print("Shaping the preamble...")
@@ -222,8 +226,9 @@ def shape_preamble_samples(h, preamble_symbols):
 def modulate_samples(p_data_p_samples):
     """
     Modulate the samples to the allowed frequency ranges
-    :param p_data_p_samples: The samples to modulate
-    :return: The modulated samples
+
+    :param p_data_p_samples:    The samples to modulate
+    :return:                    The modulated samples
     """
     if params.logs:
         print("Choosing the modulation frequencies and modulating the samples...")
@@ -242,7 +247,7 @@ def modulate_samples(p_data_p_samples):
                 print("Min and max sample after modulation: ({}, {})".format(min(p_data_p_samples),
                                                                              max(p_data_p_samples)))
             if params.plots:
-                plot_helper.samples_fft_plots(p_data_p_samples, "Samples to send", time=True, complex=True, shift=True)
+                plot_helper.samples_fft_plots(p_data_p_samples, "Samples to send", time=True, is_complex=True, shift=True)
         elif params.MOD == 3:
             modulated_samples = []
             for i in range(len(p_data_p_samples)):
@@ -261,8 +266,9 @@ def modulate_samples(p_data_p_samples):
 def scale_samples(p_data_p_modulated_samples):
     """
     Scale the samples to fit to the server's constraints
-    :param p_data_p_modulated_samples: The samples to scale
-    :return: The samples scaled
+
+    :param p_data_p_modulated_samples:  The samples to scale
+    :return:                            The samples scaled
     """
     if params.logs:
         print("Scaling the samples to the server constraints...")
@@ -270,7 +276,7 @@ def scale_samples(p_data_p_modulated_samples):
         ABS_SAMPLE_RANGE
 
     if params.logs:
-        print("Number of samples: {}".format(len(samples_to_send)))
+        print("Number of samples to send: {}".format(len(samples_to_send)))
         print("Minimum sample after scaling: {}".format(min(samples_to_send)))
         print("Maximum sample after scaling: {}".format(max(samples_to_send)))
         print("--------------------------------------------------------")
@@ -280,6 +286,7 @@ def scale_samples(p_data_p_modulated_samples):
 def send_samples():
     """
     Launch the client.py file with the correct arguments according to the parameters in the param file
+
     :return: None
     """
     subprocess.call(["python3 client.py" +
@@ -292,6 +299,7 @@ def send_samples():
         print("--------------------------------------------------------")
         print("--------------------------------------------------------")
         print("Samples sent!")
+        print("--------------------------------------------------------")
         print("--------------------------------------------------------")
         print("--------------------------------------------------------")
     return None

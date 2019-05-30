@@ -1,9 +1,5 @@
-import time
-import sys
 import numpy as np
 
-import params
-import pulses
 import read_write
 import transmitter_helper
 
@@ -12,7 +8,8 @@ import transmitter_helper
 def encoder():
     """
     Encode a message into a sequence of symbols according to the given mapping
-    :return: the corresponding symbols for the message
+
+    :return: The corresponding symbols for the message
     """
     # Retrieve the message from the file as bytes
     message_bytes = transmitter_helper.retrieve_message_as_bytes()
@@ -25,9 +22,11 @@ def encoder():
 
 def waveform_former(h, data_symbols):
     """
-    :param h: the sampled pulse
-    :param data_symbols: the data symbols modulating the pulse
-    :return: the samples of a modulated pulse train to send to the server
+    Shape the data symbols with the pulse h
+
+    :param h:               The pulse used to shape the symbols
+    :param data_symbols:    The data symbols modulating the pulse
+    :return:                The samples of a modulated pulse train to send to the server
     """
     # Generate the preamble_symbols and write them in the appropriate file
     preamble_symbols = transmitter_helper.generate_preamble_to_transmit(len(data_symbols))
@@ -54,26 +53,10 @@ def waveform_former(h, data_symbols):
 
 
 def send_samples():
+    """
+    Send the samples to the server, and received the output samples in the corresponding file
+
+    :return: None
+    """
     transmitter_helper.send_samples()
-
-
-# Intended for testing (to run the program, run main.py)
-if __name__ == '__main__':
-    if params.logs:
-        moment = time.strftime("%Y-%b-%d__%H_%M_%S", time.localtime())
-        log_file = open("../logs/" + moment + ".log", "w+")
-        sys.stdout = log_file
-        params.params_log()
-
-    # Encode the message
-    symbols = encoder()
-
-    # Generate the root-raised_cosine
-    _, h_pulse = pulses.root_raised_cosine()
-
-    # Construct the samples to send
-    waveform_former(h_pulse, symbols)
-
-    # Send the samples to the server
-    transmitter_helper.send_samples()
-
+    return None

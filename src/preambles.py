@@ -7,9 +7,10 @@ import read_write
 
 def generate_preamble_symbols(n_symbols_to_send):
     """
-    Generate preamble symbols
-    :param n_symbols_to_send:
-    :return:
+    Generate preamble symbols used to synchronize our signal at the receiver
+
+    :param n_symbols_to_send:   The number of data symbols to send
+    :return:                    None
     """
     if params.PREAMBLE_TYPE == "random":
         preamble_symbols = generate_random_preamble_symbols(n_symbols_to_send)
@@ -31,12 +32,24 @@ def generate_preamble_symbols(n_symbols_to_send):
 
 
 def generate_random_preamble_symbols(n_symbols_to_send):
+    """
+    Generate a random preamble sequence of symbols that come from the chosen mapping
+
+    :param n_symbols_to_send:   The number of data symbols to send, as we generate only a fix ratio of preamble symbols
+                                    that depend on this number
+    :return:                    The preamble symbols generated
+    """
     preamble_symbols = np.random.choice(mappings.choose_mapping(),
                                         size=int(np.ceil(n_symbols_to_send * params.PREAMBLE_LENGTH_RATIO)))
     return preamble_symbols
 
 
 def generate_barker_preamble_symbols():
+    """
+    Generate a barker sequence of complex symbols
+
+    :return: The barker sequence
+    """
     barker_code_13 = np.array([1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1])
     preamble_symbols = np.repeat(barker_code_13, params.BARKER_SEQUENCE_REPETITION)
     return preamble_symbols + 1j * preamble_symbols

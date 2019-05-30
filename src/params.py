@@ -70,6 +70,11 @@ ABS_SAMPLE_RANGE = 0.85  # samples amplitude must be between -1 and 1, but we ke
 
 
 def params_log():
+    """
+    Insert the important parameters at the beginning of the logs
+
+    :return: None
+    """
     print("--------------------------------------------------------")
     print("-----------------------PARAMETERS-----------------------")
     print("--------------------------------------------------------")
@@ -105,3 +110,4 @@ def params_log():
     print("--------------------------------------------------------")
     print("--------------------------------------------------------")
     print()
+    return None

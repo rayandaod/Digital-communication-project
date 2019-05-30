@@ -12,8 +12,8 @@ def dft_shift(X):
     obtain a symmetric vector also for even-length signals. Here is a function that does that.
     (credits: Prandoni P. - Signal processing for Communication course at EPFL)
 
-    :param X: the fourier transform of our signal x
-    :return: a shifted version of the fourier transform (to be around 0) for even and odd length signals
+    :param X:   The fourier transform of our signal x
+    :return:    A shifted version of the fourier transform (to be around 0) for even and odd length signals
     :
     """
     N = len(X)
@@ -34,10 +34,10 @@ def dft_map(X, Fs=params.Fs, shift=True):
     namely k(F_s/N). Let's remap the DFT coefficients using the sampling rate.
     (credits: Prandoni P. - Signal processing for Communication course at EPFL)
 
-    :param X: the fourier transform of our signal x
-    :param Fs: the sampling frequency
-    :param shift: rather we want to shift the fft or not
-    :return: a real-world-frequency DFT
+    :param X:       The fourier transform of our signal x
+    :param Fs:      The sampling frequency
+    :param shift:   Rather we want to shift the fft or not
+    :return:        A real-world-frequency DFT
     """
     resolution = float(Fs) / len(X)
     if shift:
@@ -52,9 +52,10 @@ def dft_map(X, Fs=params.Fs, shift=True):
 # TODO awful code, change that ASAP
 def find_removed_freq_range(samples):
     """
-        Checks which range of frequencies has been removed by the channel (among 1-3kHz, 3-5kHz, 5-7kHz, 7-9kHz)
-        :param samples: the samples received from the server
-        :return: the index in params.FREQ_RANGES corresponding to the removed frequency range
+    Checks which range of frequencies has been removed by the channel (among 1-3kHz, 3-5kHz, 5-7kHz, 7-9kHz)
+
+    :param samples: The samples received from the server
+    :return:        The index in params.FREQ_RANGES corresponding to the removed frequency range
     """
     X = np.fft.fft(samples)
     f, Y = dft_map(X)
@@ -77,9 +78,10 @@ def find_removed_freq_range(samples):
 def modulate_complex_samples(samples, frequencies):
     """
     Modulate the signal by shifting duplicates of it in the given frequencies
-    :param samples: the signal to modulate
-    :param frequencies: the frequencies we want the signal to be duplicated and shifted in
-    :return: the modulated signals
+
+    :param samples:     The signal to modulate
+    :param frequencies: The frequencies we want the signal to be duplicated and shifted in
+    :return:            The modulated signals
     """
     n_sample = len(samples)
     time_indices = np.arange(n_sample) / params.Fs
@@ -95,10 +97,11 @@ def modulate_complex_samples(samples, frequencies):
 
 def demodulate(samples, f):
     """
-    Demodulate the signal
-    :param samples: the signal to demodulate
-    :param f: the frequency we want the signal to be modulated with
-    :return: the demodulated signal
+    Demodulate the signal from the given frequency, i.e go from pass-band to base-band
+
+    :param samples: The signal to demodulate
+    :param f:       The frequency we want the signal to be modulated with
+    :return:        The demodulated signal
     """
     n_sample = len(samples)
     time_indices = np.arange(n_sample) / params.Fs

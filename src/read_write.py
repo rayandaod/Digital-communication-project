@@ -10,6 +10,7 @@ Reading methods
 def read_preamble_samples():
     """
     Read the samples from the preamble sample file
+
     :return: The preamble samples
     """
     preamble_samples_file = open(params.preamble_sample_file_path, "r")
@@ -21,6 +22,7 @@ def read_preamble_samples():
 def read_preamble_symbols():
     """
     Read the symbols from the preamble symbols file
+
     :return: The preamble symbols
     """
     preamble_symbol_file = open(params.preamble_symbol_file_path, "r")
@@ -32,7 +34,8 @@ def read_preamble_symbols():
 def read_message_sent():
     """
     Read the message that was initially sent
-    :return: the sent message
+
+    :return: The sent message
     """
     input_message_file = open(params.input_message_file_path)
     message_sent = input_message_file.readline()
@@ -48,8 +51,9 @@ Writing methods
 def write_samples(samples):
     """
     Write samples in the input sample file
-    :param samples: samples array to write in the file
-    :return: None
+
+    :param samples: The samples array to write in the file
+    :return:        None
     """
     f = open(params.input_sample_file_path, "w")
     for i in range(len(samples)):
@@ -61,8 +65,9 @@ def write_samples(samples):
 def write_preamble_symbols(preamble_symbols):
     """
     Write preamble samples in the preamble sample file
-    :param preamble_symbols: preamble samples array to write in the file
-    :return: None
+
+    :param preamble_symbols:    The preamble samples array to write in the file
+    :return:                    None
     """
     preamble_symbol_file = open(params.preamble_symbol_file_path, "w")
     for i in range(len(preamble_symbols)):
@@ -73,8 +78,9 @@ def write_preamble_symbols(preamble_symbols):
 def write_preamble_samples(preamble_samples):
     """
     Write preamble samples in the preamble sample file
-    :param preamble_samples: preamble samples array to write in the file
-    :return: None
+
+    :param preamble_samples:    The preamble samples array to write in the file
+    :return:                    None
     """
     preamble_sample_file = open(params.preamble_sample_file_path, "w")
     for i in range(len(preamble_samples)):
@@ -85,8 +91,9 @@ def write_preamble_samples(preamble_samples):
 def write_message_received(message):
     """
     Write the message received in the appropriate file
-    :param message: the message to be stored
-    :return: None
+
+    :param message: The message to be stored
+    :return:        None
     """
     output_message_file = open(params.output_message_file_path, "w")
     output_message_file.write(message)
@@ -97,10 +104,11 @@ def write_message_received(message):
 def write_gaussian_noise(duration, mean, std):
     """
     Write a gaussian noise with the given parameters in the input file
-    :param duration: duration of the noise (in seconds)
-    :param mean: mean of the gaussian noise
-    :param std: standard deviation of thr gaussian noise
-    :return: None
+
+    :param duration:    The duration of the noise (in seconds)
+    :param mean:        The mean of the gaussian noise
+    :param std:         The standard deviation of the gaussian noise
+    :return:            None
     """
     f = open(params.input_sample_file_path, "w")
     n_samples = duration * params.Fs
@@ -114,10 +122,11 @@ def write_gaussian_noise(duration, mean, std):
 def write_sinus(duration, frequencies, scaling_factor=1.):
     """
     Write a sinus in the input sample file, at the given frequency
-    :param scaling_factor:
-    :param duration: duration of the sinus (in seconds)
-    :param frequencies: array of frequencies for the sum of sinus
-    :return: None
+
+    :param scaling_factor:  The scaling factor wo multiply the sinus with
+    :param duration:        The duration of the sinus (in seconds)
+    :param frequencies:     The array of frequencies for the sum of sinus
+    :return:                None
     """
     f = open(params.input_sample_file_path, "w")
     n_samples = int(np.ceil(duration * params.Fs))
@@ -129,10 +138,3 @@ def write_sinus(duration, frequencies, scaling_factor=1.):
         f.write(str(samples[i] * scaling_factor) + '\n')
     f.close()
     return None
-
-
-# Intended for testing (to run the program, run main.py)
-if __name__ == "__main__":
-    # write_samples(input_samples)
-    write_gaussian_noise(1, mean=0, std=1 / 4)
-    # write_sinus(1, [2000, 4000, 6000, 8000], scaling_factor=1/8)

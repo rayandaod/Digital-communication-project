@@ -6,8 +6,10 @@ import plot_helper
 
 def qam_map(M):
     """
-    :param M: the size of our mapping, i.e the number of symbols we can send
-    :return: the array of symbols of the M-QAM (Quadrature Amplitude Modulation)
+    Compute the array of symbols that correspond to a M-QAM mapping
+
+    :param M:   The size of our mapping, i.e the number of symbols we can send
+    :return:    The array of symbols of the M-QAM (Quadrature Amplitude Modulation)
     """
     log_sqrt_m = np.log2(np.sqrt(M))
     if log_sqrt_m != np.ceil(log_sqrt_m):
@@ -19,41 +21,24 @@ def qam_map(M):
         return [-3-3j, -3-1j, -3+3j, -3+1j, -1-3j, -1-1j, -1+3j, -1+1j, 3-3j, 3-1j, 3+3j, 3+1j, 1-3j, 1-1j, 1+3j, 1+1j]
     else:
         raise ValueError("This mapping does not exist yet... He he he")
-        # N = np.sqrt(M) - 1
-        # aux = np.arange(-N, N + 1, 2)
-        # x, y = np.meshgrid(aux[::-1], aux[::-1])
-        # a = (x + y * 1j).T
-        # size_a = len(a) ** 2
-        # b = np.zeros(size_a, dtype=complex)
-        # c = 0
-        # i = 0
-        # j = 0
-        # while c < size_a:
-        #     b[c] = a[j][i]
-        #     c += 1
-        #     if (i == len(a) - 1 and j % 2 == 0) or (i == 0 and j % 2 == 1):
-        #         j += 1
-        #         continue
-        #     if j % 2 == 1:
-        #         i -= 1
-        #     else:
-        #         i += 1
-        # return b
-
 
 
 def psk_map(M):
     """
-    :param M: the size of our mapping, i.e the number of symbols we can send
-    :return: the array of symbols of the M-PSK (Pulse Shift Keying)
+    Compute the array of symbols that correspond to a M-PSK mapping
+
+    :param M:   The size of our mapping, i.e the number of symbols we can send
+    :return:    The array of symbols of the M-PSK (Pulse Shift Keying)
     """
     return np.exp(1j * 2 * np.pi * np.arange(0, M) / M)
 
 
 def pam_map(M):
     """
-    :param M: the size of our mapping, i.e the number of symbols we can send
-    :return: the array of symbols of the M-PAM (Pulse Amplitude Modulation)
+    Compute the array of symbols that correspond to a M-PAM mapping
+
+    :param M:   The size of our mapping, i.e the number of symbols we can send
+    :return:    The array of symbols of the M-PAM (Pulse Amplitude Modulation)
     """
     if M % 2 != 0:
         raise ValueError('Parameter[M] is not even.')
@@ -63,7 +48,10 @@ def pam_map(M):
 
 def choose_mapping(normalize=params.NORMALIZE_MAPPING):
     """
-    :return: The mapping corresponding to the given mapping
+    Choose the mapping according to the parameters in the file params.py
+
+    :param normalize:   Rather we normalize the mapping or not
+    :return:            The corresponding array of symbols
     """
     if params.MAPPING == "qam":
         chosen_mapping = qam_map(params.M)
@@ -88,7 +76,3 @@ def choose_mapping(normalize=params.NORMALIZE_MAPPING):
 
     return chosen_mapping
 
-
-# Intended for testing (to run the program, run main.py)
-if __name__ == "__main__":
-    print(qam_map(16))

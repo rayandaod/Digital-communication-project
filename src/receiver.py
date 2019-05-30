@@ -1,22 +1,23 @@
-import time
-import sys
-
-import params
 import mappings
 import receiver_helper
 
 
 def n_tuple_former():
+    """
+    Form the n-tuple from the samples received from the server
+
+    :return: The data symbols received from the server and the index of the removed frequency range
+    """
     # Prepare the data
     samples_received, preamble_samples_sent = receiver_helper.prepare_data()
 
     # Find the frequency range that has been removed
-    removed_freq_range, frequency_ranges_available, indices_available = receiver_helper.find_removed_frequency(
+    removed_frequency_range, frequency_ranges_available, indices_available = receiver_helper.find_removed_frequency(
         samples_received)
 
     # Demodulation
-    demodulated_samples = receiver_helper.demodulate(samples_received, removed_freq_range, frequency_ranges_available,
-                                                     indices_available)
+    demodulated_samples = receiver_helper.demodulate(samples_received, removed_frequency_range,
+                                                     frequency_ranges_available, indices_available)
 
     # Low pass
     y = receiver_helper.low_pass(demodulated_samples, indices_available)
@@ -48,15 +49,16 @@ def n_tuple_former():
     # Down-sample the samples to obtain the symbols
     data_symbols = receiver_helper.downsample(data_samples)
 
-    return data_symbols, removed_freq_range
+    return data_symbols, removed_frequency_range
 
 
 def decoder(symbols, removed_freq_range):
     """
     Map the received symbols to the closest symbols of our mapping
-    :param removed_freq_range: index of the range that was removed by the server
-    :param symbols: the observation vector, i.e the received symbols
-    :return: integers between 0 and M-1, i.e integers corresponding to the bits sent
+
+    :param removed_freq_range:  Index of the range that was removed by the server
+    :param symbols:             The observation vector, i.e the received symbols
+    :return:                    Integers between 0 and M-1, i.e integers corresponding to the bits sent
     """
     # Choose the mapping according to the params file
     mapping = mappings.choose_mapping()
@@ -68,12 +70,3 @@ def decoder(symbols, removed_freq_range):
     message_received = receiver_helper.ints_to_message(ints, removed_freq_range)
     return message_received
 
-
-# Intended for testing (to run the program, run main.py)
-if __name__ == "__main__":
-    if params.logs:
-        moment = time.strftime("%Y-%b-%d__%H_%M_%S", time.localtime())
-        log_file = open("../logs/" + moment + ".log", "w+")
-        sys.stdout = log_file
-    data_symbols, removed_freq_range = n_tuple_former()
-    decoder(data_symbols, removed_freq_range)

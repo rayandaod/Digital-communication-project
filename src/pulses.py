@@ -6,12 +6,14 @@ import plot_helper
 
 def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params.Fs, normalize=params.NORMALIZE_PULSE):
     """
-    :param SPAN: number of samples in output
-    :param beta: rolloff factor (0<=beta<=1)
-    :param T: symbol period (in seconds)
-    :param Fs: sampling frequency (in Hz)
-    :param normalize: rather we normalize the rrc or not
-    :return: time indices, and 1-dimensional FIR (finite-impulse response) filter coefficients
+    Generate a root-raised-cosine with the help of the formula in Bixio Rimoldi's book.
+
+    :param SPAN:        The number of samples in output
+    :param beta:        The rolloff factor (0 <= beta <= 1)
+    :param T:           The symbol period (in seconds)
+    :param Fs:          The sampling frequency (in Hz)
+    :param normalize:   Rather we normalize the rrc or not
+    :return:            The time indices, and 1-dimensional FIR (finite-impulse response) filter coefficients
     """
 
     if T <= 0 or SPAN <= 0 or Fs <= 0 or beta < 0 or beta > 1:
@@ -21,7 +23,7 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
     rrc = np.zeros(SPAN)
     time_indices = (np.arange(SPAN) - SPAN / 2) * Ts
     sample_numbers = np.arange(SPAN)
-    index_0 = None
+    # index_0 = None
 
     if beta == 0:
         for n in sample_numbers:
@@ -45,8 +47,8 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
             if abs(t) == forbidden_value_t:
                 rrc[n] = rrc_beta_forbidden_value
             elif beta == 1 or t == 0:
-                if t == 0:
-                    index_0 = n
+                # if t == 0:
+                    # index_0 = n
                 rrc[n] = first_term * (np.cos((1 + beta) * pi * t / T) + second_term) / (1 - third_term * t ** 2)
             else:
                 rrc[n] = first_term * \
@@ -69,7 +71,3 @@ def root_raised_cosine(SPAN=params.SPAN, beta=params.BETA, T=params.T, Fs=params
                                          shift=True)
     return time_indices, rrc
 
-
-# Intended for testing (to run the program, run main.py)
-if __name__ == "__main__":
-    _, pulse = root_raised_cosine(1000)

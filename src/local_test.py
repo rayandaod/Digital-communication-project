@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import butter, sosfilt, sosfreqz
 from scipy.signal import upfirdn
+from scrambler import Scrambler
 
 import fourier_helper
 import mappings
@@ -62,6 +63,7 @@ def butter_bandpass_filter(data, low_cut_freq, high_cut_freq, Fs=params.Fs, orde
 def server_simulation(samples, clip=True, filter_freq=True, delay_start=True, delay_end=True, noise=True, scale=True):
     """
     Simulate a server that clips the data to [-1, 1] adds delay, AWGN(0, params.NOISE_VAR), and some garbage at the end
+
     :param scale: rather we scale the samples or not
     :param noise: rather we noise the signal or not
     :param delay_end: rather we add delay at the end or not
@@ -141,6 +143,7 @@ def server_simulation(samples, clip=True, filter_freq=True, delay_start=True, de
 def local_test():
     """
     Test the design locally with modulation and demodulation
+
     :return: None
     """
     data_symbols = transmitter.encoder(mappings.choose_mapping())
@@ -306,8 +309,3 @@ def local_test():
     message_file = open(params.input_message_file_path)
     message_sent = message_file.readline()
     print(message_received == message_sent)
-
-
-# Intended for testing (to run the program, run main.py)
-if __name__ == "__main__":
-    local_test()
