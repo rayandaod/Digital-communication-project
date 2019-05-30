@@ -28,8 +28,10 @@ def retrieve_message_as_bytes():
     new_bytes = [b[1:] for b in message_bytes]
     new_message_bytes_grouped = ''.join(new_bytes)
 
-    print("Sent message ({} characters):\n{}\n".format(len(message), message))
-    if params.logs:
+    if not params.logs:
+        print("Sent message ({} characters):\n{}".format(len(message), message))
+    else:
+        print("Sent message ({} characters):\n{}\n".format(len(message), message))
         print("Corresponding bytes:\n{}\n".format(message_bytes))
         print("New bytes:\n{}".format(new_bytes))
         print("--------------------------------------------------------")

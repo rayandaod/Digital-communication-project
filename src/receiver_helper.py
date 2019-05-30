@@ -213,12 +213,11 @@ def extract_preamble_samples(samples, delay, preamble_samples_sent, frequency_ra
         preamble_samples_received = []
         for i in range(len(samples)):
             preamble_samples_received.append(samples[i][delay:delay + len_preamble_samples_sent])
-        if params.plots:
-            for i in range(len(preamble_samples_received)):
-                if frequency_ranges_available[i]:
-                    plot_helper.compare_preambles(preamble_samples_received[i], preamble_samples_sent,
-                                                  "Preamble samples received {} vs preamble samples sent"
-                                                  .format(indices_available[i]))
+        # if params.plots:
+        #     for i in range(len(preamble_samples_received)):
+        #         plot_helper.compare_preambles(preamble_samples_received[i], preamble_samples_sent,
+        #                                       "{}: Preamble samples received vs preamble samples sent"
+        #                                       .format(indices_available[i]))
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
 
@@ -248,7 +247,7 @@ def estimate_parameters(preamble_samples_sent, preamble_samples_received, indice
             preamble_samples_received[:len(preamble_samples_received) - half_span_h])
         if params.logs:
             print("Phase shift: {}".format(phase_shift_estim))
-            print("Scaling factor: {}".format(scaling_factor_estim))
+            # print("Scaling factor: {}".format(scaling_factor_estim))
     elif params.MOD == 3:
         phase_shift_estim = []
         scaling_factor_estim = []
@@ -261,7 +260,7 @@ def estimate_parameters(preamble_samples_sent, preamble_samples_received, indice
         if params.logs:
             for i in range(len(phase_shift_estim)):
                 print("Phase shift {}: {}".format(indices_available[i], phase_shift_estim[i]))
-                print("Scaling factor {}: {}\n".format(indices_available[i], scaling_factor_estim[i]))
+                # print("Scaling factor {}: {}\n".format(indices_available[i], scaling_factor_estim[i]))
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
     if params.logs:
@@ -294,11 +293,11 @@ def crop_samples_1(samples, delay, len_preamble_samples_sent, indices_available)
         data_samples = []
         for i in range(len(samples)):
             data_samples.append(samples[i][delay + len_preamble_samples_sent - 1 - half_span_h + 1 + params.USF:])
-        if params.plots:
-            for i in range(len(data_samples)):
-                plot_helper.plot_complex_function(data_samples[i],
-                                                  "y[{}] after removing the delay, the preamble, and adjusting".
-                                                  format(indices_available[i]))
+        # if params.plots:
+        #     for i in range(len(data_samples)):
+        #         plot_helper.plot_complex_function(data_samples[i],
+        #                                           "Samples {} after removing the delay, the preamble, and adjusting".
+        #                                           format(indices_available[i]))
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
     if params.logs:
@@ -354,9 +353,9 @@ def crop_samples_2(data_samples, second_preamble_index):
     elif params.MOD == 3:
         for i in range(len(data_samples)):
             data_samples[i] = data_samples[i][:second_preamble_index + half_span_h - params.USF + 1]
-        if params.plots:
-            for i in range(len(data_samples)):
-                plot_helper.plot_complex_function(data_samples[i], "y (only data)")
+        # if params.plots:
+        #     for i in range(len(data_samples)):
+        #         plot_helper.plot_complex_function(data_samples[i], "y (only data)")
     else:
         raise ValueError("This modulation type does not exist yet... He he he")
     if params.logs:
@@ -410,7 +409,7 @@ def downsample(data_samples):
             print("Shape of the received symbols: {}".format(np.shape(data_symbols)))
         if params.plots:
             for i in range(len(data_symbols)):
-                plot_helper.plot_complex_function(data_symbols[i], "y without preamble")
+                plot_helper.plot_complex_function(data_symbols[i], "Samples without preamble")
                 plot_helper.plot_complex_symbols(data_symbols[i], "Symbols received", annotate=False)
     else:
         raise ValueError("This modulation type does not exist yet... He he he")

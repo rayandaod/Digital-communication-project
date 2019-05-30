@@ -327,15 +327,15 @@ def compare_preambles(preamble_received, preamble_sent, title):
     """
     fig, axs = plt.subplots(2, 2)
     fig.suptitle(title)
-    x_axis = np.arange(max(len(preamble_sent), len(preamble_received)))
+    x_axis = np.arange(max(len(preamble_received), len(preamble_sent)))
 
-    axs[0][0].plot(x_axis, np.real(preamble_sent))
+    axs[0][0].plot(x_axis, np.real(preamble_received))
     axs[0][0].set_ylabel("Real")
-    axs[1][0].plot(x_axis, np.imag(preamble_sent))
+    axs[1][0].plot(x_axis, np.imag(preamble_received))
     axs[1][0].set_ylabel("Imaginary")
 
-    axs[0][1].plot(x_axis, np.real(preamble_received))
+    axs[0][1].plot(x_axis, np.real(preamble_sent))
     axs[0][1].set_ylabel("Real")
-    axs[1][1].plot(x_axis, np.imag(preamble_received))
+    axs[1][1].plot(x_axis, np.imag(preamble_sent))
     axs[1][1].set_ylabel("Imaginary")
     return None
