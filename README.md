@@ -4,6 +4,3 @@
 ### Teaching assistants: Sepand Kashani, Reka Inovan, Arda Atalik
 
 **Deadline: 31/05/2019**
-
-Introduction
-
