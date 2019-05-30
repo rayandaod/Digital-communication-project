@@ -515,8 +515,9 @@ def ints_to_message(ints, removed_freq_range):
         for j in range(len(ints)):
             bits_grouped_by_bits_per_symbol.append(
                 ["{0:0{bits_per_symbol}b}".format(i, bits_per_symbol=params.BITS_PER_SYMBOL) for i in ints[j]])
-        print("Bits grouped by groups of BITS_PER_SYMBOL bits: ({})\n{}\n".format
-              (np.shape(bits_grouped_by_bits_per_symbol), bits_grouped_by_bits_per_symbol))
+        if params.logs:
+            print("Bits grouped by groups of BITS_PER_SYMBOL bits: ({})\n{}\n".format
+                  (np.shape(bits_grouped_by_bits_per_symbol), bits_grouped_by_bits_per_symbol))
 
         # Make an array of strings with it
         bits_grouped = []
@@ -602,10 +603,11 @@ def ints_to_message(ints, removed_freq_range):
 
     message_sent = read_write.read_message_sent()
     if params.logs:
-        print("Message sent:     {}".format(message_sent))
-    print("Message received: {}".format(message_received))
-    if params.logs:
+        print("Message sent ({} characters):     {}".format(len(message_sent), message_sent))
+        print("Message received ({} characters): {}".format(len(message_received), message_received))
         helper.compare_messages(message_sent, message_received)
+    else:
+        print("Message received ({} characters):\n{}".format(len(message_received), message_received))
     read_write.write_message_received(message_received)
     if params.logs:
         print("--------------------------------------------------------")

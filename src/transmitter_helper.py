@@ -1,14 +1,15 @@
-import numpy as np
-from scipy.signal import upfirdn
 import subprocess
 
-import params
-import read_write
-import preambles
-import plot_helper
+import numpy as np
+from scipy.signal import upfirdn
+
 import fourier_helper
 import helper
 import mappings
+import params
+import plot_helper
+import preambles
+import read_write
 
 
 def retrieve_message_as_bytes():
@@ -27,8 +28,8 @@ def retrieve_message_as_bytes():
     new_bytes = [b[1:] for b in message_bytes]
     new_message_bytes_grouped = ''.join(new_bytes)
 
+    print("Sent message ({} characters):\n{}".format(len(message), message))
     if params.logs:
-        print("Sent message ({} characters):\n{}".format(len(message), message))
         print("Corresponding bytes:\n{}".format(message_bytes))
         print("New bytes:\n{}".format(new_bytes))
         print("--------------------------------------------------------")
@@ -89,7 +90,7 @@ def grouped_bytes_to_symbols(grouped_bytes):
         ints = np.zeros((n_bit_streams, int(len_bit_streams / params.BITS_PER_SYMBOL)), dtype=str)
         for i in range(n_bit_streams):
             for j in range(int(len_bit_streams / params.BITS_PER_SYMBOL)):
-                index = j*params.BITS_PER_SYMBOL
+                index = j * params.BITS_PER_SYMBOL
                 grouped_bits = ''.join(map(str, bit_streams[i][index:index + params.BITS_PER_SYMBOL]))
                 mapping_index = int(grouped_bits, base=2)
                 ints[i][j] = mapping_index
@@ -247,7 +248,8 @@ def modulate_samples(p_data_p_samples):
                 print("Min and max sample after modulation: ({}, {})".format(min(p_data_p_samples),
                                                                              max(p_data_p_samples)))
             if params.plots:
-                plot_helper.samples_fft_plots(p_data_p_samples, "Samples to send", time=True, is_complex=True, shift=True)
+                plot_helper.samples_fft_plots(p_data_p_samples, "Samples to send", time=True, is_complex=True,
+                                              shift=True)
         elif params.MOD == 3:
             modulated_samples = []
             for i in range(len(p_data_p_samples)):
@@ -272,7 +274,7 @@ def scale_samples(p_data_p_modulated_samples):
     """
     if params.logs:
         print("Scaling the samples to the server constraints...")
-    samples_to_send = p_data_p_modulated_samples / (np.max(np.abs(p_data_p_modulated_samples))) * params.\
+    samples_to_send = p_data_p_modulated_samples / (np.max(np.abs(p_data_p_modulated_samples))) * params. \
         ABS_SAMPLE_RANGE
 
     if params.logs:

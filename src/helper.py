@@ -42,4 +42,3 @@ def compare_messages(message_sent, message):
     else:
         print("({} error(s))".format(n_errors))
     return None
-

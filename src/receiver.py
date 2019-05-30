@@ -69,4 +69,3 @@ def decoder(symbols, removed_freq_range):
     # Deduce the received message
     message_received = receiver_helper.ints_to_message(ints, removed_freq_range)
     return message_received
-

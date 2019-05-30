@@ -2,6 +2,7 @@
 Credits: Prandoni P. - Signal processing for Communication course at EPFL
 """
 
+
 # TODO: Maybe use it to scramble the bits before sending them, and descramble the bits at the receiver
 
 

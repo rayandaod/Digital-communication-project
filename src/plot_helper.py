@@ -256,7 +256,7 @@ def samples_fft_plots(samples, title, shift=False, time=False, is_complex=True):
     x_label = "Samples"
 
     if time:
-        x_axis = x_axis/params.Fs
+        x_axis = x_axis / params.Fs
         x_label = "Time (in seconds)"
 
     axs[0].plot(x_axis, np.real(samples))

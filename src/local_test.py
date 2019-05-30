@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import butter, sosfilt, sosfreqz
 from scipy.signal import upfirdn
-from scrambler import Scrambler
 
 import fourier_helper
 import mappings

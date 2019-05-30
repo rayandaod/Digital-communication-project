@@ -18,7 +18,8 @@ def qam_map(M):
     if M == 4:
         return [1 + 1j, 1 - 1j, -1 + 1j, -1 - 1j]
     elif M == 16:
-        return [-3-3j, -3-1j, -3+3j, -3+1j, -1-3j, -1-1j, -1+3j, -1+1j, 3-3j, 3-1j, 3+3j, 3+1j, 1-3j, 1-1j, 1+3j, 1+1j]
+        return [-3 - 3j, -3 - 1j, -3 + 3j, -3 + 1j, -1 - 3j, -1 - 1j, -1 + 3j, -1 + 1j, 3 - 3j, 3 - 1j, 3 + 3j, 3 + 1j,
+                1 - 3j, 1 - 1j, 1 + 3j, 1 + 1j]
     else:
         raise ValueError("This mapping does not exist yet... He he he")
 
@@ -75,4 +76,3 @@ def choose_mapping(normalize=params.NORMALIZE_MAPPING):
                                          color="red", annotate=True)
 
     return chosen_mapping
-
