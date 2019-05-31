@@ -62,6 +62,7 @@ def butter_bandpass_filter(data, low_cut_freq, high_cut_freq, Fs=params.Fs, orde
 def server_simulation(samples, clip=True, filter_freq=True, delay_start=True, delay_end=True, noise=True, scale=True):
     """
     Simulate a server that clips the data to [-1, 1] adds delay, AWGN(0, params.NOISE_VAR), and some garbage at the end
+
     :param scale: rather we scale the samples or not
     :param noise: rather we noise the signal or not
     :param delay_end: rather we add delay at the end or not
@@ -141,18 +142,17 @@ def server_simulation(samples, clip=True, filter_freq=True, delay_start=True, de
 def local_test():
     """
     Test the design locally with modulation and demodulation
+
     :return: None
     """
-    mapping = mappings.choose_mapping()
-    ints = transmitter.message_to_ints()
-    symbols = transmitter.encoder(ints, mapping)
+    data_symbols = transmitter.encoder(mappings.choose_mapping())
 
     # Generate the pulse h
     _, h = pulses.root_raised_cosine()
     half_span_h = int(params.SPAN / 2)
 
     # Generate the preamble symbols and read it from the corresponding file
-    preambles.generate_preamble_symbols(len(symbols))
+    preambles.generate_preamble_symbols(len(data_symbols))
     preamble_symbols = read_write.read_preamble_symbols()
 
     # Generate the preamble samples
@@ -160,7 +160,7 @@ def local_test():
     len_preamble_samples = len(preamble_samples)
 
     # Concatenate the preamble symbols with the data symbols
-    total_symbols = np.concatenate((preamble_symbols, symbols, preamble_symbols[::-1]))
+    total_symbols = np.concatenate((preamble_symbols, data_symbols[0], preamble_symbols[::-1]))
 
     # Shape the signal with the pulse h
     total_samples = upfirdn(h, total_symbols, params.USF)
@@ -182,9 +182,9 @@ def local_test():
     plot_helper.fft_plot(total_samples, "Total samples in Frequency domain", shift=True)
 
     # Modulate the total_samples
-    if params.MODULATION_TYPE == 1:
+    if params.MOD == 1:
         samples = fourier_helper.modulate_complex_samples(total_samples, params.np.mean(params.FREQ_RANGES, axis=1))
-    elif params.MODULATION_TYPE == 2:
+    elif params.MOD == 2:
         samples = fourier_helper.modulate_complex_samples(total_samples,
                                                           [params.FREQ_RANGES[0][1], params.FREQ_RANGES[2][1]])
     else:
@@ -205,10 +205,13 @@ def local_test():
     print("Maximum sample after scaling: {}".format(max(samples)))
     print("--------------------------------------------------------")
 
+    # read_write.write_samples(samples)
+
     # ----------------------------------------------------------------------------------------------------------------
     # Channel simulation ---------------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
-    samples = server_simulation(samples, filter_freq=False)
+    # samples = server_simulation(samples, filter_freq=False)
+    samples = np.loadtxt(params.input_sample_file_path)
     # ----------------------------------------------------------------------------------------------------------------
     # Channel simulation's end ---------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
@@ -222,12 +225,12 @@ def local_test():
     print("Removed frequency range: {} (range {})".format(removed_freq_range, removed_freq_range + 1))
 
     # Choose a frequency for demodulation
-    if params.MODULATION_TYPE == 1:
+    if params.MOD == 1:
         if removed_freq_range == 0:
             fc = np.mean(params.FREQ_RANGES[1])
         else:
             fc = np.mean(params.FREQ_RANGES[0])
-    elif params.MODULATION_TYPE == 2:
+    elif params.MOD == 2:
         if removed_freq_range == 0 or removed_freq_range == 1:
             fc = 7000
         else:
@@ -246,12 +249,12 @@ def local_test():
     plot_helper.fft_plot(y, "y in Frequency domain", shift=True)
 
     # Find the delay
-    delay = parameter_estim.ML_theta_estimation(demodulated_samples, preamble_samples=preamble_samples)
+    delay = parameter_estim.ML_theta_estimation(y, preamble_samples=preamble_samples)
     print("Delay: {} samples".format(delay))
     print("--------------------------------------------------------")
 
     # Extract the preamble samples
-    preamble_samples_received = y[half_span_h + delay - 1:half_span_h + delay + len_preamble_samples - 1]
+    preamble_samples_received = y[delay:delay + len_preamble_samples]
     plot_helper.two_simple_plots(preamble_samples_received.real, preamble_samples.real,
                                  "Comparison between preamble samples received and preamble samples sent",
                                  "received", "expected")
@@ -277,7 +280,7 @@ def local_test():
     print("Scaling factor: {}".format(scaling_factor))
 
     # Crop the samples (remove the delay, the preamble, and the ramp-up)
-    data_samples = y[half_span_h + delay + len_preamble_samples - half_span_h + params.USF - 1 - 1:]
+    data_samples = y[delay + len_preamble_samples - half_span_h + params.USF:]
 
     # Find the second_preamble_index
     second_preamble_index = parameter_estim.ML_theta_estimation(data_samples, preamble_samples=preamble_samples[::-1])
@@ -299,14 +302,9 @@ def local_test():
     plot_helper.plot_complex_symbols(data_symbols, "Symbols received", annotate=False)
 
     # Decode the symbols
-    ints = receiver.decoder(data_symbols, mapping)
+    ints = receiver.decoder(data_symbols, mappings.choose_mapping())
     message_received = receiver.ints_to_message(ints)
 
     message_file = open(params.input_message_file_path)
     message_sent = message_file.readline()
     print(message_received == message_sent)
-
-
-# Intended for testing (to run the program, run main.py)
-if __name__ == "__main__":
-    local_test()

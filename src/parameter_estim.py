@@ -9,9 +9,9 @@ def ML_theta_estimation(received_signal, preamble_samples):
     Synchronizes the received signal, i.e returns the number of samples after which the first preamble is detected,
     and the number of samples after which the second preamble is detected.
 
-    :param received_signal: signal received from the server
-    :param preamble_samples: real-valued sequence used to synchronize the received signal
-    :return: delay in number of samples
+    :param received_signal:     The signal received from the server
+    :param preamble_samples:    The real-valued sequence used to synchronize the received signal
+    :return:                    The delay in number of samples
     """
     # Correlation between the received signal and the preamble to find the delay
     if len(received_signal) >= len(preamble_samples):
@@ -35,9 +35,10 @@ def ML_phase_scaling_estim(preamble_samples, preamble_samples_received):
     """
     Estimate the phase shift and the scaling factor applied by the server to the samples (to be called after finding
     the right theta for synchronization)
-    :param preamble_samples: the preamble the receiver knows
-    :param preamble_samples_received: the received preamble
-    :return: the phase shift and the scaling factor estimates
+
+    :param preamble_samples:            The preamble the receiver knows
+    :param preamble_samples_received:   The received preamble
+    :return:                            The phase shift and the scaling factor estimates
     """
 
     dot_product = np.dot(preamble_samples, preamble_samples_received)

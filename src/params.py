@@ -2,18 +2,18 @@ import numpy as np
 
 
 def choose_symbol_period():
-    if MODULATION_TYPE == 1:
-        return np.floor(((1 + BETA) / MODULATION_TYPE_1_BANDWIDTH) * Fs) / Fs
-    elif MODULATION_TYPE == 2:
-        return np.floor(((1 + BETA) / MODULATION_TYPE_2_BANDWIDTH) * Fs) / Fs
-    elif MODULATION_TYPE == 3:
-        return np.floor(((1 + BETA) / MODULATION_TYPE_3_BANDWIDTH) * Fs) / Fs
+    if MOD == 1:
+        return np.floor(((1 + BETA) / MOD_1_BANDWIDTH) * Fs) / Fs
+    elif MOD == 2:
+        return np.floor(((1 + BETA) / MOD_2_BANDWIDTH) * Fs) / Fs
+    elif MOD == 3:
+        return np.floor(((1 + BETA) / MOD_3_BANDWIDTH) * Fs) / Fs
     else:
         raise ValueError('This modulation type does not exist yet... He he he')
 
 
 # General variables
-logs = True
+logs = False
 plots = False
 input_message_file_path = "../data/input_text.txt"
 output_message_file_path = "../data/output_text.txt"
@@ -40,27 +40,27 @@ FREQ_RANGES = [[1000, 3000],  # frequency ranges authorized by the channel
 # ---------------------------------------------
 
 # Communication parameters
-MAPPING = "qam"  # mapping: qam or psk or pam for now
+MAPPING = "qam"  # mapping: qam or psk or pam for now (pam not well integrated yet (e.g SSB))
 NORMALIZE_MAPPING = False  # rather we normalize the mapping or not
 M = 4  # length of the mapping (must be of the form 2^2k if QAM is chosen)
 BITS_PER_SYMBOL = int(np.log2(M))  # number of bits we transmit per symbol
 
-MODULATION_TYPE = 1
+MOD = 3
 # 1 = naive approach (duplicate 4 times)
 # 2 = less naive approach (duplicate 2 times, (care about covering 4000Hz with the rrc --> choose T accordingly))
-# 3 = parity check approach
-MODULATION_TYPE_1_BANDWIDTH = 2000
-MODULATION_TYPE_2_BANDWIDTH = 4000
-MODULATION_TYPE_3_BANDWIDTH = 2000
+# 3 = parity check approach (only works for M=4 here)
+MOD_1_BANDWIDTH = 2000
+MOD_2_BANDWIDTH = 4000
+MOD_3_BANDWIDTH = 2000
 
-BETA = 0.2  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
+BETA = 0.15  # rolloff factor of our root-raised-cosine pulse (usually between 0.2 and 0.3 (said Prandoni))
 T = choose_symbol_period()  # symbol period (in seconds), i.e time before we can repeat the pulse while satisfying
 # Nyquist crit.
 NORMALIZE_PULSE = True  # rather we normalize the pulse or not
 
-USF = int(np.ceil(T * Fs))  # up-sampling factor, i.e the number of zeros to add between any 2 symbols before
+USF = int(T * Fs)  # up-sampling factor, i.e the number of zeros to add between any 2 symbols before
 # pulse shaping
-SPAN = 4 * USF  # size of our pulse in number of samples
+SPAN = 20 * USF  # size of our pulse in number of samples
 
 PREAMBLE_TYPE = "barker"  # Type of preamble to generate (barker or random for now)
 BARKER_SEQUENCE_REPETITION = 1  # Number of repetitions of the barker sequence
@@ -70,6 +70,11 @@ ABS_SAMPLE_RANGE = 0.85  # samples amplitude must be between -1 and 1, but we ke
 
 
 def params_log():
+    """
+    Insert the important parameters at the beginning of the logs
+
+    :return: None
+    """
     print("--------------------------------------------------------")
     print("-----------------------PARAMETERS-----------------------")
     print("--------------------------------------------------------")
@@ -77,13 +82,13 @@ def params_log():
     print("M = {}".format(M))
     print("Normalized mapping: {}\n".format(NORMALIZE_MAPPING))
 
-    print("Modulation type: {}".format(MODULATION_TYPE))
-    if MODULATION_TYPE == 1:
-        bandwidth = MODULATION_TYPE_1_BANDWIDTH
-    elif MODULATION_TYPE == 2:
-        bandwidth = MODULATION_TYPE_2_BANDWIDTH
-    elif MODULATION_TYPE == 3:
-        bandwidth = MODULATION_TYPE_3_BANDWIDTH
+    print("Modulation type: {}".format(MOD))
+    if MOD == 1:
+        bandwidth = MOD_1_BANDWIDTH
+    elif MOD == 2:
+        bandwidth = MOD_2_BANDWIDTH
+    elif MOD == 3:
+        bandwidth = MOD_3_BANDWIDTH
     else:
         bandwidth = "?"
     print("Bandwidth of the pulse: {} Hz\n".format(bandwidth))
@@ -104,4 +109,4 @@ def params_log():
     print("--------------------------------------------------------")
     print("--------------------------------------------------------")
     print("--------------------------------------------------------")
-    print()
+    return None

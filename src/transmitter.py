@@ -1,194 +1,62 @@
-import subprocess
-
 import numpy as np
-from scipy.signal import upfirdn
 
-import fourier_helper
-import helper
-import mappings
-import params
-import plot_helper
-import preambles
-import pulses
 import read_write
+import transmitter_helper
 
 
-def message_to_ints():
+# TODO: Make modular (PAM not handled yet)
+def encoder():
     """
-    Convert the message into an array of integers corresponding to the indices in the chosen mapping
-    :return: the mapping indices corresponding to our message
+    Encode a message into a sequence of symbols according to the given mapping
+
+    :return: The corresponding symbols for the message
     """
-    # Retrieve the message from file
-    message_file = open(params.input_message_file_path)
-    message = message_file.readline()
-    print("Sent message:\n{}".format(message))
-    if params.logs:
-        print("Length: {} characters".format(len(message)))
+    # Retrieve the message from the file as bytes
+    message_bytes = transmitter_helper.retrieve_message_as_bytes()
 
-    # Retrieve the message as a sequences of binary bytes
-    string_bytes = helper.string2bits(message)
-
-    # Next step is to re-arrange string_bytes in agreement with M. Indeed, with a symbol constellation of M points,
-    # we can only represent BITS_PER_SYMBOL=log2(M) bits per symbol. Thus, we want to re-structure string_bytes
-    # with BITS_PER_SYMBOL=log2(M) bits by row.
-
-    # Remove the most significant bit (0) as it is useless in ASCII (do not forget to put it again in the receiver!)
-    new_bits = [b[1:] for b in string_bytes]
-
-    # Make a new string with these cropped bytes
-    new_bits = ''.join(new_bits)
-
-    # Cut the bit-stream in 3 parts
-    # if params.MODULATION_TYPE == 3:
-
-    # New structure with bits_per_symbol bits by row
-    new_bits = [new_bits[i:i + params.BITS_PER_SYMBOL] for i in range(0, len(new_bits), params.BITS_PER_SYMBOL)]
-
-    # Convert this new bits sequence to an integer sequence
-    ints = [int(b, 2) for b in new_bits]
-
-    if params.logs:
-        print("Corresponding bytes:\n{}".format(string_bytes))
-        print("Cropped and re-structured bits:\n{}".format(new_bits))
-        print("Equivalent integers (indices for our mapping):\n{}".format(ints))
-        print("--------------------------------------------------------")
-
-    return ints
-
-
-# TODO: merge both into an encoder method
-def encoder(indices, mapping):
-    """
-    :param indices: the mapping indices corresponding to our message
-    :param mapping: the mapping corresponding to the given modulation type
-    :return: the symbols/n-tuples
-    """
-    corresponding_symbols = [mapping[i] for i in indices]
-
-    if params.logs:
-        print("Mapping the integers to the symbols in the mapping...")
-        print("Symbols/n-tuples to be sent:\n{}".format(corresponding_symbols))
-        print("Number of symbols: {}".format(len(corresponding_symbols)))
-        print("--------------------------------------------------------")
-    if params.plots:
-        plot_helper.plot_complex_symbols(corresponding_symbols, "{} data symbols to send"
-                                         .format(len(corresponding_symbols)), "blue")
+    # Associate the message bytes to the corresponding symbols
+    corresponding_symbols = transmitter_helper.grouped_bytes_to_symbols(message_bytes)
 
     return np.asarray(corresponding_symbols)
 
 
-def waveform_former(h, data_symbols, USF=params.USF):
+def waveform_former(h, data_symbols):
     """
-    :param h: the sampled pulse
-    :param data_symbols: the symbols modulating the pulse
-    :param USF: the up-sampling factor (number of samples per symbols)
-    :return: the samples of a modulated pulse train to send to the server
-    """
+    Shape the data symbols with the pulse h
 
+    :param h:               The pulse used to shape the symbols
+    :param data_symbols:    The data symbols modulating the pulse
+    :return:                The samples of a modulated pulse train to send to the server
+    """
     # Generate the preamble_symbols and write them in the appropriate file
-    preambles.generate_preamble_symbols(len(data_symbols))
-    preamble_symbols = read_write.read_preamble_symbols()
-    if params.logs:
-        print("Preamble symbols:\n{}".format(preamble_symbols))
-        print("--------------------------------------------------------")
-    if params.plots:
-        plot_helper.plot_complex_symbols(preamble_symbols, "Preamble symbols")
+    preamble_symbols = transmitter_helper.generate_preamble_to_transmit(len(data_symbols))
 
-    # Concatenate the synchronization sequence with the symbols to send
-    total_symbols = np.concatenate((preamble_symbols, data_symbols, preamble_symbols[::-1]))
-    if params.plots:
-        plot_helper.plot_complex_symbols(total_symbols, "Total symbols to send")
+    # Shape the preamble symbols and write the preamble samples in the preamble_samples file
+    transmitter_helper.shape_preamble_samples(h, preamble_symbols)
 
-    # TODO can/should I remove the ramp-up and ramp_down? (then less samples to send)
-    # Shape the signal with the pulse h
-    total_samples = upfirdn(h, total_symbols, USF)
+    # Concatenate the data symbols with the preamble symbols at the beginning and at the end
+    p_data_p_symbols = transmitter_helper.concatenate_symbols(preamble_symbols, data_symbols)
 
-    if params.logs:
-        print("Shaping the preamble and the data...")
-        print("Up-sampling factor: {}".format(params.USF))
-        print("Number of samples: {}".format(len(total_samples)))
-        print("--------------------------------------------------------")
-    if params.plots:
-        plot_helper.plot_complex_function(total_samples, "Input samples in Time domain")
-        plot_helper.fft_plot(total_samples, "Input samples in Frequency domain", shift=True)
+    # Shape each of the symbols array
+    p_data_p_samples = transmitter_helper.shape_symbols(h, p_data_p_symbols)
 
-    # Write the preamble samples (base-band, so might be complex) in the preamble_samples file
-    preamble_samples = upfirdn(h, preamble_symbols, USF)
-    read_write.write_preamble_samples(preamble_samples)
-
-    if params.logs:
-        print("Shaping the preamble...")
-        print("Number of samples for the preamble: {}".format(len(preamble_samples)))
-        print("--------------------------------------------------------")
-    if params.plots:
-        plot_helper.plot_complex_function(preamble_samples, "Synchronization sequence shaped, in Time domain")
-        plot_helper.fft_plot(preamble_samples, "Synchronization sequence shaped, in Frequency domain", shift=True)
-
-    # Modulate the samples to fit in the required bands
-    if np.any(np.iscomplex(total_samples)):
-        if params.MODULATION_TYPE == 1:
-            total_samples = fourier_helper.modulate_complex_samples(total_samples,
-                                                                    params.np.mean(params.FREQ_RANGES, axis=1))
-        elif params.MODULATION_TYPE == 2:
-            total_samples = fourier_helper.modulate_complex_samples(total_samples, [params.FREQ_RANGES[0][1],
-                                                                                    params.FREQ_RANGES[2][1]])
-        else:
-            raise ValueError('This modulation type does not exist yet... Hehehe')
-
-        if params.logs:
-            print("Modulation of the signal...")
-            print("Minimum sample after modulation: {}".format(min(total_samples)))
-            print("Maximum sample after modulation: {}".format(max(total_samples)))
-            print("--------------------------------------------------------")
-        if params.plots:
-            plot_helper.plot_complex_function(total_samples, "Input samples after modulation, in Time domain")
-            plot_helper.fft_plot(total_samples, "Input samples after modulation, in Frequency domain", shift=True)
-    else:
-        raise ValueError("TODO: handle real samples (e.g SSB)")
+    # Choose the modulation frequencies and modulate the samples
+    p_data_p_modulated_samples = transmitter_helper.modulate_samples(p_data_p_samples)
 
     # Scale the signal to the range [-1, 1] (with a bit of uncertainty margin, according to params.ABS_SAMPLE_RANGE)
-    total_samples = (total_samples / (max(abs(total_samples))) * params.ABS_SAMPLE_RANGE)
+    samples_to_send = transmitter_helper.scale_samples(p_data_p_modulated_samples)
 
-    if params.logs:
-        print("Scaling the signal...")
-        print("Minimum sample after scaling: {}".format(min(total_samples)))
-        print("Maximum sample after scaling: {}".format(max(total_samples)))
-        print("--------------------------------------------------------")
+    # Write the samples to send in the appropriate file
+    read_write.write_samples(samples_to_send)
 
-    return total_samples
+    return samples_to_send
 
 
 def send_samples():
     """
-    Launch the client.py file with the correct arguments according to the parameters in the param file
+    Send the samples to the server, and received the output samples in the corresponding file
+
     :return: None
     """
-    subprocess.call(["python3 client.py" +
-                     " --input_file=" + params.input_sample_file_path +
-                     " --output_file=" + params.output_sample_file_path +
-                     " --srv_hostname=" + params.server_hostname +
-                     " --srv_port=" + str(params.server_port)],
-                    shell=True)
+    transmitter_helper.send_samples()
     return None
-
-
-# Intended for testing (to run the program, run main.py)
-if __name__ == '__main__':
-    # Choose the mapping
-    mapping = mappings.choose_mapping()
-
-    # Encode the message
-    symbols = encoder(message_to_ints(), mapping)
-
-    # Generate the root-raised_cosine
-    _, h_pulse = pulses.root_raised_cosine()
-
-    # Construct the samples to send
-    input_samples = waveform_former(h_pulse, symbols)
-
-    # Write the samples in the input file
-    read_write.write_samples(input_samples)
-
-    # Send the samples to the server
-    send_samples()
-
