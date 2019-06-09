@@ -5,4 +5,4 @@
 
 **Deadline: 31/05/2019**
 
-Edit: 15/15 + 5 bonus points (efficiency) obtained
+Edit: 15/15 + 5 bonus points (for efficiency) obtained
