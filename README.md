@@ -4,3 +4,5 @@
 ### Teaching assistants: Sepand Kashani, Reka Inovan, Arda Atalik
 
 **Deadline: 31/05/2019**
+
+Edit: 15/15 + 5 bonus points (the best project of all) obtained
