@@ -1,5 +1,5 @@
 # PDC project: Transmission over a continuous-time channel with impairments
-## Team: Jean Chambras, Ruben Ganansia, and Rayan Daod
+## Team: Rayan Daod, Jean Chambras, Ruben Ganansia
 ## Professor: Emre Telatar
 ### Teaching assistants: Sepand Kashani, Reka Inovan, Arda Atalik
 
